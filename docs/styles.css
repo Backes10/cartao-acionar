@@ -1,0 +1,470 @@
+/* Cartão Acionar — mobile primeiro, funciona no claro e no escuro */
+
+/* Paleta
+   ------
+   Marca tirada da arte real da Acionar: laranja da faixa, grafite da diagonal.
+   Os neutros puxam para o quente (leve viés vermelho) para pertencerem ao mesmo
+   mundo do laranja — cinza azulado ao lado de laranja lê como sobra de outro
+   projeto, que é exatamente o que era: o rascunho nasceu azul-marinho.
+
+   Os tokens são redefinidos em três lugares, de propósito:
+   1. @media prefers-color-scheme — segue o sistema operacional;
+   2. :root[data-theme=...] — o leitor forçou claro ou escuro num botão da
+      página, e isso tem de vencer o sistema NOS DOIS SENTIDOS.
+   Componente nenhum lê cor direto: todos passam pelos tokens. */
+
+:root {
+  --marca: #EB6522;
+  --destaque: #3A3737;
+  --raio: 14px;
+}
+
+:root,
+:root[data-theme="light"] {
+  --fundo: #FAF7F5;
+  --papel: #FFFFFF;
+  --texto: #1A1512;
+  --texto-fraco: #6E635C;
+  --borda: #EBE4DF;
+  --alerta-fundo: #FFF3E3;
+  --alerta-borda: #EB6522;
+  --alerta-texto: #6B3A08;
+  --erro-fundo: #FEE4E2;
+  --erro-borda: #D92D20;
+  --erro-texto: #7A271A;
+  --sombra: 0 1px 2px rgba(26, 21, 18, .05), 0 6px 20px rgba(26, 21, 18, .07);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fundo: #14100E;
+    --papel: #1F1917;
+    --texto: #F5EFEB;
+    --texto-fraco: #A79C95;
+    --borda: #362D28;
+    --alerta-fundo: #3B2708;
+    --alerta-borda: #EB6522;
+    --alerta-texto: #FFD9A8;
+    --erro-fundo: #45140F;
+    --erro-borda: #F97066;
+    --erro-texto: #FFC9C4;
+    --sombra: none;
+  }
+}
+
+:root[data-theme="dark"] {
+  --fundo: #14100E;
+  --papel: #1F1917;
+  --texto: #F5EFEB;
+  --texto-fraco: #A79C95;
+  --borda: #362D28;
+  --alerta-fundo: #3B2708;
+  --alerta-borda: #EB6522;
+  --alerta-texto: #FFD9A8;
+  --erro-fundo: #45140F;
+  --erro-borda: #F97066;
+  --erro-texto: #FFC9C4;
+  --sombra: none;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  padding: 0 0 env(safe-area-inset-bottom);
+  font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--texto);
+  background: var(--fundo);
+  overflow-x: hidden;
+}
+
+main { padding: 0 16px 8px; max-width: 620px; margin: 0 auto; }
+
+/* ---------- banners ---------- */
+
+.banner {
+  padding: 12px 16px;
+  font-size: 14px;
+  line-height: 1.4;
+  border-bottom: 2px solid;
+}
+.banner--alerta { background: var(--alerta-fundo); color: var(--alerta-texto); border-color: var(--alerta-borda); }
+/* Fica colado no topo, acima da barra: o aviso ficava no começo da página e
+   sumia da tela assim que o vendedor rolava para preencher o formulário. */
+.banner--novo {
+  position: sticky;
+  top: 0;
+  z-index: 7;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  background: var(--marca); color: #fff; border-color: rgba(0, 0, 0, .18);
+}
+.botao--linha {
+  flex: 0 0 auto;
+  padding: 7px 14px; font-size: 14px;
+  background: rgba(255, 255, 255, .16);
+  border-color: rgba(255, 255, 255, .5);
+  color: #fff;
+}
+.banner--erro   { background: var(--erro-fundo);   color: var(--erro-texto);   border-color: var(--erro-borda); }
+.banner code {
+  font-size: .92em;
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: rgba(0, 0, 0, .08);
+  word-break: break-all;
+}
+.banner pre {
+  margin: 8px 0 0;
+  padding: 8px 10px;
+  overflow-x: auto;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, .12);
+  font-size: 13px;
+}
+
+/* ---------- topo ---------- */
+
+.topo {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: max(12px, env(safe-area-inset-top)) 16px 12px;
+  background: var(--marca);
+  color: #fff;
+}
+.topo__marca { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.topo__logo {
+  flex: 0 0 auto;
+  width: 40px; height: 40px;
+  display: grid; place-items: center;
+  border-radius: 10px;
+  background: var(--destaque);
+  color: var(--marca);
+  font-weight: 800; font-size: 22px;
+  overflow: hidden;
+}
+.topo__logo img { width: 100%; height: 100%; object-fit: contain; }
+/* Logo de assinatura é largo, não cabe no quadrado do monograma.
+   Altura em px na PRÓPRIA imagem, nunca em %: como item de grid dentro de um
+   flex, o height:100% não resolvia e a imagem vinha no tamanho natural
+   (1600px), aparecendo como uma tira cortada atravessando a barra. */
+.topo__logo--imagem {
+  width: auto; height: auto;
+  background: transparent; border-radius: 0;
+}
+.topo__logo.topo__logo--imagem img {
+  display: block;
+  width: auto; height: 34px;
+  max-width: 200px;
+  object-fit: contain;
+}
+.topo__titulo { font-weight: 700; font-size: 17px; }
+.topo__sub { font-size: 12.5px; opacity: .8; }
+
+/* ---------- passos ---------- */
+
+.passo {
+  margin: 16px 0;
+  padding: 16px;
+  border-radius: var(--raio);
+  background: var(--papel);
+  border: 1px solid var(--borda);
+  box-shadow: var(--sombra);
+}
+.passo__titulo {
+  display: flex; align-items: center; gap: 10px;
+  margin: 0 0 14px;
+  font-size: 15px; font-weight: 700;
+  letter-spacing: .01em;
+}
+.passo__num {
+  display: grid; place-items: center;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--marca); color: #fff;
+  font-size: 12.5px; font-weight: 700;
+}
+
+/* ---------- chips de produto ---------- */
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 14px;
+  border: 1.5px solid var(--borda);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--texto);
+  font: inherit; font-size: 14.5px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.chip[aria-checked="true"] {
+  border-color: var(--marca);
+  background: var(--marca);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* ---------- formulário ---------- */
+
+.grade { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.campo { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.campo--full { grid-column: 1 / -1; }
+.campo__label { font-size: 12.5px; font-weight: 600; color: var(--texto-fraco); }
+.campo__opc { font-weight: 400; }
+.campo__ajuda { font-size: 12px; color: var(--texto-fraco); }
+.campo__input {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1.5px solid var(--borda);
+  border-radius: 10px;
+  background: var(--fundo);
+  color: var(--texto);
+  font: inherit;
+  font-size: 16px; /* 16px evita o zoom automático do iOS */
+}
+.campo__input:focus-visible { outline: 2px solid var(--marca); outline-offset: 1px; border-color: var(--marca); }
+.campo__input--cor { height: 44px; padding: 4px; }
+textarea.campo__input { min-height: 78px; resize: vertical; line-height: 1.35; }
+.campo--erro .campo__input { border-color: var(--erro-borda); }
+/* Caixa de marcar: rótulo ao lado, não em cima. */
+.campo--caixa { flex-direction: row; align-items: flex-start; gap: 10px; }
+.campo--caixa input { width: 20px; height: 20px; margin-top: 2px; flex: 0 0 auto; }
+.campo--caixa > span { display: flex; flex-direction: column; gap: 3px; }
+
+@media (max-width: 400px) {
+  .grade { grid-template-columns: 1fr; }
+}
+
+/* ---------- telefones da seguradora ---------- */
+
+.telefones { list-style: none; margin: 12px 0 0; padding: 0; }
+.telefones li {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 12px;
+  padding: 9px 0;
+  border-top: 1px solid var(--borda);
+  font-size: 14.5px;
+}
+.telefones li:first-child { border-top: 0; }
+.telefones__rot { color: var(--texto-fraco); font-size: 13px; }
+.telefones__num { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.telefones__vazio { color: var(--texto-fraco); font-size: 14px; }
+
+/* ---------- nome do contato ---------- */
+
+.nomecontato {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1.5px dashed var(--marca);
+  background: color-mix(in srgb, var(--marca) 7%, transparent);
+}
+.nomecontato__rot { font-size: 12px; color: var(--texto-fraco); margin-bottom: 3px; }
+.nomecontato__valor { font-weight: 700; font-size: 16px; word-break: break-word; }
+
+.pendencias {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--alerta-fundo);
+  color: var(--alerta-texto);
+  font-size: 13.5px;
+}
+/* Impedimento não é recomendação: muda de cor para o vendedor não confundir
+   "seria bom" com "não vai sair". */
+.pendencias--impede {
+  background: var(--erro-fundo);
+  color: var(--erro-texto);
+  border-left: 4px solid var(--erro-borda);
+}
+.pendencias ul { margin: 4px 0 6px; padding-left: 18px; }
+.pendencias ul:last-child { margin-bottom: 0; }
+.pendencias strong + ul { margin-top: 4px; }
+
+/* ---------- prévia ---------- */
+
+.previa { margin: 14px 0; }
+.previa__canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  border: 1px solid var(--borda);
+  background: #fff;
+}
+
+/* ---------- ações ---------- */
+
+.acoes { display: flex; flex-direction: column; gap: 10px; }
+.acoes__linha { display: flex; flex-wrap: wrap; gap: 8px; }
+.acoes__linha .botao { flex: 1 1 30%; }
+
+/* Saídas de emergência ficam guardadas: a tela tem UMA ação. Elas abrem
+   sozinhas quando um envio falha, que é o único momento em que importam. */
+.mais { font-size: 13.5px; }
+.mais__abre {
+  cursor: pointer;
+  padding: 6px 0;
+  color: var(--texto-fraco);
+  font-weight: 500;
+  text-align: center;
+}
+.mais[open] .mais__abre { margin-bottom: 8px; }
+.mais .acoes__linha + .acoes__linha { margin-top: 8px; }
+
+.botao {
+  padding: 12px 16px;
+  border: 1.5px solid var(--borda);
+  border-radius: 11px;
+  background: var(--papel);
+  color: var(--texto);
+  font: inherit; font-size: 15px; font-weight: 600;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.botao:active { transform: translateY(1px); }
+.botao--primario {
+  border-color: transparent;
+  background: #128C7E; /* verde WhatsApp */
+  color: #fff;
+  font-size: 17px;
+  padding: 15px 16px;
+}
+.botao--fantasma { border-color: transparent; background: transparent; color: var(--texto-fraco); font-weight: 500; }
+/* Passo seguinte, que aparece só depois da imagem ir. Tem a cor da marca para
+   ser óbvio, mas não compete com o botão principal de enviar. */
+.botao--seguinte {
+  margin-top: 10px;
+  border-color: var(--marca);
+  color: var(--marca);
+  background: transparent;
+}
+.botao--icone { padding: 8px 12px; font-size: 19px; background: rgba(255, 255, 255, .14); border-color: transparent; color: #fff; }
+.botao:disabled { opacity: .5; cursor: not-allowed; }
+
+/* pre-wrap: quando um envio falha, o aviso traz o registro do navegador,
+   uma linha por passo. */
+.status { min-height: 20px; margin: 10px 0 0; font-size: 13.5px; color: var(--texto-fraco); white-space: pre-wrap; }
+.status--ok { color: #0E7C5A; }
+.status--erro { color: var(--erro-borda); }
+
+/* ---------- histórico ---------- */
+
+.historico { list-style: none; margin: 0; padding: 0; }
+.historico li {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 0;
+  border-top: 1px solid var(--borda);
+}
+.historico li:first-child { border-top: 0; }
+.historico__info { flex: 1 1 auto; min-width: 0; }
+.historico__nome { font-size: 14.5px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.historico__meta { font-size: 12px; color: var(--texto-fraco); }
+.historico__vazio { color: var(--texto-fraco); font-size: 14px; padding: 4px 0; }
+.historico .botao { padding: 8px 12px; font-size: 13.5px; }
+
+/* ---------- catálogo de seguradoras ---------- */
+
+.catalogo { list-style: none; margin: 10px 0 14px; padding: 0; }
+.catalogo li {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 0;
+  border-top: 1px solid var(--borda);
+}
+.catalogo li:first-child { border-top: 0; }
+.catalogo__info { flex: 1 1 auto; min-width: 0; }
+.catalogo__nome { font-size: 15px; font-weight: 600; }
+.catalogo__meta { font-size: 12.5px; color: var(--texto-fraco); }
+.catalogo__meta--exemplo { color: var(--erro-borda); font-weight: 600; }
+.catalogo li img { height: 22px; width: auto; max-width: 84px; object-fit: contain; flex: 0 0 auto; }
+.catalogo .botao { padding: 8px 12px; font-size: 13.5px; }
+.catalogo__importar { text-align: center; cursor: pointer; }
+
+.catalogo__cab { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+
+/* linha de telefone dentro do editor */
+.tel-editor {
+  padding: 12px;
+  margin-top: 10px;
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  background: var(--fundo);
+  display: grid;
+  gap: 8px;
+}
+.tel-editor__topo { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.tel-editor__num { font-size: 12.5px; font-weight: 700; color: var(--texto-fraco); }
+
+.botao--linha-clara {
+  padding: 7px 12px; font-size: 13.5px;
+  border-color: var(--marca); color: var(--marca); background: transparent;
+}
+.botao--perigo {
+  margin-top: 12px;
+  border-color: transparent; background: transparent;
+  color: var(--erro-borda); font-weight: 600;
+}
+
+/* ---------- diagnóstico ---------- */
+
+.diag {
+  max-width: 620px;
+  margin: 4px auto 0;
+  padding: 0 16px;
+  font-size: 13px;
+  color: var(--texto-fraco);
+}
+.diag__abre { cursor: pointer; padding: 8px 0; font-weight: 600; }
+.diag__lista {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 12px;
+  margin: 6px 0 12px;
+  padding: 12px;
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  background: var(--papel);
+}
+.diag__lista dt { font-weight: 600; }
+/* pre-wrap: o registro do envio tem uma linha por passo. */
+.diag__lista dd { margin: 0; word-break: break-word; white-space: pre-wrap; }
+.diag__lista dd.ruim { color: var(--erro-borda); font-weight: 600; }
+.diag__lista dd.bom { color: #0E7C5A; font-weight: 600; }
+.diag .botao { font-size: 13.5px; padding: 9px 14px; }
+.diag__acao { margin-top: 6px; }
+
+/* ---------- rodapé ---------- */
+
+.rodape {
+  padding: 20px 16px 28px;
+  text-align: center;
+  font-size: 12.5px;
+  color: var(--texto-fraco);
+}
+
+/* ---------- diálogo ---------- */
+
+.dialogo {
+  width: min(560px, calc(100vw - 24px));
+  max-height: 88vh;
+  padding: 0;
+  border: 0;
+  border-radius: var(--raio);
+  background: var(--papel);
+  color: var(--texto);
+}
+.dialogo::backdrop { background: rgba(0, 0, 0, .5); }
+.dialogo__form { display: flex; flex-direction: column; gap: 12px; padding: 18px; overflow-y: auto; max-height: 88vh; }
+.dialogo__titulo { margin: 0; font-size: 17px; }
+.dialogo__hr { border: 0; border-top: 1px solid var(--borda); margin: 4px 0; }
+.dialogo__logo { display: flex; align-items: center; gap: 12px; }
+.dialogo__logo img { width: 56px; height: 56px; object-fit: contain; border: 1px solid var(--borda); border-radius: 8px; background: #fff; }
+.dialogo__acoes { display: flex; gap: 8px; margin-top: 4px; }
+.dialogo__acoes .botao { flex: 1; }

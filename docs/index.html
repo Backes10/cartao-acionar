@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#EB6522">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Cartão Acionar">
+<title>Cartão Acionar</title>
+<link rel="manifest" href="manifest.webmanifest">
+<!-- o iOS ignora os ícones do manifest ao "Adicionar à Tela de Início" -->
+<link rel="apple-touch-icon" href="assets/icone-192.png">
+<link rel="icon" type="image/png" href="assets/icone-192.png">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div id="bannerExemplo" class="banner banner--alerta" hidden>
+  <strong>Catálogo de exemplo.</strong>
+  <span id="bannerExemploTexto"></span>
+  A imagem sai marcada como <b>EXEMPLO</b> até você trocar os números em
+  <code>data/seguradoras.json</code>.
+</div>
+
+<div id="bannerErro" class="banner banner--erro" hidden></div>
+
+<div id="bannerAtualizacao" class="banner banner--novo" hidden>
+  <strong>Tem versão nova do app.</strong>
+  <button id="btnAtualizar" class="botao botao--linha" type="button">Recarregar</button>
+</div>
+
+<header class="topo">
+  <div class="topo__marca">
+    <div id="topoLogo" class="topo__logo" aria-hidden="true">A</div>
+    <div>
+      <div class="topo__titulo">Cartão Acionar</div>
+      <div class="topo__sub">Contato do seguro pro WhatsApp</div>
+    </div>
+  </div>
+  <button id="btnConfig" class="botao botao--icone" type="button" aria-label="Configurações">⚙</button>
+</header>
+
+<main>
+
+  <section class="passo">
+    <h2 class="passo__titulo"><span class="passo__num">1</span> Produto</h2>
+    <div id="chipsProduto" class="chips" role="radiogroup" aria-label="Produto"></div>
+  </section>
+
+  <section class="passo">
+    <h2 class="passo__titulo"><span class="passo__num">2</span> Seguradora</h2>
+    <label class="campo campo--full">
+      <span class="campo__label">Seguradora</span>
+      <select id="selSeguradora" class="campo__input"></select>
+    </label>
+    <ul id="listaTelefones" class="telefones"></ul>
+    <button id="btnCatalogo" class="botao botao--fantasma" type="button">Cadastrar / editar seguradoras</button>
+  </section>
+
+  <section class="passo">
+    <h2 class="passo__titulo"><span class="passo__num">3</span> Dados da apólice</h2>
+    <div id="formDados" class="grade"></div>
+    <label class="campo campo--full">
+      <span class="campo__label">WhatsApp do cliente <span class="campo__opc">(opcional — só para abrir a conversa)</span></span>
+      <input id="inpWhatsCliente" class="campo__input" type="tel" inputmode="tel" placeholder="(41) 99999-9999" autocomplete="off">
+    </label>
+  </section>
+
+  <section class="passo">
+    <h2 class="passo__titulo"><span class="passo__num">4</span> Conferir e enviar</h2>
+
+    <div class="nomecontato">
+      <div class="nomecontato__rot">Nome que vai aparecer na agenda do cliente</div>
+      <div id="nomeContato" class="nomecontato__valor">—</div>
+    </div>
+
+    <div id="pendencias" class="pendencias" hidden></div>
+
+    <div class="previa">
+      <canvas id="canvasCartao" class="previa__canvas" width="1080" height="1350"></canvas>
+    </div>
+
+    <div class="acoes">
+      <button id="btnEnviar" class="botao botao--primario" type="button">Enviar no WhatsApp</button>
+      <button id="btnContatoDepois" class="botao botao--seguinte" type="button" hidden>Baixar o contato para anexar</button>
+
+      <details id="maisEnvio" class="mais">
+        <summary class="mais__abre">Não funcionou? Outras opções</summary>
+        <div class="acoes__linha">
+          <button id="btnEnviarVcf" class="botao" type="button">Mandar só o contato</button>
+          <button id="btnEnviarPng" class="botao" type="button">Mandar só a imagem</button>
+        </div>
+        <div class="acoes__linha">
+          <button id="btnMensagem" class="botao" type="button">Copiar mensagem</button>
+          <button id="btnVcf" class="botao" type="button">Baixar contato</button>
+          <button id="btnPng" class="botao" type="button">Baixar imagem</button>
+        </div>
+      </details>
+
+      <button id="btnLimpar" class="botao botao--fantasma" type="button">Limpar formulário</button>
+    </div>
+
+    <p id="statusEnvio" class="status" role="status" aria-live="polite"></p>
+  </section>
+
+  <section class="passo">
+    <h2 class="passo__titulo">Histórico</h2>
+    <ul id="listaHistorico" class="historico"></ul>
+    <button id="btnLimparHistorico" class="botao botao--fantasma" type="button" hidden>Limpar histórico</button>
+  </section>
+
+</main>
+
+<details id="diagnostico" class="diag">
+  <summary class="diag__abre">Versão e diagnóstico</summary>
+  <dl id="diagLista" class="diag__lista"></dl>
+  <button id="btnCopiarDiag" class="botao" type="button">Copiar diagnóstico</button>
+</details>
+
+<footer class="rodape">
+  Cartão Acionar · tudo é gerado no seu aparelho, nenhum dado de cliente sai do celular.
+</footer>
+
+<dialog id="dlgCatalogo" class="dialogo">
+  <div class="dialogo__form">
+
+    <div id="vistaLista">
+      <h2 class="dialogo__titulo">Seguradoras</h2>
+      <p class="campo__ajuda">Vermelho = telefones ainda não conferidos. Cartão dessas sai
+        marcado como EXEMPLO.</p>
+      <ul id="listaCatalogo" class="catalogo"></ul>
+      <div class="dialogo__acoes">
+        <button id="btnNovaSeguradora" class="botao botao--primario" type="button">Nova seguradora</button>
+        <button id="btnFecharCatalogo" class="botao botao--fantasma" type="button">Fechar</button>
+      </div>
+      <details class="mais">
+        <summary class="mais__abre">Backup do catálogo</summary>
+        <div class="acoes__linha">
+          <button id="btnExportarCatalogo" class="botao" type="button">Exportar</button>
+          <label class="botao catalogo__importar">Importar
+            <input id="inpImportarCatalogo" type="file" accept="application/json,.json" hidden>
+          </label>
+        </div>
+        <p class="campo__ajuda">O que você cadastra fica só neste aparelho. Exporte e me mande
+          o arquivo para eu embutir no projeto — aí vale em qualquer celular.</p>
+      </details>
+    </div>
+
+    <div id="vistaEditor" hidden>
+      <h2 id="tituloEditor" class="dialogo__titulo">Seguradora</h2>
+
+      <label class="campo campo--full">
+        <span class="campo__label">Nome</span>
+        <input id="segNome" class="campo__input" type="text" placeholder="Porto Seguro">
+      </label>
+
+      <label class="campo campo--full">
+        <span class="campo__label">Site <span class="campo__opc">(opcional)</span></span>
+        <input id="segSite" class="campo__input" type="url" inputmode="url" autocapitalize="off" placeholder="https://…">
+      </label>
+
+      <label class="campo campo--full">
+        <span class="campo__label">Logo <span class="campo__opc">(opcional, PNG fundo transparente)</span></span>
+        <input id="segLogo" class="campo__input" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml">
+        <span class="campo__ajuda">Use a versão escura da marca: o cartão é branco e logo claro desaparece.
+          Sem logo, o cartão mostra o nome escrito.</span>
+      </label>
+      <div class="dialogo__logo">
+        <img id="segLogoPrevia" alt="" hidden>
+        <button id="segLogoRemover" class="botao botao--fantasma" type="button">Remover logo</button>
+      </div>
+
+      <hr class="dialogo__hr">
+
+      <div class="catalogo__cab">
+        <span class="campo__label">Telefones</span>
+        <button id="btnNovoTelefone" class="botao botao--linha-clara" type="button">+ telefone</button>
+      </div>
+      <div id="listaTelefonesEditor"></div>
+
+      <hr class="dialogo__hr">
+
+      <label class="campo campo--full campo--caixa">
+        <input id="segConferido" type="checkbox">
+        <span>
+          <span class="campo__label">Já liguei em todos estes números</span>
+          <span class="campo__ajuda">Só marque depois de conferir de verdade. Enquanto estiver
+            desmarcado, o cartão sai com EXEMPLO atravessado — é a proteção contra mandar
+            telefone de sinistro errado.</span>
+        </span>
+      </label>
+
+      <div class="dialogo__acoes">
+        <button id="btnSalvarSeguradora" class="botao botao--primario" type="button">Salvar</button>
+        <button id="btnCancelarSeguradora" class="botao botao--fantasma" type="button">Cancelar</button>
+      </div>
+      <button id="btnExcluirSeguradora" class="botao botao--perigo" type="button">Excluir esta seguradora</button>
+    </div>
+
+  </div>
+</dialog>
+
+<dialog id="dlgConfig" class="dialogo">
+  <form id="formConfig" method="dialog" class="dialogo__form">
+    <h2 class="dialogo__titulo">Configurações</h2>
+
+    <label class="campo campo--full">
+      <span class="campo__label">Nome do corretor</span>
+      <input id="cfgCorretor" class="campo__input" type="text" placeholder="Jorge — Acionar">
+    </label>
+
+    <div class="grade">
+      <label class="campo">
+        <span class="campo__label">WhatsApp</span>
+        <input id="cfgWhats" class="campo__input" type="tel" inputmode="tel" placeholder="(51) 99999-9999">
+      </label>
+      <label class="campo">
+        <span class="campo__label">Telefone do escritório</span>
+        <input id="cfgTelefone" class="campo__input" type="tel" inputmode="tel" placeholder="(51) 3566-0010">
+      </label>
+    </div>
+
+    <label class="campo campo--full">
+      <span class="campo__label">Nome da corretora</span>
+      <input id="cfgCorretora" class="campo__input" type="text" placeholder="Acionar Corretora de Seguros">
+    </label>
+
+    <label class="campo campo--full">
+      <span class="campo__label">E-mail <span class="campo__opc">(opcional)</span></span>
+      <input id="cfgEmail" class="campo__input" type="email" inputmode="email" autocapitalize="off" placeholder="acionarseguros@acionarseguros.com.br">
+    </label>
+
+    <label class="campo campo--full">
+      <span class="campo__label">Site <span class="campo__opc">(opcional)</span></span>
+      <input id="cfgSite" class="campo__input" type="url" inputmode="url" autocapitalize="off" placeholder="https://www.acionarseguros.com.br">
+    </label>
+
+    <div class="grade">
+      <label class="campo">
+        <span class="campo__label">Cor principal</span>
+        <input id="cfgCor1" class="campo__input campo__input--cor" type="color" value="#0E3A5E">
+      </label>
+      <label class="campo">
+        <span class="campo__label">Cor de destaque</span>
+        <input id="cfgCor2" class="campo__input campo__input--cor" type="color" value="#F2A93B">
+      </label>
+    </div>
+
+    <label class="campo campo--full">
+      <span class="campo__label">Logo da Acionar <span class="campo__opc">(PNG, fundo transparente)</span></span>
+      <input id="cfgLogo" class="campo__input" type="file" accept="image/png,image/jpeg,image/webp">
+    </label>
+    <div class="dialogo__logo">
+      <img id="cfgLogoPrevia" alt="" hidden>
+      <button id="cfgLogoRemover" class="botao botao--fantasma" type="button">Remover logo</button>
+    </div>
+
+    <hr class="dialogo__hr">
+
+    <label class="campo campo--full campo--caixa">
+      <input id="cfgFotoNoContato" type="checkbox">
+      <span>
+        <span class="campo__label">Logo como foto do contato</span>
+        <span class="campo__ajuda">Deixe desligado se o WhatsApp recusar o arquivo com
+          "vCard não compatível". A foto pesa ~14 KB e é o suspeito principal.</span>
+      </span>
+    </label>
+
+    <hr class="dialogo__hr">
+
+    <label class="campo campo--full">
+      <span class="campo__label">Padrão do nome do contato</span>
+      <input id="cfgTemplate" class="campo__input" type="text">
+      <span class="campo__ajuda" id="cfgTemplateAjuda"></span>
+    </label>
+
+    <div class="dialogo__acoes">
+      <button class="botao botao--primario" value="salvar" type="submit">Salvar</button>
+      <button class="botao botao--fantasma" value="cancelar" type="submit" formnovalidate>Fechar</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="app.js"></script>
+</body>
+</html>

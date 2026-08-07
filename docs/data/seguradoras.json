@@ -1,0 +1,162 @@
+{
+  "_ATENCAO": "TODOS OS TELEFONES DESTE ARQUIVO SAO FICTICIOS (0800 000 000X). Eles existem apenas para o app funcionar antes de voce ter os numeros reais. Enquanto 'exemplo' for true, o app mostra um aviso vermelho e estampa a marca EXEMPLO na imagem gerada.",
+  "_como_publicar": "1) Pegue a imagem de contatos que a Acionar ja manda hoje. 2) Substitua os numeros abaixo pelos reais, seguradora por seguradora. 3) Troque 'exemplo': true por false SO na seguradora que voce ja conferiu. 4) Confira ligando em cada numero antes de liberar.",
+  "_tipos_de_telefone": "assistencia | sinistro | sac | whatsapp | ouvidoria | outro — o tipo so define o icone e a ordem no cartao.",
+
+  "seguradoras": [
+    {
+      "_conferido": "Numeros tirados da imagem oficial que a Acionar envia hoje. Yelum e o novo nome da Liberty Seguros.",
+      "_atencao_rotulos": "A Yelum separa os telefones por REGIAO, nao por finalidade. Nao invente 'Sinistro' ou 'Assistencia 24h' aqui: o rotulo tem de ser o mesmo que a seguradora publica.",
+      "_sobre_logo": "PNG com fundo transparente, tirado do site oficial da seguradora. Escolha a variante ESCURA da marca: o cartao tem fundo branco, e logo claro (o amarelo da Yelum, por exemplo) desaparece. Sem 'logo' o cartao mostra o nome em texto, que funciona para qualquer marca.",
+      "id": "yelum",
+      "nome": "Yelum",
+      "exemplo": false,
+      "logo": "assets/seguradoras/yelum.png",
+      "site": "https://www.yelumseguros.com.br",
+      "_sobre_rotuloCurto": "Vai no contato da agenda, prefixado com o nome da seguradora ('Yelum Capital e RM'). O 'rotulo' completo continua na imagem do cartao, que tem espaco e cabecalho explicando. Rotulo longo na agenda aparece cortado no meio.",
+      "_sobre_semTel": "semTel = aparece na imagem e nas observacoes, mas NAO vira telefone clicavel. Numeros 4004 nao tem formato internacional valido: o Android reescreve e o resultado apontou para o numero de uma pessoa real num teste. Nao repita isso.",
+      "telefones": [
+        { "rotulo": "Capital e Região Metropolitana", "rotuloCurto": "Capital e RM", "numero": "4004 5423", "tipo": "assistencia", "semTel": true },
+        { "rotulo": "Demais Regiões", "rotuloCurto": "Demais Regiões", "numero": "0800 701 4120", "tipo": "assistencia" },
+        { "rotulo": "WhatsApp Atendimento", "rotuloCurto": "WhatsApp", "numero": "(11) 3132 1001", "tipo": "whatsapp" }
+      ]
+    },
+    {
+      "id": "porto-seguro",
+      "nome": "Porto Seguro",
+      "exemplo": true,
+      "logo": "assets/seguradoras/porto-seguro.png",
+      "site": "https://www.portoseguro.com.br",
+      "telefones": [
+        { "rotulo": "Assistência 24h / Reboque", "numero": "0800 000 0001", "tipo": "assistencia" },
+        { "rotulo": "Aviso de Sinistro", "numero": "0800 000 0002", "tipo": "sinistro" },
+        { "rotulo": "SAC", "numero": "0800 000 0003", "tipo": "sac" },
+        { "rotulo": "WhatsApp da seguradora", "numero": "(11) 90000-0001", "tipo": "whatsapp" }
+      ]
+    },
+    {
+      "id": "azul-seguros",
+      "nome": "Azul Seguros",
+      "exemplo": true,
+      "logo": "assets/seguradoras/azul-seguros.png",
+      "site": "https://www.azulseguros.com.br",
+      "telefones": [
+        { "rotulo": "Assistência 24h / Reboque", "numero": "0800 000 0011", "tipo": "assistencia" },
+        { "rotulo": "Aviso de Sinistro", "numero": "0800 000 0012", "tipo": "sinistro" },
+        { "rotulo": "SAC", "numero": "0800 000 0013", "tipo": "sac" }
+      ]
+    },
+    {
+      "id": "itau-seguros",
+      "nome": "Itaú Seguros",
+      "exemplo": true,
+      "site": "",
+      "telefones": [
+        { "rotulo": "Assistência 24h / Reboque", "numero": "0800 000 0021", "tipo": "assistencia" },
+        { "rotulo": "Aviso de Sinistro", "numero": "0800 000 0022", "tipo": "sinistro" },
+        { "rotulo": "SAC", "numero": "0800 000 0023", "tipo": "sac" }
+      ]
+    },
+    {
+      "id": "bradesco-seguros",
+      "nome": "Bradesco Seguros",
+      "exemplo": true,
+      "site": "",
+      "telefones": [
+        { "rotulo": "Assistência 24h / Reboque", "numero": "0800 000 0031", "tipo": "assistencia" },
+        { "rotulo": "Aviso de Sinistro", "numero": "0800 000 0032", "tipo": "sinistro" },
+        { "rotulo": "SAC", "numero": "0800 000 0033", "tipo": "sac" }
+      ]
+    },
+    {
+      "id": "allianz",
+      "nome": "Allianz Seguros",
+      "exemplo": true,
+      "site": "",
+      "telefones": [
+        { "rotulo": "Assistência 24h / Reboque", "numero": "0800 000 0041", "tipo": "assistencia" },
+        { "rotulo": "Aviso de Sinistro", "numero": "0800 000 0042", "tipo": "sinistro" },
+        { "rotulo": "SAC", "numero": "0800 000 0043", "tipo": "sac" }
+      ]
+    },
+    {
+      "id": "hdi",
+      "nome": "HDI Seguros",
+      "exemplo": true,
+      "site": "",
+      "telefones": [
+        { "rotulo": "Assistência 24h / Reboque", "numero": "0800 000 0051", "tipo": "assistencia" },
+        { "rotulo": "Aviso de Sinistro", "numero": "0800 000 0052", "tipo": "sinistro" },
+        { "rotulo": "SAC", "numero": "0800 000 0053", "tipo": "sac" }
+      ]
+    },
+    {
+      "id": "tokio-marine",
+      "nome": "Tokio Marine",
+      "exemplo": true,
+      "logo": "assets/seguradoras/tokio-marine.png",
+      "site": "https://www.tokiomarine.com.br",
+      "telefones": [
+        { "rotulo": "Assistência 24h / Reboque", "numero": "0800 000 0061", "tipo": "assistencia" },
+        { "rotulo": "Aviso de Sinistro", "numero": "0800 000 0062", "tipo": "sinistro" },
+        { "rotulo": "SAC", "numero": "0800 000 0063", "tipo": "sac" }
+      ]
+    },
+    {
+      "id": "mapfre",
+      "nome": "Mapfre Seguros",
+      "exemplo": true,
+      "site": "",
+      "telefones": [
+        { "rotulo": "Assistência 24h / Reboque", "numero": "0800 000 0071", "tipo": "assistencia" },
+        { "rotulo": "Aviso de Sinistro", "numero": "0800 000 0072", "tipo": "sinistro" },
+        { "rotulo": "SAC", "numero": "0800 000 0073", "tipo": "sac" }
+      ]
+    },
+    {
+      "id": "sompo",
+      "nome": "Sompo Seguros",
+      "exemplo": true,
+      "site": "",
+      "telefones": [
+        { "rotulo": "Assistência 24h / Reboque", "numero": "0800 000 0081", "tipo": "assistencia" },
+        { "rotulo": "Aviso de Sinistro", "numero": "0800 000 0082", "tipo": "sinistro" },
+        { "rotulo": "SAC", "numero": "0800 000 0083", "tipo": "sac" }
+      ]
+    },
+    {
+      "id": "sulamerica",
+      "nome": "SulAmérica",
+      "exemplo": true,
+      "logo": "assets/seguradoras/sulamerica.png",
+      "site": "https://www.sulamerica.com.br",
+      "telefones": [
+        { "rotulo": "Assistência 24h", "numero": "0800 000 0091", "tipo": "assistencia" },
+        { "rotulo": "Aviso de Sinistro", "numero": "0800 000 0092", "tipo": "sinistro" },
+        { "rotulo": "SAC", "numero": "0800 000 0093", "tipo": "sac" }
+      ]
+    },
+    {
+      "id": "zurich",
+      "nome": "Zurich Seguros",
+      "exemplo": true,
+      "site": "",
+      "telefones": [
+        { "rotulo": "Assistência 24h / Reboque", "numero": "0800 000 0101", "tipo": "assistencia" },
+        { "rotulo": "Aviso de Sinistro", "numero": "0800 000 0102", "tipo": "sinistro" },
+        { "rotulo": "SAC", "numero": "0800 000 0103", "tipo": "sac" }
+      ]
+    },
+    {
+      "id": "suhai",
+      "nome": "Suhai Seguradora",
+      "exemplo": true,
+      "site": "",
+      "telefones": [
+        { "rotulo": "Assistência 24h / Reboque", "numero": "0800 000 0111", "tipo": "assistencia" },
+        { "rotulo": "Aviso de Sinistro", "numero": "0800 000 0112", "tipo": "sinistro" },
+        { "rotulo": "SAC", "numero": "0800 000 0113", "tipo": "sac" }
+      ]
+    }
+  ]
+}

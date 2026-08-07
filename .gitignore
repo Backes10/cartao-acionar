@@ -1,0 +1,13 @@
+# Material de origem que o irmão mandou (PDFs do cartão antigo e do logo
+# vetorizado). Fica na máquina, nunca no repositório: se o repo virar público,
+# eles vazariam junto — já aconteceu uma vez pela hospedagem.
+fontes/
+
+# Saída de build descartável: o arquivo único e o zip são gerados por build.py.
+# docs/ NÃO entra aqui: é de lá que o GitHub Pages serve o site.
+dist/
+
+# Lixo de sistema
+Thumbs.db
+desktop.ini
+.DS_Store

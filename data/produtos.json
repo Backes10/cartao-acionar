@@ -1,0 +1,138 @@
+{
+  "_leia_me": "Definicao dos produtos. Para mudar o nome que o cliente ve na agenda, edite 'templateNome'. Campos entre {chaves} sao substituidos pelos dados do formulario. '@vigencia' e um campo calculado (inicio a fim).",
+  "ordem": ["auto", "moto", "residencial", "vida", "empresarial"],
+  "produtos": {
+    "auto": {
+      "nome": "Auto",
+      "icone": "🚗",
+      "eyebrow": "SEGURO AUTO",
+      "templateNome": "Seguro Auto - {marca} {modelo} {placa}",
+      "tituloCartao": "{marca} {modelo}",
+      "subtituloCartao": "Placa {placa}",
+      "resumoCurto": "Auto - {marca} {modelo} {ano}",
+      "campos": [
+        { "id": "segurado", "label": "Segurado", "tipo": "texto", "placeholder": "João da Silva", "obrigatorio": true, "largura": "full" },
+        { "id": "marca", "label": "Marca", "tipo": "texto", "placeholder": "Honda", "obrigatorio": true, "largura": "half" },
+        { "id": "modelo", "label": "Modelo", "tipo": "texto", "placeholder": "Civic EXL", "obrigatorio": true, "largura": "half" },
+        { "id": "placa", "label": "Placa", "tipo": "placa", "placeholder": "ABC1D23", "obrigatorio": true, "largura": "half" },
+        { "id": "ano", "label": "Ano/modelo", "tipo": "texto", "placeholder": "2022/2023", "largura": "half" },
+        { "id": "apolice", "label": "Nº da apólice", "tipo": "texto", "placeholder": "0123456789", "largura": "half" },
+        { "id": "franquia", "label": "Franquia", "tipo": "dinheiro", "placeholder": "2.450,00", "largura": "half" },
+        { "id": "vigenciaInicio", "label": "Vigência — início", "tipo": "data", "largura": "half" },
+        { "id": "vigenciaFim", "label": "Vigência — fim", "tipo": "data", "largura": "half" },
+        { "id": "carroReserva", "label": "Carro reserva", "tipo": "texto", "placeholder": "15 dias", "largura": "half" },
+        { "id": "guincho", "label": "Guincho até", "tipo": "texto", "placeholder": "400 km", "largura": "half" },
+        { "id": "extras", "label": "Coberturas em destaque", "tipo": "textarea", "placeholder": "Vidros, faróis e lanternas\nProteção a terceiros", "largura": "full" }
+      ],
+      "detalhes": [
+        { "label": "Apólice", "campo": "apolice" },
+        { "label": "Vigência", "campo": "@vigencia" },
+        { "label": "Franquia", "campo": "franquia", "prefixo": "R$ " },
+        { "label": "Carro reserva", "campo": "carroReserva" },
+        { "label": "Guincho até", "campo": "guincho" }
+      ]
+    },
+
+    "moto": {
+      "nome": "Moto",
+      "icone": "🏍️",
+      "eyebrow": "SEGURO MOTO",
+      "templateNome": "Seguro Moto - {marca} {modelo} {placa}",
+      "tituloCartao": "{marca} {modelo}",
+      "subtituloCartao": "Placa {placa}",
+      "resumoCurto": "Moto - {marca} {modelo} {ano}",
+      "campos": [
+        { "id": "segurado", "label": "Segurado", "tipo": "texto", "placeholder": "João da Silva", "obrigatorio": true, "largura": "full" },
+        { "id": "marca", "label": "Marca", "tipo": "texto", "placeholder": "Honda", "obrigatorio": true, "largura": "half" },
+        { "id": "modelo", "label": "Modelo", "tipo": "texto", "placeholder": "CG 160 Titan", "obrigatorio": true, "largura": "half" },
+        { "id": "placa", "label": "Placa", "tipo": "placa", "placeholder": "XYZ4E56", "obrigatorio": true, "largura": "half" },
+        { "id": "ano", "label": "Ano/modelo", "tipo": "texto", "placeholder": "2023/2024", "largura": "half" },
+        { "id": "apolice", "label": "Nº da apólice", "tipo": "texto", "placeholder": "0123456789", "largura": "half" },
+        { "id": "franquia", "label": "Franquia", "tipo": "dinheiro", "placeholder": "1.200,00", "largura": "half" },
+        { "id": "vigenciaInicio", "label": "Vigência — início", "tipo": "data", "largura": "half" },
+        { "id": "vigenciaFim", "label": "Vigência — fim", "tipo": "data", "largura": "half" },
+        { "id": "guincho", "label": "Guincho até", "tipo": "texto", "placeholder": "200 km", "largura": "half" },
+        { "id": "extras", "label": "Coberturas em destaque", "tipo": "textarea", "placeholder": "Roubo e furto\nProteção a terceiros", "largura": "full" }
+      ],
+      "detalhes": [
+        { "label": "Apólice", "campo": "apolice" },
+        { "label": "Vigência", "campo": "@vigencia" },
+        { "label": "Franquia", "campo": "franquia", "prefixo": "R$ " },
+        { "label": "Guincho até", "campo": "guincho" }
+      ]
+    },
+
+    "residencial": {
+      "nome": "Residencial",
+      "icone": "🏡",
+      "eyebrow": "SEGURO RESIDENCIAL",
+      "templateNome": "Seguro Residencial - {imovel}",
+      "tituloCartao": "{imovel}",
+      "subtituloCartao": "{endereco}",
+      "resumoCurto": "Residencial - {imovel}",
+      "campos": [
+        { "id": "segurado", "label": "Segurado", "tipo": "texto", "placeholder": "João da Silva", "obrigatorio": true, "largura": "full" },
+        { "id": "imovel", "label": "Como o cliente chama o imóvel", "tipo": "texto", "placeholder": "Apto Rua das Flores 320", "obrigatorio": true, "largura": "full", "ajuda": "Vira o nome do contato na agenda. Use algo que ele reconheça de imediato." },
+        { "id": "endereco", "label": "Bairro / cidade", "tipo": "texto", "placeholder": "Centro — Curitiba/PR", "largura": "full", "ajuda": "Evite o endereço completo: o cartão pode ser reencaminhado." },
+        { "id": "apolice", "label": "Nº da apólice", "tipo": "texto", "placeholder": "0123456789", "largura": "half" },
+        { "id": "franquia", "label": "Franquia", "tipo": "dinheiro", "placeholder": "1.500,00", "largura": "half" },
+        { "id": "vigenciaInicio", "label": "Vigência — início", "tipo": "data", "largura": "half" },
+        { "id": "vigenciaFim", "label": "Vigência — fim", "tipo": "data", "largura": "half" },
+        { "id": "extras", "label": "Coberturas e serviços", "tipo": "textarea", "placeholder": "Incêndio, raio e explosão\nDanos elétricos\nChaveiro e encanador 24h", "largura": "full" }
+      ],
+      "detalhes": [
+        { "label": "Apólice", "campo": "apolice" },
+        { "label": "Vigência", "campo": "@vigencia" },
+        { "label": "Franquia", "campo": "franquia", "prefixo": "R$ " }
+      ]
+    },
+
+    "vida": {
+      "nome": "Vida",
+      "icone": "🛡️",
+      "eyebrow": "SEGURO DE VIDA",
+      "templateNome": "Seguro de Vida - {segurado}",
+      "tituloCartao": "{segurado}",
+      "subtituloCartao": "Apólice {apolice}",
+      "resumoCurto": "Vida - {segurado}",
+      "campos": [
+        { "id": "segurado", "label": "Segurado", "tipo": "texto", "placeholder": "João da Silva", "obrigatorio": true, "largura": "full" },
+        { "id": "apolice", "label": "Nº da apólice", "tipo": "texto", "placeholder": "0123456789", "largura": "half" },
+        { "id": "capital", "label": "Capital segurado", "tipo": "dinheiro", "placeholder": "200.000,00", "largura": "half" },
+        { "id": "vigenciaInicio", "label": "Vigência — início", "tipo": "data", "largura": "half" },
+        { "id": "vigenciaFim", "label": "Vigência — fim", "tipo": "data", "largura": "half" },
+        { "id": "extras", "label": "Coberturas", "tipo": "textarea", "placeholder": "Morte natural e acidental\nInvalidez permanente por acidente\nDoenças graves", "largura": "full" }
+      ],
+      "detalhes": [
+        { "label": "Apólice", "campo": "apolice" },
+        { "label": "Vigência", "campo": "@vigencia" },
+        { "label": "Capital segurado", "campo": "capital", "prefixo": "R$ " }
+      ]
+    },
+
+    "empresarial": {
+      "nome": "Empresarial",
+      "icone": "🏪",
+      "eyebrow": "SEGURO EMPRESARIAL",
+      "templateNome": "Seguro Empresarial - {empresa}",
+      "tituloCartao": "{empresa}",
+      "subtituloCartao": "{endereco}",
+      "resumoCurto": "Empresarial - {empresa}",
+      "campos": [
+        { "id": "empresa", "label": "Empresa", "tipo": "texto", "placeholder": "Padaria Pão Quente", "obrigatorio": true, "largura": "full" },
+        { "id": "segurado", "label": "Responsável", "tipo": "texto", "placeholder": "João da Silva", "largura": "full" },
+        { "id": "endereco", "label": "Bairro / cidade", "tipo": "texto", "placeholder": "Centro — Curitiba/PR", "largura": "full" },
+        { "id": "apolice", "label": "Nº da apólice", "tipo": "texto", "placeholder": "0123456789", "largura": "half" },
+        { "id": "franquia", "label": "Franquia", "tipo": "dinheiro", "placeholder": "3.000,00", "largura": "half" },
+        { "id": "vigenciaInicio", "label": "Vigência — início", "tipo": "data", "largura": "half" },
+        { "id": "vigenciaFim", "label": "Vigência — fim", "tipo": "data", "largura": "half" },
+        { "id": "extras", "label": "Coberturas e serviços", "tipo": "textarea", "placeholder": "Incêndio e danos elétricos\nRoubo de bens\nPerda de faturamento", "largura": "full" }
+      ],
+      "detalhes": [
+        { "label": "Apólice", "campo": "apolice" },
+        { "label": "Vigência", "campo": "@vigencia" },
+        { "label": "Franquia", "campo": "franquia", "prefixo": "R$ " }
+      ]
+    }
+  }
+}
