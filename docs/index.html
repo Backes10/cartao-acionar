@@ -17,10 +17,12 @@
 <body>
 
 <div id="bannerExemplo" class="banner banner--alerta" hidden>
-  <strong>Catálogo de exemplo.</strong>
-  <span id="bannerExemploTexto"></span>
-  A imagem sai marcada como <b>EXEMPLO</b> até você trocar os números em
-  <code>data/seguradoras.json</code>.
+  <div>
+    <strong>Telefones não conferidos.</strong>
+    <span id="bannerExemploTexto"></span>
+    O cartão dessas sai marcado como <b>EXEMPLO</b>.
+  </div>
+  <button id="btnBannerCatalogo" class="botao botao--linha" type="button">Cadastrar</button>
 </div>
 
 <div id="bannerErro" class="banner banner--erro" hidden></div>
@@ -55,7 +57,7 @@
       <select id="selSeguradora" class="campo__input"></select>
     </label>
     <ul id="listaTelefones" class="telefones"></ul>
-    <button id="btnCatalogo" class="botao botao--fantasma" type="button">Cadastrar / editar seguradoras</button>
+    <button id="btnCatalogo" class="botao botao--seguinte" type="button">Cadastrar telefones e logo das seguradoras</button>
   </section>
 
   <section class="passo">

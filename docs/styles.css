@@ -90,7 +90,17 @@ main { padding: 0 16px 8px; max-width: 620px; margin: 0 auto; }
   line-height: 1.4;
   border-bottom: 2px solid;
 }
-.banner--alerta { background: var(--alerta-fundo); color: var(--alerta-texto); border-color: var(--alerta-borda); }
+.banner--alerta {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  background: var(--alerta-fundo); color: var(--alerta-texto); border-color: var(--alerta-borda);
+}
+/* O botão do banner de alerta é escuro sobre fundo claro, ao contrário do
+   botão do banner de atualização, que é claro sobre laranja. */
+.banner--alerta .botao--linha {
+  background: rgba(0, 0, 0, .06);
+  border-color: currentColor;
+  color: inherit;
+}
 /* Fica colado no topo, acima da barra: o aviso ficava no começo da página e
    sumia da tela assim que o vendedor rolava para preencher o formulário. */
 .banner--novo {

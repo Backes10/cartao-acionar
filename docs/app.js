@@ -8,7 +8,7 @@
 // Precisa bater com o VERSAO do sw.js. O diagnóstico mostra os dois lado a
 // lado justamente para o vendedor perceber quando o aparelho está preso numa
 // versão antiga: se divergirem, o service worker ainda não trocou.
-const VERSAO_APP = 'v25';
+const VERSAO_APP = 'v26';
 
 const CHAVE_CONFIG = 'acionar.config';
 const CHAVE_CATALOGO = 'acionar.seguradoras';
@@ -1075,7 +1075,7 @@ function renderAvisoExemplo() {
   const exemplos = estado.seguradoras.filter((s) => s.exemplo).length;
   el.bannerExemplo.hidden = exemplos === 0;
   el.bannerExemploTexto.textContent = exemplos
-    ? ` ${exemplos} de ${estado.seguradoras.length} seguradoras ainda estão com telefones não conferidos. `
+    ? ` ${exemplos} de ${estado.seguradoras.length} seguradoras. `
     : '';
 }
 
@@ -2262,7 +2262,7 @@ async function iniciar() {
     'btnEnviarVcf', 'btnEnviarPng', 'maisEnvio', 'btnContatoDepois',
     'btnLimpar', 'statusEnvio', 'listaHistorico', 'btnLimparHistorico',
     'diagnostico', 'diagLista', 'btnCopiarDiag',
-    'btnCatalogo', 'dlgCatalogo', 'vistaLista', 'vistaEditor', 'listaCatalogo',
+    'btnCatalogo', 'btnBannerCatalogo', 'dlgCatalogo', 'vistaLista', 'vistaEditor', 'listaCatalogo',
     'btnNovaSeguradora', 'btnFecharCatalogo', 'btnExportarCatalogo', 'inpImportarCatalogo',
     'tituloEditor', 'segNome', 'segSite', 'segLogo', 'segLogoPrevia', 'segLogoRemover',
     'listaTelefonesEditor', 'btnNovoTelefone', 'segConferido', 'btnSalvarSeguradora',
@@ -2399,6 +2399,7 @@ async function iniciar() {
 
   /* ---- editor do catálogo ---- */
   el.btnCatalogo.addEventListener('click', abrirCatalogo);
+  el.btnBannerCatalogo.addEventListener('click', abrirCatalogo);
   el.btnFecharCatalogo.addEventListener('click', () => el.dlgCatalogo.close());
   el.btnNovaSeguradora.addEventListener('click', () => abrirEditorSeguradora(null));
   el.btnCancelarSeguradora.addEventListener('click', mostrarListaCatalogo);
