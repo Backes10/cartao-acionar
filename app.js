@@ -8,7 +8,7 @@
 // Precisa bater com o VERSAO do sw.js. O diagnóstico mostra os dois lado a
 // lado justamente para o vendedor perceber quando o aparelho está preso numa
 // versão antiga: se divergirem, o service worker ainda não trocou.
-const VERSAO_APP = 'v26';
+const VERSAO_APP = 'v27';
 
 const CHAVE_CONFIG = 'acionar.config';
 const CHAVE_CATALOGO = 'acionar.seguradoras';
@@ -1897,6 +1897,36 @@ function renderTelefonesEditor() {
       bloco.appendChild(wrap);
       return inp;
     };
+
+    // Evidência de onde o número veio, quando ele foi raspado do site da
+    // seguradora. Fica no editor para a conferência ser feita sem sair do app —
+    // e o aviso é literal porque o texto capturado às vezes se refere a OUTRO
+    // número da mesma página.
+    if (tel._contexto || tel._fonte) {
+      const ev = document.createElement('div');
+      ev.className = 'tel-editor__origem';
+      const alerta = document.createElement('strong');
+      alerta.textContent = 'Não conferido — tirei do site:';
+      ev.appendChild(alerta);
+      if (tel._contexto) {
+        const c = document.createElement('span');
+        c.textContent = '“…' + tel._contexto + '”';
+        ev.appendChild(c);
+      }
+      if (tel._fonte) {
+        const a = document.createElement('a');
+        a.href = tel._fonte;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        a.textContent = 'abrir a página';
+        ev.appendChild(a);
+      }
+      const nota = document.createElement('span');
+      nota.className = 'tel-editor__nota';
+      nota.textContent = 'O texto acima pode se referir a outro número da mesma página. Confira e ligue.';
+      ev.appendChild(nota);
+      bloco.appendChild(ev);
+    }
 
     campo('Número', tel.numero, (v) => { tel.numero = v; }, 'Escreva como você escreveria para um cliente: 0800 701 4120, (11) 3132 1001.', 'tel');
     campo('Rótulo na imagem', tel.rotulo, (v) => { tel.rotulo = v; }, 'Use as palavras da própria seguradora.');

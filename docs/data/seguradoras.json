@@ -1,8 +1,8 @@
 {
-  "_ATENCAO": "TODOS OS TELEFONES DESTE ARQUIVO SAO FICTICIOS (0800 000 000X). Eles existem apenas para o app funcionar antes de voce ter os numeros reais. Enquanto 'exemplo' for true, o app mostra um aviso vermelho e estampa a marca EXEMPLO na imagem gerada.",
-  "_como_publicar": "1) Pegue a imagem de contatos que a Acionar ja manda hoje. 2) Substitua os numeros abaixo pelos reais, seguradora por seguradora. 3) Troque 'exemplo': true por false SO na seguradora que voce ja conferiu. 4) Confira ligando em cada numero antes de liberar.",
+  "_ATENCAO": "So a Yelum tem telefone conferido ('exemplo': false). Todas as outras estao com 'exemplo': true e saem com a marca EXEMPLO na imagem. Dentro delas ha DOIS tipos de numero: ficticio (0800 000 000X, nunca discou) e raspado do site da seguradora (tem '_contexto' e '_fonte'). Raspado NAO e conferido.",
+  "_sobre_raspado": "Os numeros com '_contexto' e '_fonte' foram extraidos automaticamente da pagina da seguradora. O texto em '_contexto' as vezes se refere a OUTRO numero da mesma pagina, entao o par numero/finalidade nao e confiavel. O rotulo e um chute a partir desse texto. Abra '_fonte', confira, LIGUE, corrija o rotulo, e so entao troque 'exemplo' para false.",
+  "_como_publicar": "Pelo app: passo 2 > 'Cadastrar telefones e logo das seguradoras'. Ou editando este arquivo: corrija os telefones, apague '_contexto' e '_fonte' depois de conferir, e troque 'exemplo': true por false SO na seguradora que voce ja ligou.",
   "_tipos_de_telefone": "assistencia | sinistro | sac | whatsapp | ouvidoria | outro — o tipo so define o icone e a ordem no cartao.",
-
   "seguradoras": [
     {
       "_conferido": "Numeros tirados da imagem oficial que a Acionar envia hoje. Yelum e o novo nome da Liberty Seguros.",
@@ -16,9 +16,25 @@
       "_sobre_rotuloCurto": "Vai no contato da agenda, prefixado com o nome da seguradora ('Yelum Capital e RM'). O 'rotulo' completo continua na imagem do cartao, que tem espaco e cabecalho explicando. Rotulo longo na agenda aparece cortado no meio.",
       "_sobre_semTel": "semTel = aparece na imagem e nas observacoes, mas NAO vira telefone clicavel. Numeros 4004 nao tem formato internacional valido: o Android reescreve e o resultado apontou para o numero de uma pessoa real num teste. Nao repita isso.",
       "telefones": [
-        { "rotulo": "Capital e Região Metropolitana", "rotuloCurto": "Capital e RM", "numero": "4004 5423", "tipo": "assistencia", "semTel": true },
-        { "rotulo": "Demais Regiões", "rotuloCurto": "Demais Regiões", "numero": "0800 701 4120", "tipo": "assistencia" },
-        { "rotulo": "WhatsApp Atendimento", "rotuloCurto": "WhatsApp", "numero": "(11) 3132 1001", "tipo": "whatsapp" }
+        {
+          "rotulo": "Capital e Região Metropolitana",
+          "rotuloCurto": "Capital e RM",
+          "numero": "4004 5423",
+          "tipo": "assistencia",
+          "semTel": true
+        },
+        {
+          "rotulo": "Demais Regiões",
+          "rotuloCurto": "Demais Regiões",
+          "numero": "0800 701 4120",
+          "tipo": "assistencia"
+        },
+        {
+          "rotulo": "WhatsApp Atendimento",
+          "rotuloCurto": "WhatsApp",
+          "numero": "(11) 3132 1001",
+          "tipo": "whatsapp"
+        }
       ]
     },
     {
@@ -28,10 +44,26 @@
       "logo": "assets/seguradoras/porto-seguro.png",
       "site": "https://www.portoseguro.com.br",
       "telefones": [
-        { "rotulo": "Assistência 24h / Reboque", "numero": "0800 000 0001", "tipo": "assistencia" },
-        { "rotulo": "Aviso de Sinistro", "numero": "0800 000 0002", "tipo": "sinistro" },
-        { "rotulo": "SAC", "numero": "0800 000 0003", "tipo": "sac" },
-        { "rotulo": "WhatsApp da seguradora", "numero": "(11) 90000-0001", "tipo": "whatsapp" }
+        {
+          "rotulo": "Assistência 24h / Reboque",
+          "numero": "0800 000 0001",
+          "tipo": "assistencia"
+        },
+        {
+          "rotulo": "Aviso de Sinistro",
+          "numero": "0800 000 0002",
+          "tipo": "sinistro"
+        },
+        {
+          "rotulo": "SAC",
+          "numero": "0800 000 0003",
+          "tipo": "sac"
+        },
+        {
+          "rotulo": "WhatsApp da seguradora",
+          "numero": "(11) 90000-0001",
+          "tipo": "whatsapp"
+        }
       ]
     },
     {
@@ -41,9 +73,63 @@
       "logo": "assets/seguradoras/azul-seguros.png",
       "site": "https://www.azulseguros.com.br",
       "telefones": [
-        { "rotulo": "Assistência 24h / Reboque", "numero": "0800 000 0011", "tipo": "assistencia" },
-        { "rotulo": "Aviso de Sinistro", "numero": "0800 000 0012", "tipo": "sinistro" },
-        { "rotulo": "SAC", "numero": "0800 000 0013", "tipo": "sac" }
+        {
+          "rotulo": "Central de Atendimento — capitais",
+          "rotuloCurto": "Central capitais",
+          "numero": "0800 703 0203",
+          "tipo": "outro",
+          "_contexto": "e atendimento: 4004-3700 (Capitais e grandes centros) e 0300 123 2985 (outras regiões) ou",
+          "_fonte": "https://www.azulseguros.com.br"
+        },
+        {
+          "rotulo": "SAC",
+          "rotuloCurto": "SAC",
+          "numero": "0800 703 1280",
+          "tipo": "sac",
+          "_contexto": "sua região. SAC Para cancelamento, reclamações e solicitar informações: Para todo Brasil",
+          "_fonte": "https://www.azulseguros.com.br/fale-com-a-azul/"
+        },
+        {
+          "rotulo": "SAC",
+          "rotuloCurto": "SAC",
+          "numero": "0800 727 1184",
+          "tipo": "sac",
+          "_contexto": "ória, segundo o cliente, pelo Serviço de Atendimento ao Cliente (SAC): Para todo o Brasil",
+          "_fonte": "https://www.azulseguros.com.br/fale-com-a-azul/"
+        },
+        {
+          "rotulo": "SAC",
+          "rotuloCurto": "SAC",
+          "numero": "0800 727 8736",
+          "tipo": "sac",
+          "_contexto": "o de Atendimento ao Cliente (SAC): Para todo o Brasil 0800 727 1184 Deficientes auditivos",
+          "_fonte": "https://www.azulseguros.com.br/fale-com-a-azul/"
+        },
+        {
+          "rotulo": "Central de Atendimento",
+          "rotuloCurto": "Central",
+          "numero": "4004-3700",
+          "tipo": "outro",
+          "_contexto": "uro e reparo rápido. Estamos à disposição para te ajudar em nossa central de atendimento:",
+          "_fonte": "https://www.azulseguros.com.br",
+          "semTel": true
+        },
+        {
+          "rotulo": "Central de Atendimento — capitais",
+          "rotuloCurto": "Central capitais",
+          "numero": "0300 123 2985",
+          "tipo": "outro",
+          "_contexto": "para te ajudar em nossa central de atendimento: 4004-3700 (Capitais e grandes centros) e",
+          "_fonte": "https://www.azulseguros.com.br"
+        },
+        {
+          "rotulo": "Aviso de Sinistro",
+          "rotuloCurto": "Sinistro",
+          "numero": "(21)3906-2985",
+          "tipo": "sinistro",
+          "_contexto": "ria, boletos, pagamentos e acompanhamento do seu processo de sinistro. Para todo o Brasil",
+          "_fonte": "https://www.azulseguros.com.br/fale-com-a-azul/"
+        }
       ]
     },
     {
@@ -52,9 +138,22 @@
       "exemplo": true,
       "site": "",
       "telefones": [
-        { "rotulo": "Assistência 24h / Reboque", "numero": "0800 000 0021", "tipo": "assistencia" },
-        { "rotulo": "Aviso de Sinistro", "numero": "0800 000 0022", "tipo": "sinistro" },
-        { "rotulo": "SAC", "numero": "0800 000 0023", "tipo": "sac" }
+        {
+          "rotulo": "Ouvidoria",
+          "rotuloCurto": "Ouvidoria",
+          "numero": "0800 570 0011",
+          "tipo": "ouvidoria",
+          "_contexto": "deb Pacotes e tarifas Fale com o Itaú Para você Sac 0800 728 0728 0800 728 0728 Ouvidoria",
+          "_fonte": "https://www.itau.com.br"
+        },
+        {
+          "rotulo": "SAC",
+          "rotuloCurto": "SAC",
+          "numero": "0800 728 0728",
+          "tipo": "sac",
+          "_contexto": "o Para empresas Para poder público Fundeb Pacotes e tarifas Fale com o Itaú Para você Sac",
+          "_fonte": "https://www.itau.com.br"
+        }
       ]
     },
     {
@@ -63,9 +162,15 @@
       "exemplo": true,
       "site": "",
       "telefones": [
-        { "rotulo": "Assistência 24h / Reboque", "numero": "0800 000 0031", "tipo": "assistencia" },
-        { "rotulo": "Aviso de Sinistro", "numero": "0800 000 0032", "tipo": "sinistro" },
-        { "rotulo": "SAC", "numero": "0800 000 0033", "tipo": "sac" }
+        {
+          "rotulo": "Central de Atendimento",
+          "rotuloCurto": "Central",
+          "numero": "4004 0237",
+          "tipo": "outro",
+          "_contexto": "Atendimento para Auto, Saúde, Vida, Previdência, Residencial, Dental e dúvidas em geral.",
+          "_fonte": "https://www.bradescoseguros.com.br/clientes",
+          "semTel": true
+        }
       ]
     },
     {
@@ -74,9 +179,21 @@
       "exemplo": true,
       "site": "",
       "telefones": [
-        { "rotulo": "Assistência 24h / Reboque", "numero": "0800 000 0041", "tipo": "assistencia" },
-        { "rotulo": "Aviso de Sinistro", "numero": "0800 000 0042", "tipo": "sinistro" },
-        { "rotulo": "SAC", "numero": "0800 000 0043", "tipo": "sac" }
+        {
+          "rotulo": "Assistência 24h / Reboque",
+          "numero": "0800 000 0041",
+          "tipo": "assistencia"
+        },
+        {
+          "rotulo": "Aviso de Sinistro",
+          "numero": "0800 000 0042",
+          "tipo": "sinistro"
+        },
+        {
+          "rotulo": "SAC",
+          "numero": "0800 000 0043",
+          "tipo": "sac"
+        }
       ]
     },
     {
@@ -85,9 +202,14 @@
       "exemplo": true,
       "site": "",
       "telefones": [
-        { "rotulo": "Assistência 24h / Reboque", "numero": "0800 000 0051", "tipo": "assistencia" },
-        { "rotulo": "Aviso de Sinistro", "numero": "0800 000 0052", "tipo": "sinistro" },
-        { "rotulo": "SAC", "numero": "0800 000 0053", "tipo": "sac" }
+        {
+          "rotulo": "Assistência 24h",
+          "rotuloCurto": "Assistência",
+          "numero": "11 99524-8188",
+          "tipo": "assistencia",
+          "_contexto": "Assistência via WhatsApp × WhatsApp! Aqui tem, Assistência 24h , Sinistro e muito mais...",
+          "_fonte": "https://www.hdiseguros.com.br"
+        }
       ]
     },
     {
@@ -97,9 +219,70 @@
       "logo": "assets/seguradoras/tokio-marine.png",
       "site": "https://www.tokiomarine.com.br",
       "telefones": [
-        { "rotulo": "Assistência 24h / Reboque", "numero": "0800 000 0061", "tipo": "assistencia" },
-        { "rotulo": "Aviso de Sinistro", "numero": "0800 000 0062", "tipo": "sinistro" },
-        { "rotulo": "SAC", "numero": "0800 000 0063", "tipo": "sac" }
+        {
+          "rotulo": "Aviso de Sinistro — demais regiões",
+          "rotuloCurto": "Sinistro demais",
+          "numero": "0800 015 3600",
+          "tipo": "sinistro",
+          "_contexto": "lidades) SAC 3616-9000 (São Paulo) 0800 774 2000 (Demais localidades) Aviso Roubo / Furto",
+          "_fonte": "https://www.tokiomarine.com.br/telefones/"
+        },
+        {
+          "rotulo": "SAC — demais regiões",
+          "rotuloCurto": "SAC demais",
+          "numero": "0800 117 1721",
+          "tipo": "sac",
+          "_contexto": "dar Agendamento por telefone 4002-7002 (São Paulo) 0800 770 1415 (Demais localidades) SAC",
+          "_fonte": "https://www.tokiomarine.com.br/telefones/"
+        },
+        {
+          "rotulo": "Aviso de Sinistro",
+          "rotuloCurto": "Sinistro",
+          "numero": "0800 323 5095",
+          "tipo": "sinistro",
+          "_contexto": "calidades) WhatsApp (11) 99500-0741 SAC 0800 888 8909 Aviso Roubo / Furto 0800 882 1889 /",
+          "_fonte": "https://www.tokiomarine.com.br/telefones/"
+        },
+        {
+          "rotulo": "SAC",
+          "rotuloCurto": "SAC",
+          "numero": "0800 449 0000",
+          "tipo": "sac",
+          "_contexto": "eriados nacionais. Formulário online do Serviço de Atendimento ao Cliente. Ou ligue para:",
+          "_fonte": "https://www.tokiomarine.com.br/telefones/"
+        },
+        {
+          "rotulo": "Aviso de Sinistro — capitais",
+          "rotuloCurto": "Sinistro capitais",
+          "numero": "0800 600 7707",
+          "tipo": "sinistro",
+          "_contexto": "grandes centros) 0800 725 7707 (Demais localidades) SAC 0800 725 7707 Aviso Roubo / Furto",
+          "_fonte": "https://www.tokiomarine.com.br/telefones/"
+        },
+        {
+          "rotulo": "Central de Atendimento",
+          "rotuloCurto": "Central",
+          "numero": "0800 702 8181",
+          "tipo": "outro",
+          "_contexto": "Japonês 日本語での対応窓 Horário de Atendimento Segunda a sexta das 08:15h às 17:15h Ligue para:",
+          "_fonte": "https://www.tokiomarine.com.br/telefones/"
+        },
+        {
+          "rotulo": "Atendimento 24 horas",
+          "rotuloCurto": "Atendimento 24h",
+          "numero": "0800 703 9000",
+          "tipo": "assistencia",
+          "_contexto": "formações sobre serviços e seguros. Atendimento 24 Horas Formulário online Ou ligue para:",
+          "_fonte": "https://www.tokiomarine.com.br/telefones/"
+        },
+        {
+          "rotulo": "Atendimento 24 horas",
+          "rotuloCurto": "Atendimento 24h",
+          "numero": "0800 707 5050",
+          "tipo": "assistencia",
+          "_contexto": "24 Horas: 0800 31 86546 (Território Nacional) 3543-5809 (Mercosul) Atendimento 24 Horas:",
+          "_fonte": "https://www.tokiomarine.com.br/assistencia-24h/"
+        }
       ]
     },
     {
@@ -108,9 +291,70 @@
       "exemplo": true,
       "site": "",
       "telefones": [
-        { "rotulo": "Assistência 24h / Reboque", "numero": "0800 000 0071", "tipo": "assistencia" },
-        { "rotulo": "Aviso de Sinistro", "numero": "0800 000 0072", "tipo": "sinistro" },
-        { "rotulo": "SAC", "numero": "0800 000 0073", "tipo": "sac" }
+        {
+          "rotulo": "Central de Atendimento",
+          "rotuloCurto": "Central",
+          "numero": "0800 061 3040",
+          "tipo": "outro",
+          "_contexto": ": Pontos de Atendimento Poupex. Digital: App POUPEX ou site www.poupex.com.br/poupexvida/",
+          "_fonte": "https://www.mapfre.com.br/atendimento/"
+        },
+        {
+          "rotulo": "Assistência 24h",
+          "rotuloCurto": "Assistência",
+          "numero": "0800-323 5098",
+          "tipo": "assistencia",
+          "_contexto": "s 08h00 às 14h00. 0800 775 1131 Agendamento e Instalação Assistência 24h (11) 4580-4004 e",
+          "_fonte": "https://www.mapfre.com.br/atendimento/"
+        },
+        {
+          "rotulo": "Aviso de Sinistro",
+          "rotuloCurto": "Sinistro",
+          "numero": "0800 709 8432",
+          "tipo": "sinistro",
+          "_contexto": "7196 Abertura e informação de Sinistros 2ª a 6ª, das 8h às 18h, exceto feriados nacionais",
+          "_fonte": "https://www.mapfre.com.br/atendimento/"
+        },
+        {
+          "rotulo": "Atendimento 24 horas",
+          "rotuloCurto": "Atendimento 24h",
+          "numero": "0800 727 3065",
+          "tipo": "assistencia",
+          "_contexto": "clamações, cancelamentos e informações sobre serviços e seguros. 24 horas, todos os dias.",
+          "_fonte": "https://www.mapfre.com.br/atendimento/"
+        },
+        {
+          "rotulo": "Atendimento 24 horas",
+          "rotuloCurto": "Atendimento 24h",
+          "numero": "0800 775 1000",
+          "tipo": "assistencia",
+          "_contexto": "ões sobre serviços e seguros 24 horas, todos os dias. Acesse também no Portal do Cliente.",
+          "_fonte": "https://www.mapfre.com.br/atendimento/"
+        },
+        {
+          "rotulo": "Atendimento 24 horas",
+          "rotuloCurto": "Atendimento 24h",
+          "numero": "0800 775 1125",
+          "tipo": "assistencia",
+          "_contexto": "ões sobre serviços e seguros 24 horas, todos os dias. Acesse também no Portal do Cliente.",
+          "_fonte": "https://www.mapfre.com.br/atendimento/"
+        },
+        {
+          "rotulo": "Atendimento 24 horas",
+          "rotuloCurto": "Atendimento 24h",
+          "numero": "0800 775 1130",
+          "tipo": "assistencia",
+          "_contexto": "clamações, cancelamentos e informações sobre serviços e seguros. 24 horas, todos os dias.",
+          "_fonte": "https://www.mapfre.com.br/atendimento/"
+        },
+        {
+          "rotulo": "Assistência 24h",
+          "rotuloCurto": "Assistência",
+          "numero": "0800 775 1131",
+          "tipo": "assistencia",
+          "_contexto": "ida Automóvel e Garantia Mecânica Sinistro, Atendimento ao Ponto de Venda Assistência 24h",
+          "_fonte": "https://www.mapfre.com.br/atendimento/"
+        }
       ]
     },
     {
@@ -119,9 +363,38 @@
       "exemplo": true,
       "site": "",
       "telefones": [
-        { "rotulo": "Assistência 24h / Reboque", "numero": "0800 000 0081", "tipo": "assistencia" },
-        { "rotulo": "Aviso de Sinistro", "numero": "0800 000 0082", "tipo": "sinistro" },
-        { "rotulo": "SAC", "numero": "0800 000 0083", "tipo": "sac" }
+        {
+          "rotulo": "Aviso de Sinistro",
+          "rotuloCurto": "Sinistro",
+          "numero": "0800 723 3002",
+          "tipo": "sinistro",
+          "_contexto": "ifestação. Sompo SOS Cargas Para comunicar um Aviso de Sinistro de Transportes ligue para",
+          "_fonte": "https://sompo.com.br/contato"
+        },
+        {
+          "rotulo": "Assistência 24h",
+          "rotuloCurto": "Assistência",
+          "numero": "0800 771 9000",
+          "tipo": "assistencia",
+          "_contexto": "istências Para acionar os serviços de Assistência Sompo do seguro Empresarial, ligue para",
+          "_fonte": "https://sompo.com.br/contato"
+        },
+        {
+          "rotulo": "WhatsApp — demais regiões",
+          "rotuloCurto": "WhatsApp demais",
+          "numero": "(11) 3460 9000",
+          "tipo": "whatsapp",
+          "_contexto": "rande São Paulo 0800 77 00 179 Demais Localidades Acesse nosso WhatsApp através do número",
+          "_fonte": "https://sompo.com.br/contato"
+        },
+        {
+          "rotulo": "Atendimento 24 horas",
+          "rotuloCurto": "Atendimento 24h",
+          "numero": "(11) 3470-3589",
+          "tipo": "assistencia",
+          "_contexto": "ndimento 24 horas Assessoria de Imprensa Departamento de Marketing – William Parron Tels.",
+          "_fonte": "https://sompo.com.br/contato"
+        }
       ]
     },
     {
@@ -131,9 +404,21 @@
       "logo": "assets/seguradoras/sulamerica.png",
       "site": "https://www.sulamerica.com.br",
       "telefones": [
-        { "rotulo": "Assistência 24h", "numero": "0800 000 0091", "tipo": "assistencia" },
-        { "rotulo": "Aviso de Sinistro", "numero": "0800 000 0092", "tipo": "sinistro" },
-        { "rotulo": "SAC", "numero": "0800 000 0093", "tipo": "sac" }
+        {
+          "rotulo": "Assistência 24h",
+          "numero": "0800 000 0091",
+          "tipo": "assistencia"
+        },
+        {
+          "rotulo": "Aviso de Sinistro",
+          "numero": "0800 000 0092",
+          "tipo": "sinistro"
+        },
+        {
+          "rotulo": "SAC",
+          "numero": "0800 000 0093",
+          "tipo": "sac"
+        }
       ]
     },
     {
@@ -142,9 +427,21 @@
       "exemplo": true,
       "site": "",
       "telefones": [
-        { "rotulo": "Assistência 24h / Reboque", "numero": "0800 000 0101", "tipo": "assistencia" },
-        { "rotulo": "Aviso de Sinistro", "numero": "0800 000 0102", "tipo": "sinistro" },
-        { "rotulo": "SAC", "numero": "0800 000 0103", "tipo": "sac" }
+        {
+          "rotulo": "Assistência 24h / Reboque",
+          "numero": "0800 000 0101",
+          "tipo": "assistencia"
+        },
+        {
+          "rotulo": "Aviso de Sinistro",
+          "numero": "0800 000 0102",
+          "tipo": "sinistro"
+        },
+        {
+          "rotulo": "SAC",
+          "numero": "0800 000 0103",
+          "tipo": "sac"
+        }
       ]
     },
     {
@@ -153,9 +450,31 @@
       "exemplo": true,
       "site": "",
       "telefones": [
-        { "rotulo": "Assistência 24h / Reboque", "numero": "0800 000 0111", "tipo": "assistencia" },
-        { "rotulo": "Aviso de Sinistro", "numero": "0800 000 0112", "tipo": "sinistro" },
-        { "rotulo": "SAC", "numero": "0800 000 0113", "tipo": "sac" }
+        {
+          "rotulo": "Assistência 24h",
+          "rotuloCurto": "Assistência",
+          "numero": "0800-327-8424",
+          "tipo": "assistencia",
+          "_contexto": "ra a sexta-feira, das 8h às 19h Assistência 24h Troca de pneu, guincho e auxílio mecânico",
+          "_fonte": "https://suhaiseguradora.com/"
+        },
+        {
+          "rotulo": "WhatsApp",
+          "rotuloCurto": "WhatsApp",
+          "numero": "0800-772-1214",
+          "tipo": "whatsapp",
+          "_contexto": "Peça sua cotação grátis WhatsApp 3003-0335 Iniciar conversa agora Central de Atendimento",
+          "_fonte": "https://suhaiseguradora.com/"
+        },
+        {
+          "rotulo": "WhatsApp",
+          "rotuloCurto": "WhatsApp",
+          "numero": "3003-0335",
+          "tipo": "whatsapp",
+          "_contexto": "a resolução. Fale conosco, estamos aqui pra ajudar você Peça sua cotação grátis WhatsApp",
+          "_fonte": "https://suhaiseguradora.com/",
+          "semTel": true
+        }
       ]
     }
   ]

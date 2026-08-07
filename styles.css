@@ -412,6 +412,20 @@ textarea.campo__input { min-height: 78px; resize: vertical; line-height: 1.35; }
 .tel-editor__topo { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .tel-editor__num { font-size: 12.5px; font-weight: 700; color: var(--texto-fraco); }
 
+/* Bloco de evidência dos números raspados do site da seguradora. */
+.tel-editor__origem {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border-left: 4px solid var(--erro-borda);
+  background: var(--erro-fundo);
+  color: var(--erro-texto);
+  font-size: 12.5px;
+  line-height: 1.35;
+}
+.tel-editor__origem a { color: inherit; font-weight: 600; }
+.tel-editor__nota { opacity: .85; }
+
 .botao--linha-clara {
   padding: 7px 12px; font-size: 13.5px;
   border-color: var(--marca); color: var(--marca); background: transparent;
