@@ -392,6 +392,39 @@ textarea.campo__input { min-height: 78px; resize: vertical; line-height: 1.35; }
 .catalogo__info { flex: 1 1 auto; min-width: 0; }
 .catalogo__nome { font-size: 15px; font-weight: 600; }
 .catalogo__meta { font-size: 12.5px; color: var(--texto-fraco); }
+/* O link do cliente vive dentro da mensagem, que o app nunca mostra na tela.
+   Sem este bloco o vendedor não tem como saber que ele existe, nem como testá-lo
+   — foi exatamente o que aconteceu no primeiro dia. */
+.linkcli {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--borda);
+  border-radius: 12px;
+  background: var(--fundo-fraco, rgba(0, 0, 0, 0.03));
+}
+.linkcli__rot {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  color: var(--texto-fraco);
+}
+.linkcli__url {
+  display: block;
+  margin: 6px 0 10px;
+  font-size: 13px;
+  line-height: 1.4;
+  word-break: break-all;
+  color: var(--marca);
+}
+.linkcli__acoes { display: flex; gap: 8px; }
+.linkcli__ajuda {
+  display: block;
+  margin-top: 8px;
+  font-size: 12.5px;
+  color: var(--texto-fraco);
+}
+
 .catalogo__meta--exemplo { color: var(--erro-borda); font-weight: 600; }
 /* Entrada de outro produto: fica na lista, mas recuada e apagada, para não
    competir com as que servem o produto aberto. */

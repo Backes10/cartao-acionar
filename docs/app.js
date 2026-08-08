@@ -8,7 +8,7 @@
 // Precisa bater com o VERSAO do sw.js. O diagnóstico mostra os dois lado a
 // lado justamente para o vendedor perceber quando o aparelho está preso numa
 // versão antiga: se divergirem, o service worker ainda não trocou.
-const VERSAO_APP = 'v34';
+const VERSAO_APP = 'v35';
 
 const CHAVE_CONFIG = 'acionar.config';
 const CHAVE_CATALOGO = 'acionar.seguradoras';
@@ -1683,6 +1683,18 @@ function atualizarAcoes() {
     el.btnContatoDepois.hidden = !pronto;
     el.btnContatoDepois.disabled = !pronto;
   }
+
+  // O link mora dentro da mensagem, que o app nunca exibe. Sem mostrá-lo aqui,
+  // não há como saber que ele existe nem como conferir a página antes de mandar
+  // para um cliente — e a primeira reação a ele foi "não tem os links".
+  if (el.blocoLink) {
+    const url = pronto ? linkDoCartao(estado.artefatos.cartao) : '';
+    el.blocoLink.hidden = !url;
+    if (url) {
+      el.linkCliente.textContent = url;
+      el.linkCliente.href = url;
+    }
+  }
 }
 
 function escaparHtml(s) {
@@ -2792,7 +2804,7 @@ async function iniciar() {
     'chipsProduto', 'selSeguradora', 'rotuloSeguradora', 'tituloPasso2',
     'listaTelefones', 'formDados', 'inpWhatsCliente',
     'nomeContato', 'pendencias', 'canvasCartao', 'btnEnviar', 'btnMensagem', 'btnVcf', 'btnPng',
-    'maisEnvio', 'btnContatoDepois',
+    'maisEnvio', 'btnContatoDepois', 'blocoLink', 'linkCliente', 'btnCopiarLink',
     'btnLimpar', 'statusEnvio', 'listaHistorico', 'btnLimparHistorico',
     'diagnostico', 'diagLista', 'btnCopiarDiag',
     'btnCatalogo', 'btnBannerCatalogo', 'dlgCatalogo', 'vistaLista', 'vistaEditor', 'listaCatalogo',
@@ -2869,6 +2881,15 @@ async function iniciar() {
 
   el.btnEnviar.addEventListener('click', () => enviar('png'));
   el.btnContatoDepois.textContent = rotuloPasso2();
+
+  el.btnCopiarLink.addEventListener('click', () => {
+    const url = el.linkCliente.href;
+    if (!url) return;
+    copiar(url).then((copiou) => {
+      statusEnvio(copiou ? 'Link copiado.' : 'Não consegui copiar — toque no endereço e copie da barra do navegador.',
+        copiou ? 'ok' : 'erro');
+    });
+  });
 
   el.btnMensagem.addEventListener('click', () => {
     if (!estado.artefatos) return;
