@@ -1,6 +1,8 @@
 {
   "_leia_me": "Definicao dos produtos. Para mudar o nome que o cliente ve na agenda, edite 'templateNome'. Campos entre {chaves} sao substituidos pelos dados do formulario. '@vigencia' e um campo calculado (inicio a fim).",
-  "ordem": ["auto", "moto", "residencial", "vida", "empresarial"],
+  "_textos_do_produto": "Chaves opcionais que trocam o vocabulario de seguro quando o produto nao e seguro: 'rotuloFornecedor' e 'rotuloFornecedorPlural' (Seguradora/Administradora), 'rotuloTitular' (Segurado/Consorciado), 'rotuloResumo', 'tituloTelefones' (o cabecalho do bloco de telefones na imagem), 'instrucaoAgenda' (a frase da mensagem do WhatsApp) e 'avisoSemFornecedor'. Sem elas, valem os textos de seguro.",
+  "_tipos_de_campo": "texto | dinheiro | data | placa | textarea | select. O 'select' exige a lista em 'opcoes'.",
+  "ordem": ["auto", "moto", "residencial", "vida", "empresarial", "consorcio"],
   "produtos": {
     "auto": {
       "nome": "Auto",
@@ -132,6 +134,48 @@
         { "label": "Apólice", "campo": "apolice" },
         { "label": "Vigência", "campo": "@vigencia" },
         { "label": "Franquia", "campo": "franquia", "prefixo": "R$ " }
+      ]
+    },
+
+    "consorcio": {
+      "_sobre": "Consorcio nao e seguro: nao tem sinistro, nem vigencia, nem franquia. O identificador e GRUPO + COTA, que e o que a administradora pede em toda ligacao. So entram dados que NAO envelhecem: saldo devedor, parcelas pagas e situacao de contemplacao mudam todo mes e deixariam o cartao errado em 30 dias.",
+      "nome": "Consórcio",
+      "icone": "🔑",
+      "eyebrow": "CONSÓRCIO {tipoBem}",
+      "templateNome": "Consórcio {tipoBem} - Grupo {grupo} Cota {cota}",
+      "tituloCartao": "{bem}",
+      "subtituloCartao": "Grupo {grupo} · Cota {cota}",
+      "resumoCurto": "{tipoBem} - {bem}",
+      "rotuloFornecedor": "Administradora",
+      "rotuloFornecedorPlural": "Administradoras",
+      "rotuloTitular": "Consorciado",
+      "rotuloResumo": "Consórcio",
+      "tituloTelefones": "ATENDIMENTO DA ADMINISTRADORA",
+      "instrucaoAgenda": "Salve na sua agenda: para segunda via de boleto, dúvida sobre a assembleia ou sobre a contemplação, procure por \"Consórcio\" no telefone e ligue direto — os números já estão lá.",
+      "avisoSemFornecedor": "Escolha a administradora — sem ela o cartão vai sem telefone de atendimento.",
+      "campos": [
+        { "id": "segurado", "label": "Consorciado", "tipo": "texto", "placeholder": "João da Silva", "obrigatorio": true, "largura": "full" },
+        { "id": "tipoBem", "label": "Tipo do bem", "tipo": "select", "opcoes": ["Imóvel", "Automóvel", "Moto", "Caminhão", "Serviços"], "obrigatorio": true, "largura": "half" },
+        { "id": "bem", "label": "Bem em referência", "tipo": "texto", "placeholder": "Apartamento", "obrigatorio": true, "largura": "half", "ajuda": "Vira o título do cartão. Use como o cliente chama: 'Apartamento', 'Honda CG 160'." },
+        { "id": "grupo", "label": "Grupo", "tipo": "texto", "placeholder": "1234", "obrigatorio": true, "largura": "half" },
+        { "id": "cota", "label": "Cota", "tipo": "texto", "placeholder": "056", "obrigatorio": true, "largura": "half", "ajuda": "Grupo e cota são o que a administradora pede em toda ligação." },
+        { "id": "credito", "label": "Valor do crédito", "tipo": "dinheiro", "placeholder": "300.000,00", "obrigatorio": true, "largura": "half" },
+        { "id": "parcela", "label": "Parcela", "tipo": "dinheiro", "placeholder": "2.150,00", "largura": "half" },
+        { "id": "vencimento", "label": "Vence todo dia", "tipo": "texto", "placeholder": "10", "largura": "half" },
+        { "id": "prazo", "label": "Prazo", "tipo": "texto", "placeholder": "200 meses", "largura": "half" },
+        { "id": "assembleia", "label": "Assembleia todo dia", "tipo": "texto", "placeholder": "15", "largura": "half", "ajuda": "É quando saem o sorteio e o lance." },
+        { "id": "taxaAdm", "label": "Taxa de administração", "tipo": "texto", "placeholder": "16%", "largura": "half" },
+        { "id": "fundoReserva", "label": "Fundo de reserva", "tipo": "texto", "placeholder": "2%", "largura": "half" },
+        { "id": "extras", "label": "Observações", "tipo": "textarea", "placeholder": "Seguro prestamista incluso\nLance embutido permitido", "largura": "full" }
+      ],
+      "detalhes": [
+        { "label": "Crédito", "campo": "credito", "prefixo": "R$ " },
+        { "label": "Parcela", "campo": "parcela", "prefixo": "R$ " },
+        { "label": "Vencimento", "campo": "vencimento", "prefixo": "Todo dia " },
+        { "label": "Prazo", "campo": "prazo" },
+        { "label": "Assembleia", "campo": "assembleia", "prefixo": "Todo dia " },
+        { "label": "Taxa de adm.", "campo": "taxaAdm" },
+        { "label": "Fundo de reserva", "campo": "fundoReserva" }
       ]
     }
   }

@@ -8,7 +8,7 @@
 // Precisa bater com o VERSAO do sw.js. O diagnóstico mostra os dois lado a
 // lado justamente para o vendedor perceber quando o aparelho está preso numa
 // versão antiga: se divergirem, o service worker ainda não trocou.
-const VERSAO_APP = 'v29';
+const VERSAO_APP = 'v30';
 
 const CHAVE_CONFIG = 'acionar.config';
 const CHAVE_CATALOGO = 'acionar.seguradoras';
@@ -338,10 +338,27 @@ function catalogoEfetivo() {
   return lista;
 }
 
+/** O catálogo já filtrado pelo produto ativo.
+ *
+ *  Administradora de consórcio não é seguradora. São pessoas jurídicas
+ *  distintas, com CNPJ e telefones próprios, mesmo quando o nome coincide —
+ *  Porto Seguro Administradora de Consórcios não é a Porto Seguro Companhia de
+ *  Seguros Gerais. Sem este filtro a Yelum apareceria como opção de consórcio e
+ *  o vendedor mandaria ao cliente o telefone de reboque de uma seguradora que
+ *  não tem nada a ver com a cota dele.
+ *
+ *  Entrada sem `produtos` aparece em todos. É o caso do que o vendedor cadastra
+ *  pelo editor: sumir da lista por falta de um campo que ele nunca viu seria
+ *  pior que aparecer a mais. */
+function catalogoDoProduto(produtoId) {
+  const alvo = produtoId || estado.produtoId;
+  return estado.seguradoras.filter((s) => !s.produtos || s.produtos.includes(alvo));
+}
+
 function recarregarCatalogo() {
   const anterior = estado.seguradoraId;
   estado.seguradoras = catalogoEfetivo();
-  if (anterior && !estado.seguradoras.some((s) => s.id === anterior)) estado.seguradoraId = null;
+  if (anterior && !catalogoDoProduto().some((s) => s.id === anterior)) estado.seguradoraId = null;
   renderSeguradoras();
   renderTelefonesSeguradora();
   renderAvisoExemplo();
@@ -402,7 +419,12 @@ function montarCartao() {
   const subtitulo = aplicarTemplate(produto.subtituloCartao, dados);
 
   const telefones = [];
-  const ordem = { assistencia: 0, sinistro: 1, sac: 2, whatsapp: 3, ouvidoria: 4, outro: 5 };
+  // O que vem primeiro é o que o cliente precisa na pior hora. No seguro isso é
+  // assistência e sinistro; no consórcio não existe nenhum dos dois, e o
+  // equivalente é a central que resolve boleto, assembleia e contemplação.
+  const ordem = {
+    assistencia: 0, sinistro: 1, atendimento: 1, sac: 2, whatsapp: 3, ouvidoria: 4, outro: 5
+  };
   const doSeguro = (seguradora?.telefones || [])
     .filter((t) => t.numero)
     .slice()
@@ -467,7 +489,17 @@ function montarCartao() {
 
   const cartao = {
     produtoId: estado.produtoId,
-    eyebrow: produto.eyebrow,
+    // Templatizado: no consórcio o eyebrow depende do tipo do bem escolhido
+    // ("CONSÓRCIO IMÓVEL", "CONSÓRCIO AUTO"). Nos seguros é texto literal e o
+    // aplicarTemplate devolve ele mesmo.
+    eyebrow: (aplicarTemplate(produto.eyebrow, dados) || produto.eyebrow).toUpperCase(),
+    // Consórcio não tem sinistro. Sem isto o cartão de uma cota de imóvel saía
+    // com "EM CASO DE SINISTRO OU REBOQUE" em cima do telefone da
+    // administradora, e a mensagem mandava o cliente ligar depois de bater o
+    // carro que a cota não cobre.
+    tituloTelefones: produto.tituloTelefones || 'EM CASO DE SINISTRO OU REBOQUE',
+    instrucaoAgenda: produto.instrucaoAgenda
+      || 'Salve na sua agenda: em caso de sinistro ou reboque, procure por "Seguro" no telefone e ligue direto — todos os números já estão lá.',
     nomeContato,
     titulo,
     subtitulo,
@@ -491,12 +523,18 @@ function montarCartao() {
 function montarObservacoes(cartao, produto, dados) {
   const l = [];
   if (cartao.ehExemplo) {
-    l.push('*** CARTÃO DE EXEMPLO — TELEFONES FICTÍCIOS, NÃO USE ***', '');
+    // "Não conferidos" e não "fictícios": a maioria destes números é real,
+    // tirada do site da própria empresa — o que falta é alguém ter ligado para
+    // confirmar a que finalidade cada um atende. Aviso que exagera vira aviso
+    // ignorado, e este é o único que separa o cliente de um telefone errado.
+    l.push('*** CARTÃO DE EXEMPLO — TELEFONES NÃO CONFERIDOS, NÃO USE ***', '');
   }
-  if (cartao.segurado) l.push('SEGURADO: ' + cartao.segurado);
+  if (cartao.segurado) l.push((produto.rotuloTitular || 'SEGURADO').toUpperCase() + ': ' + cartao.segurado);
   const resumo = aplicarTemplate(produto.resumoCurto, dados);
-  if (resumo) l.push('SEGURO: ' + resumo);
-  if (cartao.seguradora) l.push('SEGURADORA: ' + cartao.seguradora);
+  if (resumo) l.push((produto.rotuloResumo || 'SEGURO').toUpperCase() + ': ' + resumo);
+  if (cartao.seguradora) {
+    l.push((produto.rotuloFornecedor || 'SEGURADORA').toUpperCase() + ': ' + cartao.seguradora);
+  }
   for (const d of cartao.detalhes) l.push(d.label.toUpperCase() + ': ' + d.valor);
 
   if (cartao.extras.length) {
@@ -529,7 +567,7 @@ function mensagemWhatsApp(cartao) {
   l.push(`Seu ${oQue}${cartao.seguradora ? ` (${cartao.seguradora})` : ''} está ativo.`);
   l.push('');
   l.push(`Estou mandando junto um contato chamado "${cartao.nomeContato}".`);
-  l.push('Salve na sua agenda: em caso de sinistro ou reboque, procure por "Seguro" no telefone e ligue direto — todos os números já estão lá.');
+  l.push(cartao.instrucaoAgenda);
   l.push('');
   l.push('Qualquer dúvida, me chama.');
   const assina = [estado.config.corretor, estado.config.corretora].filter(Boolean).join(' — ');
@@ -553,7 +591,8 @@ function conferirCartao() {
     .map((c) => c.label);
   if (faltando.length) impedimentos.push('Preencha: ' + faltando.join(', ') + '.');
   if (!seguradoraAtual()) {
-    impedimentos.push('Escolha a seguradora — sem ela o cartão vai sem telefone de sinistro.');
+    impedimentos.push(produto.avisoSemFornecedor
+      || 'Escolha a seguradora — sem ela o cartão vai sem telefone de sinistro.');
   }
 
   const avisos = [];
@@ -970,7 +1009,7 @@ async function desenharCartao(cartao) {
 
     ctx.fillStyle = tintaFraca;
     ctx.font = fnt(700, 22);
-    textoEspacado(ctx, 'EM CASO DE SINISTRO OU REBOQUE', PAD, y, 1.6);
+    textoEspacado(ctx, cartao.tituloTelefones, PAD, y, 1.6);
     y += 42;
 
     for (const t of telSeguradora) {
@@ -1078,7 +1117,7 @@ async function desenharCartao(cartao) {
     for (let i = -repeticoes; i <= repeticoes; i += 1) {
       ctx.fillText('EXEMPLO', 0, i * passo);
       ctx.font = fnt(700, 34);
-      ctx.fillText('TELEFONES FICTÍCIOS', 0, i * passo + 56);
+      ctx.fillText('TELEFONES NÃO CONFERIDOS', 0, i * passo + 56);
       ctx.font = fnt(800, 92);
     }
     ctx.restore();
@@ -1253,31 +1292,56 @@ function trocarProduto(id) {
   const antigos = estado.dados;
   estado.dados = {};
   for (const k of preservados) if (antigos[k]) estado.dados[k] = antigos[k];
+
+  // A lista de fornecedores muda junto com o produto. Se a escolhida não serve
+  // o produto novo, ela sai: manter a Yelum selecionada ao trocar para
+  // consórcio deixaria o cartão com os telefones errados sem nenhum aviso.
+  if (estado.seguradoraId && !catalogoDoProduto().some((s) => s.id === estado.seguradoraId)) {
+    estado.seguradoraId = null;
+  }
+
   renderChipsProduto();
+  renderSeguradoras();
+  renderTelefonesSeguradora();
+  renderAvisoExemplo();
   renderFormulario();
   atualizar();
 }
 
 function renderSeguradoras() {
+  const lista = catalogoDoProduto();
   el.selSeguradora.innerHTML = '';
   const vazio = document.createElement('option');
   vazio.value = '';
   vazio.textContent = '— escolha —';
   el.selSeguradora.appendChild(vazio);
-  for (const s of estado.seguradoras) {
+  for (const s of lista) {
     const o = document.createElement('option');
     o.value = s.id;
     o.textContent = s.exemplo ? `${s.nome} (exemplo)` : s.nome;
     el.selSeguradora.appendChild(o);
   }
   el.selSeguradora.value = estado.seguradoraId || '';
+
+  // "Seguradora" e "Administradora" não são sinônimos para quem vende, e o
+  // rótulo errado na tela é o tipo de detalhe que faz o vendedor desconfiar do
+  // resto do cartão.
+  const termo = produtoAtual()?.rotuloFornecedor || 'Seguradora';
+  if (el.rotuloSeguradora) el.rotuloSeguradora.textContent = termo;
+  if (el.tituloPasso2) el.tituloPasso2.textContent = termo;
+  if (el.btnCatalogo) {
+    el.btnCatalogo.textContent = `Cadastrar telefones e logo das ${
+      (produtoAtual()?.rotuloFornecedorPlural || 'seguradoras').toLowerCase()}`;
+  }
 }
 
 function renderAvisoExemplo() {
-  const exemplos = estado.seguradoras.filter((s) => s.exemplo).length;
+  const lista = catalogoDoProduto();
+  const exemplos = lista.filter((s) => s.exemplo).length;
   el.bannerExemplo.hidden = exemplos === 0;
+  const termo = (produtoAtual()?.rotuloFornecedorPlural || 'seguradoras').toLowerCase();
   el.bannerExemploTexto.textContent = exemplos
-    ? ` ${exemplos} de ${estado.seguradoras.length} seguradoras. `
+    ? ` ${exemplos} de ${lista.length} ${termo}. `
     : '';
 }
 
@@ -1324,13 +1388,35 @@ function renderFormulario() {
     }
     wrap.appendChild(rot);
 
-    const entrada = campo.tipo === 'textarea' ? document.createElement('textarea') : document.createElement('input');
+    let entrada;
+    if (campo.tipo === 'textarea') {
+      entrada = document.createElement('textarea');
+    } else if (campo.tipo === 'select') {
+      // Lista fechada onde escrever à mão só gera divergência: o tipo do bem do
+      // consórcio vira o eyebrow do cartão, e "imovel", "Imóvel" e "IMÓVEL"
+      // sairiam três cartões diferentes para a mesma coisa.
+      entrada = document.createElement('select');
+      for (const op of campo.opcoes || []) {
+        const o = document.createElement('option');
+        o.value = op;
+        o.textContent = op;
+        entrada.appendChild(o);
+      }
+      if (!campo.obrigatorio || !estado.dados[campo.id]) {
+        const vazio = document.createElement('option');
+        vazio.value = '';
+        vazio.textContent = campo.placeholder || '— escolha —';
+        entrada.insertBefore(vazio, entrada.firstChild);
+      }
+    } else {
+      entrada = document.createElement('input');
+    }
     entrada.className = 'campo__input';
     entrada.id = 'campo-' + campo.id;
     entrada.dataset.campo = campo.id;
     entrada.dataset.tipo = campo.tipo;
-    if (campo.placeholder) entrada.placeholder = campo.placeholder;
-    if (campo.tipo !== 'textarea') {
+    if (campo.placeholder && campo.tipo !== 'select') entrada.placeholder = campo.placeholder;
+    if (campo.tipo !== 'textarea' && campo.tipo !== 'select') {
       entrada.type = campo.tipo === 'data' ? 'date' : 'text';
       entrada.autocomplete = 'off';
       if (campo.tipo === 'placa') {
@@ -1341,7 +1427,7 @@ function renderFormulario() {
     }
     entrada.value = estado.dados[campo.id] || '';
 
-    entrada.addEventListener('input', () => {
+    const anotarValor = () => {
       let v = entrada.value;
       if (campo.tipo === 'placa') {
         v = formatarPlaca(v);
@@ -1349,7 +1435,11 @@ function renderFormulario() {
       }
       estado.dados[campo.id] = v;
       agendarAtualizacao();
-    });
+    };
+    entrada.addEventListener('input', anotarValor);
+    // Safari antigo não dispara 'input' em <select>. Sem isto o tipo do bem
+    // ficava escolhido na tela e ausente no cartão.
+    if (campo.tipo === 'select') entrada.addEventListener('change', anotarValor);
     entrada.addEventListener('blur', () => {
       if (campo.tipo === 'dinheiro') {
         const v = formatarDinheiro(entrada.value);
@@ -1967,6 +2057,7 @@ function processarLogo(arquivo) {
 const TIPOS_TELEFONE = [
   ['assistencia', 'Assistência / reboque'],
   ['sinistro', 'Aviso de sinistro'],
+  ['atendimento', 'Central de atendimento (consórcio)'],
   ['sac', 'SAC'],
   ['whatsapp', 'WhatsApp'],
   ['ouvidoria', 'Ouvidoria'],
@@ -1990,8 +2081,18 @@ function mostrarListaCatalogo() {
 
 function renderListaCatalogo() {
   el.listaCatalogo.innerHTML = '';
-  for (const cia of estado.seguradoras) {
+
+  // O editor mostra TUDO — quem entra aqui pode querer corrigir uma entrada de
+  // outro produto sem ter de trocar de produto antes. Mas as do produto aberto
+  // vêm primeiro: são 22 no total, e caçar a Porto Seguro Consórcio no meio das
+  // seguradoras é o tipo de atrito que faz o cadastro nunca ser conferido.
+  const servem = new Set(catalogoDoProduto().map((s) => s.id));
+  const lista = estado.seguradoras.slice()
+    .sort((a, b) => (servem.has(b.id) ? 1 : 0) - (servem.has(a.id) ? 1 : 0));
+
+  for (const cia of lista) {
     const li = document.createElement('li');
+    if (!servem.has(cia.id)) li.classList.add('catalogo__item--outro');
 
     if (cia.logo) {
       const img = document.createElement('img');
@@ -2012,6 +2113,19 @@ function renderListaCatalogo() {
       ? `${qtd} telefone${qtd === 1 ? '' : 's'} — não conferidos`
       : `${qtd} telefone${qtd === 1 ? '' : 's'} conferidos`;
     info.append(nome, meta);
+
+    // Diz de qual produto é a entrada quando ela não serve o que está aberto.
+    // Sem isto, "Porto Seguro" e "Porto Seguro Consórcio" na mesma lista viram
+    // duas linhas quase idênticas e ele edita a errada.
+    if (!servem.has(cia.id)) {
+      const escopo = document.createElement('div');
+      escopo.className = 'catalogo__escopo';
+      const nomes = (cia.produtos || [])
+        .map((p) => estado.produtos?.[p]?.nome)
+        .filter(Boolean);
+      escopo.textContent = nomes.length ? 'Só para ' + nomes.join(', ') : '';
+      if (escopo.textContent) info.appendChild(escopo);
+    }
 
     const editar = document.createElement('button');
     editar.type = 'button';
@@ -2490,7 +2604,8 @@ function mostrarErroCarregamento() {
 async function iniciar() {
   for (const id of ['bannerExemplo', 'bannerExemploTexto', 'bannerErro', 'bannerAtualizacao',
     'btnAtualizar', 'topoLogo', 'btnConfig',
-    'chipsProduto', 'selSeguradora', 'listaTelefones', 'formDados', 'inpWhatsCliente',
+    'chipsProduto', 'selSeguradora', 'rotuloSeguradora', 'tituloPasso2',
+    'listaTelefones', 'formDados', 'inpWhatsCliente',
     'nomeContato', 'pendencias', 'canvasCartao', 'btnEnviar', 'btnMensagem', 'btnVcf', 'btnPng',
     'maisEnvio', 'btnContatoDepois',
     'btnLimpar', 'statusEnvio', 'listaHistorico', 'btnLimparHistorico',

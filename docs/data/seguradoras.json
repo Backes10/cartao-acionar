@@ -3,6 +3,7 @@
   "_sobre_raspado": "Os numeros com '_contexto' e '_fonte' foram extraidos automaticamente da pagina da seguradora. O texto em '_contexto' as vezes se refere a OUTRO numero da mesma pagina, entao o par numero/finalidade nao e confiavel. O rotulo e um chute a partir desse texto. Abra '_fonte', confira, LIGUE, corrija o rotulo, e so entao troque 'exemplo' para false.",
   "_como_publicar": "Pelo app: passo 2 > 'Cadastrar telefones e logo das seguradoras'. Ou editando este arquivo: corrija os telefones, apague '_contexto' e '_fonte' depois de conferir, e troque 'exemplo': true por false SO na seguradora que voce ja ligou.",
   "_tipos_de_telefone": "assistencia | sinistro | sac | whatsapp | ouvidoria | outro — o tipo so define o icone e a ordem no cartao.",
+  "_sobre_produtos": "Em quais produtos a entrada aparece. Seguradora nao administra consorcio e administradora de consorcio nao vende seguro: sao pessoas juridicas diferentes, com CNPJ e telefones proprios, mesmo quando o nome coincide. Entrada SEM este campo aparece em todos os produtos.",
   "seguradoras": [
     {
       "_conferido": "Numeros tirados da imagem oficial que a Acionar envia hoje. Yelum e o novo nome da Liberty Seguros.",
@@ -11,6 +12,13 @@
       "id": "yelum",
       "nome": "Yelum",
       "exemplo": false,
+      "produtos": [
+        "auto",
+        "moto",
+        "residencial",
+        "vida",
+        "empresarial"
+      ],
       "logo": "assets/seguradoras/yelum.png",
       "site": "https://www.yelumseguros.com.br",
       "_sobre_rotuloCurto": "Vai no contato da agenda, prefixado com o nome da seguradora ('Yelum Capital e RM'). O 'rotulo' completo continua na imagem do cartao, que tem espaco e cabecalho explicando. Rotulo longo na agenda aparece cortado no meio.",
@@ -41,6 +49,13 @@
       "id": "porto-seguro",
       "nome": "Porto Seguro",
       "exemplo": true,
+      "produtos": [
+        "auto",
+        "moto",
+        "residencial",
+        "vida",
+        "empresarial"
+      ],
       "logo": "assets/seguradoras/porto-seguro.png",
       "site": "https://www.portoseguro.com.br",
       "telefones": [
@@ -70,6 +85,13 @@
       "id": "azul-seguros",
       "nome": "Azul Seguros",
       "exemplo": true,
+      "produtos": [
+        "auto",
+        "moto",
+        "residencial",
+        "vida",
+        "empresarial"
+      ],
       "logo": "assets/seguradoras/azul-seguros.png",
       "site": "https://www.azulseguros.com.br",
       "telefones": [
@@ -136,6 +158,13 @@
       "id": "itau-seguros",
       "nome": "Itaú Seguros",
       "exemplo": true,
+      "produtos": [
+        "auto",
+        "moto",
+        "residencial",
+        "vida",
+        "empresarial"
+      ],
       "site": "",
       "telefones": [
         {
@@ -160,6 +189,13 @@
       "id": "bradesco-seguros",
       "nome": "Bradesco Seguros",
       "exemplo": true,
+      "produtos": [
+        "auto",
+        "moto",
+        "residencial",
+        "vida",
+        "empresarial"
+      ],
       "site": "",
       "telefones": [
         {
@@ -177,6 +213,13 @@
       "id": "allianz",
       "nome": "Allianz Seguros",
       "exemplo": true,
+      "produtos": [
+        "auto",
+        "moto",
+        "residencial",
+        "vida",
+        "empresarial"
+      ],
       "site": "",
       "telefones": [
         {
@@ -200,6 +243,13 @@
       "id": "hdi",
       "nome": "HDI Seguros",
       "exemplo": true,
+      "produtos": [
+        "auto",
+        "moto",
+        "residencial",
+        "vida",
+        "empresarial"
+      ],
       "site": "",
       "telefones": [
         {
@@ -216,6 +266,13 @@
       "id": "tokio-marine",
       "nome": "Tokio Marine",
       "exemplo": true,
+      "produtos": [
+        "auto",
+        "moto",
+        "residencial",
+        "vida",
+        "empresarial"
+      ],
       "logo": "assets/seguradoras/tokio-marine.png",
       "site": "https://www.tokiomarine.com.br",
       "telefones": [
@@ -289,6 +346,13 @@
       "id": "mapfre",
       "nome": "Mapfre Seguros",
       "exemplo": true,
+      "produtos": [
+        "auto",
+        "moto",
+        "residencial",
+        "vida",
+        "empresarial"
+      ],
       "site": "",
       "telefones": [
         {
@@ -361,6 +425,13 @@
       "id": "sompo",
       "nome": "Sompo Seguros",
       "exemplo": true,
+      "produtos": [
+        "auto",
+        "moto",
+        "residencial",
+        "vida",
+        "empresarial"
+      ],
       "site": "",
       "telefones": [
         {
@@ -401,6 +472,13 @@
       "id": "sulamerica",
       "nome": "SulAmérica",
       "exemplo": true,
+      "produtos": [
+        "auto",
+        "moto",
+        "residencial",
+        "vida",
+        "empresarial"
+      ],
       "logo": "assets/seguradoras/sulamerica.png",
       "site": "https://www.sulamerica.com.br",
       "telefones": [
@@ -425,6 +503,13 @@
       "id": "zurich",
       "nome": "Zurich Seguros",
       "exemplo": true,
+      "produtos": [
+        "auto",
+        "moto",
+        "residencial",
+        "vida",
+        "empresarial"
+      ],
       "site": "",
       "telefones": [
         {
@@ -448,6 +533,13 @@
       "id": "suhai",
       "nome": "Suhai Seguradora",
       "exemplo": true,
+      "produtos": [
+        "auto",
+        "moto",
+        "residencial",
+        "vida",
+        "empresarial"
+      ],
       "site": "",
       "telefones": [
         {
@@ -474,6 +566,341 @@
           "_contexto": "a resolução. Fale conosco, estamos aqui pra ajudar você Peça sua cotação grátis WhatsApp",
           "_fonte": "https://suhaiseguradora.com/",
           "semTel": true
+        }
+      ]
+    },
+    {
+      "id": "porto-seguro-consorcio",
+      "nome": "Porto Seguro Consórcio",
+      "exemplo": true,
+      "produtos": [
+        "consorcio"
+      ],
+      "logo": "",
+      "site": "https://www.portoseguro.com.br/consorcio",
+      "telefones": [
+        {
+          "rotulo": "Central de relacionamento — Grande São Paulo",
+          "rotuloCurto": "Central Grande SP",
+          "numero": "(11) 3366 3006",
+          "tipo": "atendimento",
+          "_contexto": "Rótulo e número lidos JUNTOS na página oficial de contatos, numa seção dedicada a consórcio. É a melhor procedência que consegui — mas ninguém ligou.",
+          "_fonte": "https://www.portoseguro.com.br/fale-conosco/contatos/telefones-e-sac"
+        },
+        {
+          "rotulo": "Central de relacionamento — demais localidades",
+          "rotuloCurto": "Central",
+          "numero": "0800 721 3006",
+          "tipo": "atendimento",
+          "_contexto": "Rótulo e número lidos JUNTOS na página oficial de contatos, numa seção dedicada a consórcio. É a melhor procedência que consegui — mas ninguém ligou.",
+          "_fonte": "https://www.portoseguro.com.br/fale-conosco/contatos/telefones-e-sac"
+        },
+        {
+          "rotulo": "SAC Consórcio — 24h",
+          "rotuloCurto": "SAC",
+          "numero": "0800 727 2743",
+          "tipo": "sac",
+          "_contexto": "Rótulo e número lidos JUNTOS na página oficial de contatos, numa seção dedicada a consórcio. É a melhor procedência que consegui — mas ninguém ligou.",
+          "_fonte": "https://www.portoseguro.com.br/fale-conosco/contatos/telefones-e-sac"
+        }
+      ]
+    },
+    {
+      "id": "embracon",
+      "nome": "Embracon",
+      "exemplo": true,
+      "produtos": [
+        "consorcio"
+      ],
+      "logo": "",
+      "site": "https://www.embracon.com.br",
+      "telefones": [
+        {
+          "rotulo": "Central de relacionamento",
+          "rotuloCurto": "Central",
+          "numero": "0800 889 0999",
+          "tipo": "atendimento",
+          "_contexto": "Rótulo e número lidos JUNTOS na página oficial de contatos, numa seção dedicada a consórcio. É a melhor procedência que consegui — mas ninguém ligou.",
+          "_fonte": "https://www.embracon.com.br/blog/canais-de-atendimento-embracon"
+        },
+        {
+          "rotulo": "Central de relacionamento (alternativo)",
+          "rotuloCurto": "Central 2",
+          "numero": "4003 9999",
+          "tipo": "atendimento",
+          "semTel": true,
+          "_contexto": "Rótulo e número lidos JUNTOS na página oficial de contatos, numa seção dedicada a consórcio. É a melhor procedência que consegui — mas ninguém ligou.",
+          "_fonte": "https://www.embracon.com.br/blog/canais-de-atendimento-embracon"
+        },
+        {
+          "rotulo": "Ouvidoria",
+          "rotuloCurto": "Ouvidoria",
+          "numero": "0800 888 4321",
+          "tipo": "ouvidoria",
+          "_contexto": "Rótulo e número lidos JUNTOS na página oficial de contatos, numa seção dedicada a consórcio. É a melhor procedência que consegui — mas ninguém ligou.",
+          "_fonte": "https://www.embracon.com.br/blog/canais-de-atendimento-embracon"
+        }
+      ]
+    },
+    {
+      "id": "rodobens",
+      "nome": "Rodobens Consórcio",
+      "exemplo": true,
+      "produtos": [
+        "consorcio"
+      ],
+      "logo": "",
+      "site": "https://www.rodobens.com.br/consorcio/",
+      "telefones": [
+        {
+          "rotulo": "Atendimento consórcio",
+          "rotuloCurto": "Consórcio",
+          "numero": "0800 701 0212",
+          "tipo": "atendimento",
+          "_contexto": "Números reunidos de busca na web, incluindo sites de terceiros. NÃO li o par rótulo/número na página oficial. O rótulo pode pertencer a outro número. Confira no site e ligue antes de usar.",
+          "_fonte": "https://www.rodobens.com.br/consorcio/paginas/contato.aspx"
+        },
+        {
+          "rotulo": "Central Rodobens",
+          "rotuloCurto": "Central",
+          "numero": "0800 405 9909",
+          "tipo": "atendimento",
+          "_contexto": "Números reunidos de busca na web, incluindo sites de terceiros. NÃO li o par rótulo/número na página oficial. O rótulo pode pertencer a outro número. Confira no site e ligue antes de usar.",
+          "_fonte": "https://www.rodobens.com.br/consorcio/paginas/contato.aspx"
+        },
+        {
+          "rotulo": "Ouvidoria consórcio",
+          "rotuloCurto": "Ouvidoria",
+          "numero": "0800 701 8606",
+          "tipo": "ouvidoria",
+          "_contexto": "Números reunidos de busca na web, incluindo sites de terceiros. NÃO li o par rótulo/número na página oficial. O rótulo pode pertencer a outro número. Confira no site e ligue antes de usar.",
+          "_fonte": "https://www.rodobens.com.br/consorcio/paginas/contato.aspx"
+        }
+      ]
+    },
+    {
+      "id": "ademicon",
+      "nome": "Ademicon",
+      "exemplo": true,
+      "produtos": [
+        "consorcio"
+      ],
+      "logo": "",
+      "site": "https://www.ademicon.com.br",
+      "telefones": [
+        {
+          "rotulo": "Central de atendimento",
+          "rotuloCurto": "Central",
+          "numero": "(41) 3023 2000",
+          "tipo": "atendimento",
+          "_contexto": "Números reunidos de busca na web, incluindo sites de terceiros. NÃO li o par rótulo/número na página oficial. O rótulo pode pertencer a outro número. Confira no site e ligue antes de usar. O (41) 3023 2000 aparece como central e o 0800 602 9080 como ouvidoria E como informações gerais — as duas coisas na mesma fonte.",
+          "_fonte": "https://www.ademicon.com.br/ouvidoria"
+        },
+        {
+          "rotulo": "Ouvidoria",
+          "rotuloCurto": "Ouvidoria",
+          "numero": "0800 602 9080",
+          "tipo": "ouvidoria",
+          "_contexto": "Números reunidos de busca na web, incluindo sites de terceiros. NÃO li o par rótulo/número na página oficial. O rótulo pode pertencer a outro número. Confira no site e ligue antes de usar. O (41) 3023 2000 aparece como central e o 0800 602 9080 como ouvidoria E como informações gerais — as duas coisas na mesma fonte.",
+          "_fonte": "https://www.ademicon.com.br/ouvidoria"
+        }
+      ]
+    },
+    {
+      "id": "hs-consorcios",
+      "nome": "HS Consórcios",
+      "exemplo": true,
+      "produtos": [
+        "consorcio"
+      ],
+      "logo": "",
+      "site": "https://hsconsorcios.com.br",
+      "telefones": [
+        {
+          "rotulo": "Central de atendimento",
+          "rotuloCurto": "Central",
+          "numero": "(51) 3564 8400",
+          "tipo": "atendimento",
+          "_contexto": "Números reunidos de busca na web, incluindo sites de terceiros. NÃO li o par rótulo/número na página oficial. O rótulo pode pertencer a outro número. Confira no site e ligue antes de usar. A central é um número do RS ((51)), o que bate com uma administradora que atende a região — vale confirmar se é a de consorciado ou a da matriz.",
+          "_fonte": "https://hsconsorcios.com.br/contato/"
+        },
+        {
+          "rotulo": "Central de vendas",
+          "rotuloCurto": "Vendas",
+          "numero": "0800 644 9007",
+          "tipo": "outro",
+          "_contexto": "Números reunidos de busca na web, incluindo sites de terceiros. NÃO li o par rótulo/número na página oficial. O rótulo pode pertencer a outro número. Confira no site e ligue antes de usar. A central é um número do RS ((51)), o que bate com uma administradora que atende a região — vale confirmar se é a de consorciado ou a da matriz.",
+          "_fonte": "https://hsconsorcios.com.br/contato/"
+        },
+        {
+          "rotulo": "Ouvidoria",
+          "rotuloCurto": "Ouvidoria",
+          "numero": "0800 648 1213",
+          "tipo": "ouvidoria",
+          "_contexto": "Números reunidos de busca na web, incluindo sites de terceiros. NÃO li o par rótulo/número na página oficial. O rótulo pode pertencer a outro número. Confira no site e ligue antes de usar. A central é um número do RS ((51)), o que bate com uma administradora que atende a região — vale confirmar se é a de consorciado ou a da matriz.",
+          "_fonte": "https://hsconsorcios.com.br/contato/"
+        }
+      ]
+    },
+    {
+      "id": "itau-consorcio",
+      "nome": "Itaú Consórcio",
+      "exemplo": true,
+      "produtos": [
+        "consorcio"
+      ],
+      "logo": "",
+      "site": "https://www.itau.com.br/creditos/consorcio",
+      "telefones": [
+        {
+          "rotulo": "Central do consórcio",
+          "rotuloCurto": "Consórcio",
+          "numero": "0800 970 4828",
+          "tipo": "atendimento",
+          "_contexto": "Números reunidos de busca na web, incluindo sites de terceiros. NÃO li o par rótulo/número na página oficial. O rótulo pode pertencer a outro número. Confira no site e ligue antes de usar. O 0800 970 4828 aparece como central específica do consórcio; os demais são canais gerais do banco.",
+          "_fonte": "https://www.itau.com.br/atendimento-itau"
+        },
+        {
+          "rotulo": "Central Itaú",
+          "rotuloCurto": "Central",
+          "numero": "4004 4224",
+          "tipo": "atendimento",
+          "semTel": true,
+          "_contexto": "Números reunidos de busca na web, incluindo sites de terceiros. NÃO li o par rótulo/número na página oficial. O rótulo pode pertencer a outro número. Confira no site e ligue antes de usar. O 0800 970 4828 aparece como central específica do consórcio; os demais são canais gerais do banco.",
+          "_fonte": "https://www.itau.com.br/atendimento-itau"
+        },
+        {
+          "rotulo": "SAC — 24h",
+          "rotuloCurto": "SAC",
+          "numero": "0800 728 0728",
+          "tipo": "sac",
+          "_contexto": "Números reunidos de busca na web, incluindo sites de terceiros. NÃO li o par rótulo/número na página oficial. O rótulo pode pertencer a outro número. Confira no site e ligue antes de usar. O 0800 970 4828 aparece como central específica do consórcio; os demais são canais gerais do banco.",
+          "_fonte": "https://www.itau.com.br/atendimento-itau"
+        },
+        {
+          "rotulo": "Ouvidoria",
+          "rotuloCurto": "Ouvidoria",
+          "numero": "0800 570 0011",
+          "tipo": "ouvidoria",
+          "_contexto": "Números reunidos de busca na web, incluindo sites de terceiros. NÃO li o par rótulo/número na página oficial. O rótulo pode pertencer a outro número. Confira no site e ligue antes de usar. O 0800 970 4828 aparece como central específica do consórcio; os demais são canais gerais do banco.",
+          "_fonte": "https://www.itau.com.br/atendimento-itau"
+        }
+      ]
+    },
+    {
+      "id": "bradesco-consorcio",
+      "nome": "Bradesco Consórcio",
+      "exemplo": true,
+      "produtos": [
+        "consorcio"
+      ],
+      "logo": "",
+      "site": "https://banco.bradesco/consorcio",
+      "telefones": [
+        {
+          "rotulo": "Central consórcio — capitais",
+          "rotuloCurto": "Central capitais",
+          "numero": "4002 0022",
+          "tipo": "atendimento",
+          "semTel": true,
+          "_contexto": "Números reunidos de busca na web, incluindo sites de terceiros. NÃO li o par rótulo/número na página oficial. O rótulo pode pertencer a outro número. Confira no site e ligue antes de usar.",
+          "_fonte": "https://banco.bradesco/html/classic/atendimento/fale-conosco/centrais-de-atendimento.shtm"
+        },
+        {
+          "rotulo": "Central consórcio — demais localidades",
+          "rotuloCurto": "Central",
+          "numero": "0800 570 0022",
+          "tipo": "atendimento",
+          "_contexto": "Números reunidos de busca na web, incluindo sites de terceiros. NÃO li o par rótulo/número na página oficial. O rótulo pode pertencer a outro número. Confira no site e ligue antes de usar.",
+          "_fonte": "https://banco.bradesco/html/classic/atendimento/fale-conosco/centrais-de-atendimento.shtm"
+        },
+        {
+          "rotulo": "SAC Consórcio",
+          "rotuloCurto": "SAC",
+          "numero": "0800 721 1166",
+          "tipo": "sac",
+          "_contexto": "Números reunidos de busca na web, incluindo sites de terceiros. NÃO li o par rótulo/número na página oficial. O rótulo pode pertencer a outro número. Confira no site e ligue antes de usar.",
+          "_fonte": "https://banco.bradesco/html/classic/atendimento/fale-conosco/centrais-de-atendimento.shtm"
+        },
+        {
+          "rotulo": "Ouvidoria",
+          "rotuloCurto": "Ouvidoria",
+          "numero": "0800 727 9933",
+          "tipo": "ouvidoria",
+          "_contexto": "Números reunidos de busca na web, incluindo sites de terceiros. NÃO li o par rótulo/número na página oficial. O rótulo pode pertencer a outro número. Confira no site e ligue antes de usar.",
+          "_fonte": "https://banco.bradesco/html/classic/atendimento/fale-conosco/centrais-de-atendimento.shtm"
+        }
+      ]
+    },
+    {
+      "id": "magalu-consorcio",
+      "nome": "Consórcio Magalu",
+      "exemplo": true,
+      "produtos": [
+        "consorcio"
+      ],
+      "logo": "",
+      "site": "https://consorciomagalu.com.br",
+      "telefones": [
+        {
+          "rotulo": "Atendimento ao consorciado",
+          "rotuloCurto": "Atendimento",
+          "numero": "0800 340 1214",
+          "tipo": "atendimento",
+          "_contexto": "Números reunidos de busca na web, incluindo sites de terceiros. NÃO li o par rótulo/número na página oficial. O rótulo pode pertencer a outro número. Confira no site e ligue antes de usar. ATENÇÃO: a mesma fonte dá 0800 340 1214 como atendimento E como ouvidoria. Um dos dois rótulos está errado — descubra qual antes de usar.",
+          "_fonte": "https://consorciomagalu.com.br/2020/10/21/nossos-canais-de-atendimento/"
+        },
+        {
+          "rotulo": "Atendimento — São Paulo",
+          "rotuloCurto": "São Paulo",
+          "numero": "(11) 3185 7300",
+          "tipo": "atendimento",
+          "_contexto": "Números reunidos de busca na web, incluindo sites de terceiros. NÃO li o par rótulo/número na página oficial. O rótulo pode pertencer a outro número. Confira no site e ligue antes de usar. ATENÇÃO: a mesma fonte dá 0800 340 1214 como atendimento E como ouvidoria. Um dos dois rótulos está errado — descubra qual antes de usar.",
+          "_fonte": "https://consorciomagalu.com.br/2020/10/21/nossos-canais-de-atendimento/"
+        },
+        {
+          "rotulo": "SAC",
+          "rotuloCurto": "SAC",
+          "numero": "0800 310 0002",
+          "tipo": "sac",
+          "_contexto": "Números reunidos de busca na web, incluindo sites de terceiros. NÃO li o par rótulo/número na página oficial. O rótulo pode pertencer a outro número. Confira no site e ligue antes de usar. ATENÇÃO: a mesma fonte dá 0800 340 1214 como atendimento E como ouvidoria. Um dos dois rótulos está errado — descubra qual antes de usar.",
+          "_fonte": "https://consorciomagalu.com.br/2020/10/21/nossos-canais-de-atendimento/"
+        }
+      ]
+    },
+    {
+      "id": "caixa-consorcio",
+      "nome": "CAIXA Consórcio",
+      "exemplo": true,
+      "produtos": [
+        "consorcio"
+      ],
+      "logo": "",
+      "site": "https://www.caixaconsorcio.com.br",
+      "telefones": [
+        {
+          "rotulo": "Central de relacionamento",
+          "rotuloCurto": "Central",
+          "numero": "0800 975 1000",
+          "tipo": "atendimento",
+          "_contexto": "Números reunidos de busca na web, incluindo sites de terceiros. NÃO li o par rótulo/número na página oficial. O rótulo pode pertencer a outro número. Confira no site e ligue antes de usar.",
+          "_fonte": "https://blogcaixaconsorcio.com.br/conheca-os-canais-oficiais-da-caixa-consorcio/"
+        },
+        {
+          "rotulo": "SAC — 24h",
+          "rotuloCurto": "SAC",
+          "numero": "0800 975 2000",
+          "tipo": "sac",
+          "_contexto": "Números reunidos de busca na web, incluindo sites de terceiros. NÃO li o par rótulo/número na página oficial. O rótulo pode pertencer a outro número. Confira no site e ligue antes de usar.",
+          "_fonte": "https://blogcaixaconsorcio.com.br/conheca-os-canais-oficiais-da-caixa-consorcio/"
+        },
+        {
+          "rotulo": "Ouvidoria",
+          "rotuloCurto": "Ouvidoria",
+          "numero": "0800 975 3000",
+          "tipo": "ouvidoria",
+          "_contexto": "Números reunidos de busca na web, incluindo sites de terceiros. NÃO li o par rótulo/número na página oficial. O rótulo pode pertencer a outro número. Confira no site e ligue antes de usar.",
+          "_fonte": "https://blogcaixaconsorcio.com.br/conheca-os-canais-oficiais-da-caixa-consorcio/"
         }
       ]
     }

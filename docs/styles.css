@@ -393,6 +393,10 @@ textarea.campo__input { min-height: 78px; resize: vertical; line-height: 1.35; }
 .catalogo__nome { font-size: 15px; font-weight: 600; }
 .catalogo__meta { font-size: 12.5px; color: var(--texto-fraco); }
 .catalogo__meta--exemplo { color: var(--erro-borda); font-weight: 600; }
+/* Entrada de outro produto: fica na lista, mas recuada e apagada, para não
+   competir com as que servem o produto aberto. */
+.catalogo__item--outro { opacity: 0.62; }
+.catalogo__escopo { font-size: 12px; color: var(--texto-fraco); font-style: italic; }
 .catalogo li img { height: 22px; width: auto; max-width: 84px; object-fit: contain; flex: 0 0 auto; }
 .catalogo .botao { padding: 8px 12px; font-size: 13.5px; }
 .catalogo__importar { text-align: center; cursor: pointer; }
