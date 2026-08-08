@@ -40,31 +40,16 @@ body {
   padding-bottom: max(40px, env(safe-area-inset-bottom));
 }
 
-.rotulo {
-  margin: 0;
-  font-size: 12.5px;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  color: var(--marca);
-  text-transform: uppercase;
-}
 .titulo {
-  margin: 4px 0 22px;
-  font-size: 26px;
-  font-weight: 800;
-  line-height: 1.2;
-}
-
-.secao {
-  margin: 26px 0 10px;
-  font-size: 12px;
+  margin: 0 0 18px;
+  font-size: 20px;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  line-height: 1.25;
   color: var(--fraca);
-  text-transform: uppercase;
 }
 
 .telefones { display: flex; flex-direction: column; gap: 10px; }
+.telefones--claro { margin-top: 10px; }
 
 /* O bloco inteiro é o alvo, não só o número: dedo tremendo não acerta link de
    uma linha. 64px de altura mínima é o que a Apple e o Google recomendam com
@@ -102,16 +87,10 @@ body {
   font-weight: 700;
   cursor: pointer;
 }
-.botao--primario { background: var(--marca); color: #FFFFFF; }
+.botao--primario { background: var(--marca); color: #FFFFFF; margin: 16px 0; }
 .botao--primario:active { background: #D2571A; }
 
-.nota { margin: 8px 0 0; font-size: 13px; color: var(--fraca); }
-
-.corretora { margin-top: 30px; padding-top: 8px; border-top: 1px solid var(--borda); }
-.corretora__nome { margin: 0 0 10px; font-size: 17px; font-weight: 700; }
 .telefones--claro .tel { border-left-color: var(--fraca); }
-
-.rodape { margin-top: 30px; font-size: 12.5px; color: var(--fraca); }
 
 .erro {
   margin: 16px 0;

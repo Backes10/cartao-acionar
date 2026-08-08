@@ -8,7 +8,7 @@
 // Precisa bater com o VERSAO do sw.js. O diagnóstico mostra os dois lado a
 // lado justamente para o vendedor perceber quando o aparelho está preso numa
 // versão antiga: se divergirem, o service worker ainda não trocou.
-const VERSAO_APP = 'v40';
+const VERSAO_APP = 'v41';
 
 const CHAVE_CONFIG = 'acionar.config';
 const CHAVE_CATALOGO = 'acionar.seguradoras';
@@ -445,8 +445,11 @@ function montarCartao() {
   const dados = estado.dados;
   const cfg = estado.config;
 
+  // O reserva usa o vocabulário do próprio produto. Estava fixo em "Seguro " +
+  // nome, e no consórcio — que não é seguro — saía "Seguro Consórcio" na tela
+  // que mostra o nome que vai para a agenda do cliente.
   const nomeContato = aplicarTemplate(templateDoProduto(estado.produtoId), dados)
-    || ('Seguro ' + produto.nome);
+    || (produto.rotuloResumo ? produto.nome : 'Seguro ' + produto.nome);
   const titulo = aplicarTemplate(produto.tituloCartao, dados);
   const subtitulo = aplicarTemplate(produto.subtituloCartao, dados);
 
@@ -604,27 +607,29 @@ function montarObservacoes(cartao, produto, dados) {
   return l.join('\n');
 }
 
+/** A mensagem que acompanha o cartão.
+ *
+ *  Curta de propósito. A versão anterior repetia o produto, o veículo, a
+ *  seguradora e o nome do contato — tudo isso já está escrito na imagem que vai
+ *  junto, e quem recebe as duas coisas lê duas vezes a mesma informação. Aqui
+ *  fica só o que a imagem não faz: o link, que é tocável. */
 function mensagemWhatsApp(cartao) {
   const nome = primeiroNome(cartao.segurado);
   const l = [];
   l.push(nome ? `Olá, ${nome}!` : 'Olá!');
   l.push('');
-  const oQue = [rotuloProduto(cartao.produtoId), cartao.titulo].filter(Boolean).join(' — ');
-  l.push(`Seu ${oQue}${cartao.seguradora ? ` (${cartao.seguradora})` : ''} está ativo.`);
-  l.push('');
-  l.push(`Estou mandando junto um contato chamado "${cartao.nomeContato}".`);
-  l.push(cartao.instrucaoAgenda);
+
   const link = linkDoCartao(cartao);
   if (link) {
-    l.push('');
-    // A linha nomeia o destino. "Abra aqui" não diz o que tem do outro lado, e
-    // um endereço de github.io não ajuda ninguém a adivinhar — o cliente
-    // simplesmente não toca. Com o nome da seguradora ele sabe o que vai achar.
     l.push(cartao.seguradora
       ? `Telefones da ${cartao.seguradora}, é só tocar para ligar:`
-      : 'Telefones para emergência, é só tocar para ligar:');
+      : 'Telefones para ligar com um toque:');
     l.push(link);
+  } else {
+    // Sem link, a única coisa que a imagem não resolve sozinha é o contato.
+    l.push(cartao.instrucaoAgenda);
   }
+
   l.push('');
   l.push('Qualquer dúvida, me chama.');
   const assina = [estado.config.corretor, estado.config.corretora].filter(Boolean).join(' — ');

@@ -3,55 +3,34 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Telefones da sua seguradora — Acionar Corretora de Seguros</title>
+<title>Telefones — Acionar Corretora de Seguros</title>
 <meta name="theme-color" content="#EB6522">
 <meta name="robots" content="noindex, nofollow">
-<meta name="description" content="Os telefones da sua seguradora, prontos para ligar com um toque.">
-<!-- O cartão de prévia é o que o cliente vê MAIOR na conversa do WhatsApp,
-     maior que o endereço. Sem ele o link chega como texto azul cru de um
-     domínio que ninguém reconhece, e ninguém toca. As etiquetas são estáticas
-     porque o robô do WhatsApp não executa JavaScript: ele lê o HTML e vai
-     embora, então nada que a página monta depois aparece aqui. -->
+<!-- Sem og:image de propósito: a imagem do cartão já vai na conversa, e uma
+     segunda peça grande logo acima do link só repetia a mesma marca. A prévia
+     fica só com o texto. -->
 <meta property="og:title" content="Telefones da sua seguradora">
-<meta property="og:description" content="Toque para ligar. Enviado pela Acionar Corretora de Seguros.">
+<meta property="og:description" content="Toque para ligar.">
 <meta property="og:type" content="website">
-<meta property="og:image" content="https://backes10.github.io/cartao-acionar/assets/link-previa.png">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="pagina.css">
 </head>
 <body>
   <header class="topo">
-    <img id="logo" class="topo__logo" src="../assets/logo-acionar.png" alt="Acionar Corretora de Seguros">
+    <img class="topo__logo" src="../assets/logo-acionar.png" alt="Acionar Corretora de Seguros">
   </header>
 
   <main class="folha">
-    <p id="rotulo" class="rotulo"></p>
     <h1 id="titulo" class="titulo">Carregando…</h1>
 
     <div id="erro" class="erro" hidden></div>
 
-    <section id="blocoSeguradora" hidden>
-      <p id="tituloTelefones" class="secao">EM CASO DE SINISTRO OU REBOQUE</p>
-      <div id="telefones" class="telefones"></div>
-    </section>
+    <div id="telefones" class="telefones"></div>
 
-    <section id="blocoContato" hidden>
-      <button id="btnContato" class="botao botao--primario" type="button">Salvar na minha agenda</button>
-      <p class="nota">Salva todos estes telefones de uma vez, com o nome acima.</p>
-    </section>
+    <button id="btnContato" class="botao botao--primario" type="button" hidden>
+      Salvar na minha agenda
+    </button>
 
-    <section id="blocoCorretora" class="corretora" hidden>
-      <p class="secao">SEU CORRETOR</p>
-      <p id="nomeCorretora" class="corretora__nome"></p>
-      <div id="telefonesCorretora" class="telefones telefones--claro"></div>
-    </section>
-
-    <p class="rodape">
-      Esta página foi enviada pela sua corretora. Os números são os que ela mantém
-      atualizados — se algum deles mudar, esta página muda junto.
-    </p>
+    <div id="telefonesCorretora" class="telefones telefones--claro"></div>
   </main>
 
   <script src="pagina.js"></script>

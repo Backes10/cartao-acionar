@@ -203,8 +203,7 @@ async function iniciar() {
   }
   const produto = (produtos.produtos || {})[pedido.produtoId];
 
-  document.title = (pedido.nome || 'Seus telefones') + ' — ' + (corretora.nome || 'Acionar');
-  el('rotulo').textContent = produto ? (produto.rotuloFornecedor || 'Seguradora') + ' · ' + cia.nome : cia.nome;
+  document.title = (pedido.nome || 'Telefones') + ' — ' + (corretora.nome || 'Acionar');
   el('titulo').textContent = pedido.nome || cia.nome;
 
   const doSeguro = (cia.telefones || [])
@@ -212,8 +211,8 @@ async function iniciar() {
     .slice()
     .sort((a, b) => (ORDEM_TIPO[a.tipo] ?? 9) - (ORDEM_TIPO[b.tipo] ?? 9));
 
-  el('tituloTelefones').textContent =
-    (produto && produto.tituloTelefones) || 'EM CASO DE SINISTRO OU REBOQUE';
+  // Sem cabeçalho de seção: o rótulo de cada telefone já começa com o nome da
+  // seguradora, então uma linha em cima dizendo a mesma coisa era repetição.
   const destino = el('telefones');
   for (const t of doSeguro) {
     destino.appendChild(cartaoTelefone({
@@ -222,7 +221,6 @@ async function iniciar() {
       semTel: !!t.semTel
     }));
   }
-  el('blocoSeguradora').hidden = doSeguro.length === 0;
 
   /* ---- a corretora ---- */
   const daCorretora = [];
@@ -232,11 +230,9 @@ async function iniciar() {
   if (corretora.telefone) {
     daCorretora.push({ rotulo: 'Escritório', numero: corretora.telefone, movel: false });
   }
-  el('nomeCorretora').textContent = corretora.nome || '';
   for (const t of daCorretora) {
     destinoCorretora(t, corretora);
   }
-  el('blocoCorretora').hidden = daCorretora.length === 0;
 
   /* ---- salvar contato ---- */
   const paraContato = [
@@ -263,7 +259,7 @@ async function iniciar() {
       telefones: paraContato
     }), nomeArquivoSeguro(nome) + '.vcf');
   });
-  el('blocoContato').hidden = false;
+  el('btnContato').hidden = false;
 }
 
 function destinoCorretora(t, corretora) {
