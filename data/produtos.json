@@ -7,6 +7,7 @@
     "auto": {
       "nome": "Auto",
       "icone": "🚗",
+      "iconeCartao": "auto",
       "eyebrow": "SEGURO AUTO",
       "templateNome": "Seguro Auto - {marca} {modelo} {placa}",
       "tituloCartao": "{marca} {modelo}",
@@ -38,6 +39,7 @@
     "moto": {
       "nome": "Moto",
       "icone": "🏍️",
+      "iconeCartao": "moto",
       "eyebrow": "SEGURO MOTO",
       "templateNome": "Seguro Moto - {marca} {modelo} {placa}",
       "tituloCartao": "{marca} {modelo}",
@@ -67,6 +69,7 @@
     "residencial": {
       "nome": "Residencial",
       "icone": "🏡",
+      "iconeCartao": "residencial",
       "eyebrow": "SEGURO RESIDENCIAL",
       "templateNome": "Seguro Residencial - {imovel}",
       "tituloCartao": "{imovel}",
@@ -92,6 +95,7 @@
     "vida": {
       "nome": "Vida",
       "icone": "🛡️",
+      "iconeCartao": "vida",
       "eyebrow": "SEGURO DE VIDA",
       "templateNome": "Seguro de Vida - {segurado}",
       "tituloCartao": "{segurado}",
@@ -115,6 +119,7 @@
     "empresarial": {
       "nome": "Empresarial",
       "icone": "🏪",
+      "iconeCartao": "empresarial",
       "eyebrow": "SEGURO EMPRESARIAL",
       "templateNome": "Seguro Empresarial - {empresa}",
       "tituloCartao": "{empresa}",

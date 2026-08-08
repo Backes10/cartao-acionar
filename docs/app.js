@@ -8,7 +8,7 @@
 // Precisa bater com o VERSAO do sw.js. O diagnóstico mostra os dois lado a
 // lado justamente para o vendedor perceber quando o aparelho está preso numa
 // versão antiga: se divergirem, o service worker ainda não trocou.
-const VERSAO_APP = 'v32';
+const VERSAO_APP = 'v33';
 
 const CHAVE_CONFIG = 'acionar.config';
 const CHAVE_CATALOGO = 'acionar.seguradoras';
@@ -500,9 +500,15 @@ function montarCartao() {
     // Ícone ao lado do título, escolhido por um campo do formulário. Sai na cor
     // de destaque e some quando o campo não foi preenchido — melhor sem ícone
     // que com o ícone errado.
+    //
+    //  Dois caminhos: o consórcio escolhe pelo tipo do bem preenchido no
+    //  formulário; os seguros têm um ícone fixo, porque o próprio produto já
+    //  diz o que é. Quando o tipo ainda não foi escolhido, cai no fixo — e se
+    //  não houver nenhum, o cartão sai sem ícone.
     iconeTitulo: (() => {
       const m = produto.iconePorTipo;
-      const id = m && m.valores[String(dados[m.campo] || '').trim()];
+      const porTipo = m && m.valores[String(dados[m.campo] || '').trim()];
+      const id = porTipo || produto.iconeCartao;
       return id && icones[id] ? id : null;
     })(),
     tituloTelefones: produto.tituloTelefones || 'EM CASO DE SINISTRO OU REBOQUE',
@@ -854,6 +860,30 @@ const icones = {
       ctx.arc(...p(cx, 0.76), 0.09 * p.lado, 0, Math.PI * 2);
       ctx.stroke();
     }
+  },
+
+  empresarial(ctx, p) {
+    // Fachada de loja: toldo, corpo e porta. O prédio genérico ficava igual ao
+    // ícone de imóvel, e os dois produtos existem no mesmo app.
+    ctx.beginPath();
+    ctx.moveTo(...p(0.06, 0.38));
+    ctx.lineTo(...p(0.18, 0.18));
+    ctx.lineTo(...p(0.82, 0.18));
+    ctx.lineTo(...p(0.94, 0.38));
+    ctx.closePath();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(...p(0.14, 0.38));
+    ctx.lineTo(...p(0.14, 0.86));
+    ctx.lineTo(...p(0.86, 0.86));
+    ctx.lineTo(...p(0.86, 0.38));
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(...p(0.38, 0.86));
+    ctx.lineTo(...p(0.38, 0.58));
+    ctx.lineTo(...p(0.62, 0.58));
+    ctx.lineTo(...p(0.62, 0.86));
+    ctx.stroke();
   },
 
   servicos(ctx, p) {
