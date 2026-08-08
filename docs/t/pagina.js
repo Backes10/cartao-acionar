@@ -11,67 +11,17 @@
  * cadastro conserta os cartões de todos os clientes de uma vez — inclusive os
  * enviados há dois anos.
  *
- * ATENÇÃO — duplicação conhecida: telParaDiscagem, escVCard e o montador de
- * vCard são espelhos do app.js. Se a regra de discagem mudar lá, mude aqui. Foi
- * uma escolha para manter esta página testável sem mexer no caminho do .vcf que
- * já está validado no celular; se o link vingar, o certo é extrair os dois para
- * um arquivo comum. */
+ * As regras de discagem, escape e dobra de linha vivem em ../comum.js, junto com
+ * o app. Elas já estiveram duplicadas aqui e sete de oito cópias divergiram em
+ * poucos dias — a página tinha perdido o tratamento de códigos curtos. */
 
 const el = (id) => document.getElementById(id);
 
 /* ---- espelho de app.js: números brasileiros que não aceitam +55 ---- */
-function telParaDiscagem(bruto) {
-  const s = String(bruto || '').trim();
-  if (!s) return '';
-  const d = s.replace(/\D/g, '');
-  if (!d) return '';
-  if (/^0(800|300|500)/.test(d)) return d;
-  if (/^(3003|3004|4003|4004)/.test(d)) return d;
-  if (d.length <= 5) return d;
-  if (d.length === 10 || d.length === 11) return '+55' + d;
-  if ((d.length === 12 || d.length === 13) && d.startsWith('55')) return '+' + d;
-  return d;
-}
 
-function telParaWaMe(bruto) {
-  const d = String(bruto || '').replace(/\D/g, '');
-  if (!d) return '';
-  if (d.length === 10 || d.length === 11) return '55' + d;
-  if (d.startsWith('55') && d.length >= 12) return d;
-  return d;
-}
 
 /* ---- espelho de app.js ---- */
-function escVCard(v) {
-  return String(v ?? '')
-    .replace(/\\/g, '\\\\')
-    .replace(/\r\n|\r|\n/g, '\\n')
-    .replace(/,/g, '\\,')
-    .replace(/;/g, '\\;');
-}
 
-function dobrarLinha(linha) {
-  const enc = new TextEncoder();
-  if (enc.encode(linha).length <= 75) return linha;
-  const partes = [];
-  let atual = '';
-  let bytes = 0;
-  let limite = 75;
-  for (const ch of linha) {
-    const n = enc.encode(ch).length;
-    if (bytes + n > limite) {
-      partes.push(atual);
-      atual = ch;
-      bytes = n;
-      limite = 74;
-    } else {
-      atual += ch;
-      bytes += n;
-    }
-  }
-  if (atual) partes.push(atual);
-  return partes.join('\r\n ');
-}
 
 /** O endereço traz só a seguradora: "#yelum".
  *
@@ -136,10 +86,6 @@ function cartaoTelefone({ rotulo, numero, semTel, classe }) {
   return no;
 }
 
-const ORDEM_TIPO = {
-  assistencia: 0, sinistro: 1, atendimento: 1, sac: 2, whatsapp: 3, ouvidoria: 4, outro: 5
-};
-
 function montarVCard(dados) {
   const l = [];
   const add = (linha) => l.push(dobrarLinha(linha));
@@ -180,13 +126,6 @@ function baixar(texto, nome) {
   setTimeout(() => URL.revokeObjectURL(url), 4000);
 }
 
-function nomeArquivoSeguro(nome) {
-  return String(nome || 'contato')
-    .normalize('NFD').replace(/[̀-ͯ]/g, '')
-    .replace(/[^A-Za-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 60) || 'contato';
-}
 
 async function iniciar() {
   const pedido = lerEndereco();
@@ -216,10 +155,7 @@ async function iniciar() {
   document.title = cia.nome + ' — ' + (corretora.nome || 'Acionar');
   el('titulo').textContent = pedido.nome || cia.nome;
 
-  const doSeguro = (cia.telefones || [])
-    .filter((t) => t.numero)
-    .slice()
-    .sort((a, b) => (ORDEM_TIPO[a.tipo] ?? 9) - (ORDEM_TIPO[b.tipo] ?? 9));
+  const doSeguro = ordenarTelefones(cia.telefones);
 
   // Sem cabeçalho de seção: o rótulo de cada telefone já começa com o nome da
   // seguradora, então uma linha em cima dizendo a mesma coisa era repetição.
@@ -267,7 +203,7 @@ async function iniciar() {
       corretora: corretora.nome,
       email: corretora.email,
       telefones: paraContato
-    }), nomeArquivoSeguro(nome) + '.vcf');
+    }), nomeArquivoSeguro(nome, 'contato') + '.vcf');
   });
   el('btnContato').hidden = false;
 }

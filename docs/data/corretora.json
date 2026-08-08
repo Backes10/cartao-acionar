@@ -1,5 +1,5 @@
 {
-  "_leia_me": "Dados da corretora usados pela PAGINA DO LINK (pasta c/). O app usa os dados de Configuracoes, que ficam no celular do vendedor; a pagina e publica e nao tem acesso a eles, entao le daqui. Se voce mudar o WhatsApp em Configuracoes, mude aqui tambem — senao o link manda o cliente para o numero antigo.",
+  "_leia_me": "Dados da corretora usados pela PAGINA DO LINK (pasta t/). O app usa os dados de Configuracoes, que ficam no celular do vendedor; a pagina e publica e nao tem acesso a eles, entao le daqui. Se voce mudar algo em Configuracoes, mude aqui tambem — senao o link manda o cliente para o dado antigo. O app compara os dois ao abrir e avisa nas pendencias quando divergem (ver conferirCorretora em app.js).",
   "nome": "Acionar Corretora de Seguros",
   "whatsapp": "(51) 99741-4049",
   "telefone": "(51) 3566-0010",

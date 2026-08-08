@@ -427,6 +427,15 @@ textarea.campo__input { min-height: 78px; resize: vertical; line-height: 1.35; }
 /* Entrada de outro produto: fica na lista, mas recuada e apagada, para não
    competir com as que servem o produto aberto. */
 .catalogo__item--outro { opacity: 0.62; }
+.catalogo__secao {
+  padding: 14px 0 4px;
+  border-top: 1px solid var(--borda);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--texto-fraco);
+}
 .catalogo__escopo { font-size: 12px; color: var(--texto-fraco); font-style: italic; }
 .catalogo li img { height: 22px; width: auto; max-width: 84px; object-fit: contain; flex: 0 0 auto; }
 .catalogo .botao { padding: 8px 12px; font-size: 13.5px; }

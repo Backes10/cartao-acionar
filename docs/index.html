@@ -12,7 +12,7 @@
 <!-- o iOS ignora os ícones do manifest ao "Adicionar à Tela de Início" -->
 <link rel="apple-touch-icon" href="assets/icone-192.png">
 <link rel="icon" type="image/png" href="assets/icone-192.png">
-<link rel="stylesheet" href="styles.css?v=v45">
+<link rel="stylesheet" href="styles.css?v=v46">
 </head>
 <body>
 
@@ -80,7 +80,8 @@
     <div id="pendencias" class="pendencias" hidden></div>
 
     <div class="previa">
-      <canvas id="canvasCartao" class="previa__canvas" width="1080" height="1350"></canvas>
+      <canvas id="canvasCartao" class="previa__canvas" width="1080" height="1350"
+        role="img" aria-label="Prévia do cartão que será enviado ao cliente"></canvas>
     </div>
 
     <div class="acoes">
@@ -164,6 +165,17 @@
       <label class="campo campo--full">
         <span class="campo__label">Site <span class="campo__opc">(opcional)</span></span>
         <input id="segSite" class="campo__input" type="url" inputmode="url" autocapitalize="off" placeholder="https://…">
+      </label>
+
+      <label class="campo campo--full">
+        <span class="campo__label">Aparece em</span>
+        <select id="segProdutos" class="campo__input">
+          <option value="seguros">Seguros (auto, moto, residencial, vida, empresarial)</option>
+          <option value="consorcio">Consórcio</option>
+          <option value="todos">Todos os produtos</option>
+        </select>
+        <span class="campo__ajuda">Administradora de consórcio não é seguradora — são empresas
+          diferentes, com telefones próprios, mesmo quando o nome é parecido.</span>
       </label>
 
       <label class="campo campo--full">
@@ -298,6 +310,7 @@
   </form>
 </dialog>
 
-<script src="app.js?v=v45"></script>
+<script src="comum.js?v=v46"></script>
+<script src="app.js?v=v46"></script>
 </body>
 </html>

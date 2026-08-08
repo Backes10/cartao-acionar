@@ -8,7 +8,7 @@
 // Precisa bater com o VERSAO do sw.js. O diagnóstico mostra os dois lado a
 // lado justamente para o vendedor perceber quando o aparelho está preso numa
 // versão antiga: se divergirem, o service worker ainda não trocou.
-const VERSAO_APP = 'v45';
+const VERSAO_APP = 'v46';
 
 const CHAVE_CONFIG = 'acionar.config';
 const CHAVE_CATALOGO = 'acionar.seguradoras';
@@ -79,6 +79,9 @@ const estado = {
   whatsCliente: '',
   config: { ...CONFIG_PADRAO },
   artefatos: null,
+  // Preenchido quando os dados da corretora aqui e os da página do link não
+  // batem. Ver conferirCorretora().
+  divergenciaCorretora: ''
 };
 
 const $ = (sel) => document.querySelector(sel);
@@ -136,14 +139,6 @@ function primeiroNome(nomeCompleto) {
   return String(nomeCompleto || '').trim().split(/\s+/)[0] || '';
 }
 
-/** Remove acento, espaço e sinal — nome de arquivo com acento quebra no iOS. */
-function nomeArquivoSeguro(texto) {
-  return String(texto || 'cartao')
-    .normalize('NFD').replace(/[\u0300-\u036F]/g, '')
-    .replace(/[^A-Za-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 70) || 'cartao';
-}
 
 function aplicarTemplate(template, dados) {
   let temVariavel = false;
@@ -180,70 +175,11 @@ function hexParaRgba(hex, alfa) {
    Só celular e fixo comum viram E.164.
    ========================================================================== */
 
-function telParaDiscagem(bruto) {
-  const s = String(bruto || '').trim();
-  if (!s) return '';
-  if (/^[*#]/.test(s)) return s.replace(/\s+/g, '');
-  const d = s.replace(/\D/g, '');
-  if (!d) return '';
-  if (/^0(800|300|500)/.test(d)) return d;
-  if (/^(3003|3004|4003|4004)/.test(d)) return d;
-  if (d.length <= 5) return d;
-  if (d.length === 10 || d.length === 11) return '+55' + d;
-  if ((d.length === 12 || d.length === 13) && d.startsWith('55')) return '+' + d;
-  return d;
-}
-
-/** Número só de dígitos com 55 na frente, para links wa.me. */
-function telParaWaMe(bruto) {
-  const d = String(bruto || '').replace(/\D/g, '');
-  if (!d) return '';
-  if (d.length === 10 || d.length === 11) return '55' + d;
-  if (d.startsWith('55') && d.length >= 12) return d;
-  return d;
-}
 
 /* ==========================================================================
    vCard 3.0
    ========================================================================== */
 
-function escVCard(valor) {
-  return String(valor ?? '')
-    .replace(/\\/g, '\\\\')
-    .replace(/\r\n|\r|\n/g, '\\n')
-    .replace(/,/g, '\\,')
-    .replace(/;/g, '\\;');
-}
-
-/** Dobra a linha em 75 octetos, como a especificação exige. Sem isso a
- *  importação falha em silêncio em parte dos aparelhos. */
-function dobrarLinha(linha) {
-  if (!/[^\x00-\x7F]/.test(linha)) {
-    if (linha.length <= 75) return linha;
-    const partes = [linha.slice(0, 75)];
-    for (let i = 75; i < linha.length; i += 74) partes.push(linha.slice(i, i + 74));
-    return partes.join('\r\n ');
-  }
-  const enc = new TextEncoder();
-  const partes = [];
-  let atual = '';
-  let bytes = 0;
-  let limite = 75;
-  for (const ch of linha) {
-    const n = enc.encode(ch).length;
-    if (bytes + n > limite) {
-      partes.push(atual);
-      atual = ch;
-      bytes = n;
-      limite = 74; // a linha de continuação gasta 1 octeto com o espaço
-    } else {
-      atual += ch;
-      bytes += n;
-    }
-  }
-  partes.push(atual);
-  return partes.join('\r\n ');
-}
 
 function montarVCard(cartao) {
   const linhas = [];
@@ -298,8 +234,10 @@ function montarVCard(cartao) {
   }
 
   add('NOTE:' + escVCard(cartao.observacoes));
-  // Em CATEGORIES a vírgula é separador de lista, então vai crua.
-  add('CATEGORIES:Seguros,Acionar');
+  // Em CATEGORIES a vírgula é separador de lista, então vai crua. A categoria
+  // acompanha o produto: estava fixa em "Seguros" e marcava a cota de consórcio
+  // como se fosse seguro — o mesmo erro de vocabulário do "Seguro Consórcio".
+  add('CATEGORIES:' + escVCard(cartao.categoria || 'Seguros') + ',Acionar');
 
   if (cartao.foto) {
     add(`PHOTO;ENCODING=b;TYPE=${cartao.foto.tipo}:` + cartao.foto.base64);
@@ -361,12 +299,46 @@ function catalogoEfetivo() {
   const lista = [];
   for (const base of estado.seguradorasBase) {
     if (ajustes.removidas.includes(base.id)) continue;
-    lista.push(ajustes.editadas[base.id] ? { ...base, ...ajustes.editadas[base.id] } : base);
+    lista.push(ajustes.editadas[base.id] ? juntar(base, ajustes.editadas[base.id]) : base);
   }
   for (const nova of ajustes.novas) {
-    if (!ajustes.removidas.includes(nova.id)) lista.push(nova);
+    if (!ajustes.removidas.includes(nova.id)) lista.push(limparNulos(nova));
   }
   return lista;
+}
+
+/** Junta a base com o ajuste local. `null` no ajuste significa APAGADO.
+ *
+ *  Precisa de um valor explícito porque o JSON.stringify descarta chave com
+ *  `undefined`: gravando `logo: undefined`, a remoção do logo simplesmente não
+ *  chegava ao disco e ele reaparecia na recarga seguinte. */
+function juntar(base, ajuste) {
+  return limparNulos({ ...base, ...ajuste });
+}
+
+function limparNulos(obj) {
+  const saida = {};
+  for (const [k, v] of Object.entries(obj)) {
+    if (v !== null && v !== undefined) saida[k] = v;
+  }
+  return saida;
+}
+
+/** Guarda só o que difere da base do projeto.
+ *
+ *  Antes o ajuste local guardava o registro inteiro, e isso tinha um efeito
+ *  silencioso: uma seguradora editada uma vez ficava imune para sempre às
+ *  correções publicadas. Se eu corrigisse um telefone da Yelum no projeto, a
+ *  cópia local continuaria por cima, sem aviso. Guardando só a diferença, o que
+ *  ele não tocou continua vindo do projeto e recebe correção. */
+function soAsDiferencas(cia, base) {
+  if (!base) return cia;
+  const iguais = (a, b) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
+  const delta = { id: cia.id };
+  for (const chave of ['nome', 'exemplo', 'logo', 'site', 'produtos', 'telefones']) {
+    if (!iguais(cia[chave], base[chave])) delta[chave] = cia[chave] ?? null;
+  }
+  return delta;
 }
 
 /** O catálogo já filtrado pelo produto ativo.
@@ -453,16 +425,7 @@ function montarCartao() {
   const subtitulo = aplicarTemplate(produto.subtituloCartao, dados);
 
   const telefones = [];
-  // O que vem primeiro é o que o cliente precisa na pior hora. No seguro isso é
-  // assistência e sinistro; no consórcio não existe nenhum dos dois, e o
-  // equivalente é a central que resolve boleto, assembleia e contemplação.
-  const ordem = {
-    assistencia: 0, sinistro: 1, atendimento: 1, sac: 2, whatsapp: 3, ouvidoria: 4, outro: 5
-  };
-  const doSeguro = (seguradora?.telefones || [])
-    .filter((t) => t.numero)
-    .slice()
-    .sort((a, b) => (ordem[a.tipo] ?? 9) - (ordem[b.tipo] ?? 9));
+  const doSeguro = ordenarTelefones(seguradora?.telefones);
   for (const t of doSeguro) {
     telefones.push({
       // Dois rótulos de propósito: o completo vai na imagem, que tem espaço e
@@ -545,6 +508,7 @@ function montarCartao() {
       const id = porTipo || produto.iconeCartao;
       return id && icones[id] ? id : null;
     })(),
+    categoria: produto.rotuloResumo || 'Seguros',
     tituloTelefones: produto.tituloTelefones || 'EM CASO DE SINISTRO OU REBOQUE',
     instrucaoAgenda: produto.instrucaoAgenda
       || 'Salve na sua agenda: em caso de sinistro ou reboque, procure por "Seguro" no telefone e ligue direto — todos os números já estão lá.',
@@ -665,7 +629,22 @@ function conferirCartao() {
       || 'Escolha a seguradora — sem ela o cartão vai sem telefone de sinistro.');
   }
 
+  // Vigência invertida ou de um dia só é erro de digitação, não de cadastro:
+  // apareceu num cartão real como "08/08/2026 a 08/08/2026". Impede, porque um
+  // cartão dizendo que o seguro venceu no dia em que começou é pior que nenhum.
+  const ini = estado.dados.vigenciaInicio;
+  const fim = estado.dados.vigenciaFim;
+  if (ini && fim && fim <= ini) {
+    impedimentos.push(fim === ini
+      ? 'A vigência começa e termina no mesmo dia. Confira as datas.'
+      : 'A vigência termina antes de começar. Confira as datas.');
+  }
+
   const avisos = [];
+  if (estado.divergenciaCorretora) {
+    avisos.push('Os dados da corretora na página do link estão diferentes dos daqui ('
+      + estado.divergenciaCorretora + '). O cliente que abrir o link vai ver os antigos — me avise para eu publicar a correção.');
+  }
   if (!estado.config.whatsapp) avisos.push('Cadastre o WhatsApp do corretor em Configurações — sem ele o cliente não tem como te achar.');
   if (!estado.config.logo) avisos.push('Suba o logo da Acionar em Configurações para o cartão sair com a marca.');
   if (fotoRecusada) avisos.push('O logo entrou na imagem, mas ficou grande demais para virar a foto do contato. Use um PNG mais simples, de traço, se quiser a marca na agenda também.');
@@ -2126,7 +2105,14 @@ function registrarHistorico(cartao) {
     whatsCliente: estado.whatsCliente,
     quando: new Date().toISOString()
   });
-  localStorage.setItem(CHAVE_HISTORICO, JSON.stringify(itens.slice(0, MAX_HISTORICO)));
+  try {
+    localStorage.setItem(CHAVE_HISTORICO, JSON.stringify(itens.slice(0, MAX_HISTORICO)));
+  } catch (erro) {
+    // Sem rede de proteção, o estouro de espaço acontecia DENTRO do envio: a
+    // imagem ia, o erro subia, e a confirmação nunca aparecia na tela. Perder
+    // uma linha do histórico é aceitável; perder o aviso de que deu certo não.
+    console.warn('não consegui gravar o histórico', erro);
+  }
   renderHistorico();
 }
 
@@ -2394,6 +2380,96 @@ function renderListaCatalogo() {
     li.append(info, editar);
     el.listaCatalogo.appendChild(li);
   }
+
+  renderExcluidas();
+}
+
+/** Lista as seguradoras do projeto que foram excluídas, com um botão de
+ *  restaurar.
+ *
+ *  Sem isto, excluir era irreversível: a marca de removida ficava gravada e a
+ *  única saída era apagar os dados do site — o que levava junto as
+ *  configurações e o histórico. Um toque errado custava caro demais. */
+function renderExcluidas() {
+  const ajustes = lerAjustesCatalogo();
+  const excluidas = estado.seguradorasBase.filter((s) => ajustes.removidas.includes(s.id));
+  if (!excluidas.length) return;
+
+  const cab = document.createElement('li');
+  cab.className = 'catalogo__secao';
+  cab.textContent = 'Excluídas por você';
+  el.listaCatalogo.appendChild(cab);
+
+  for (const cia of excluidas) {
+    const li = document.createElement('li');
+    li.className = 'catalogo__item--outro';
+    const info = document.createElement('div');
+    info.className = 'catalogo__info';
+    const nome = document.createElement('div');
+    nome.className = 'catalogo__nome';
+    nome.textContent = cia.nome;
+    const meta = document.createElement('div');
+    meta.className = 'catalogo__meta';
+    meta.textContent = 'fora da lista';
+    info.append(nome, meta);
+
+    const voltar = document.createElement('button');
+    voltar.type = 'button';
+    voltar.className = 'botao';
+    voltar.textContent = 'Restaurar';
+    voltar.addEventListener('click', () => {
+      const a = lerAjustesCatalogo();
+      a.removidas = a.removidas.filter((id) => id !== cia.id);
+      if (!salvarAjustesCatalogo(a)) return;
+      recarregarCatalogo();
+      renderListaCatalogo();
+    });
+
+    li.append(info, voltar);
+    el.listaCatalogo.appendChild(li);
+  }
+}
+
+/* As duas famílias do catálogo. Não é uma lista de checkbox por produto porque
+ * a escolha real é essa: ou a empresa vende seguro, ou administra consórcio. */
+const PRODUTOS_SEGURO = ['auto', 'moto', 'residencial', 'vida', 'empresarial'];
+
+function escopoDeProdutos(produtos) {
+  if (!produtos || !produtos.length) return 'todos';
+  if (produtos.length === 1 && produtos[0] === 'consorcio') return 'consorcio';
+  return 'seguros';
+}
+
+function produtosDoEditor() {
+  const escolha = el.segProdutos ? el.segProdutos.value : 'todos';
+  if (escolha === 'consorcio') return ['consorcio'];
+  if (escolha === 'seguros') return PRODUTOS_SEGURO.slice();
+  return null;   // null = apagado no merge = aparece em todos
+}
+
+/** Compara o que está em Configurações com o que a página pública do link
+ *  publica em data/corretora.json.
+ *
+ *  Os dois existem porque a página é pública e não enxerga o localStorage do
+ *  celular do vendedor. O risco é silencioso: ele troca o WhatsApp aqui, o
+ *  cartão passa a mostrar o número novo, e o link continua mandando o cliente
+ *  para o antigo. Ninguém percebe até alguém ligar para o número errado. */
+async function conferirCorretora() {
+  if (!estado.config.linkNaMensagem) return;
+  try {
+    const daPagina = await fetch('data/corretora.json', { cache: 'no-cache' }).then((r) => r.json());
+    const c = estado.config;
+    const difere = [];
+    if (daPagina.whatsapp !== c.whatsapp) difere.push('WhatsApp');
+    if (daPagina.telefone !== c.telefone) difere.push('telefone do escritório');
+    if (daPagina.nome !== c.corretora) difere.push('nome da corretora');
+    if (daPagina.email !== c.email) difere.push('e-mail');
+    estado.divergenciaCorretora = difere.join(', ');
+    if (difere.length) renderPendencias();
+  } catch (_) {
+    // Sem rede ou sem o arquivo: não é motivo para atrapalhar quem está
+    // montando um cartão. O aviso simplesmente não aparece.
+  }
 }
 
 function abrirEditorSeguradora(id) {
@@ -2403,9 +2479,15 @@ function abrirEditorSeguradora(id) {
     ? JSON.parse(JSON.stringify(base))
     : { id: null, nome: '', site: '', logo: '', exemplo: true, telefones: [] };
 
+  // Guarda o número como estava ao abrir. Se ele mudar o número, a procedência
+  // (o "tirei do site") passa a se referir a outro número e é descartada; se
+  // não mudar, ela sobrevive à gravação.
+  for (const t of emEdicao.telefones) t._numeroOriginal = t.numero;
+
   el.tituloEditor.textContent = base ? base.nome : 'Nova seguradora';
   el.segNome.value = emEdicao.nome || '';
   el.segSite.value = emEdicao.site || '';
+  el.segProdutos.value = escopoDeProdutos(emEdicao.produtos);
   el.segConferido.checked = !emEdicao.exemplo;
   el.segLogo.value = '';
   el.segLogoPrevia.hidden = !emEdicao.logo;
@@ -2553,17 +2635,34 @@ function salvarSeguradoraDoEditor() {
     alert('Dê um nome para a seguradora.');
     return;
   }
+  const conferido = el.segConferido.checked;
   const telefones = emEdicao.telefones
     .filter((t) => String(t.numero || '').trim())
-    .map((t) => ({
-      rotulo: String(t.rotulo || '').trim() || 'Atendimento',
-      rotuloCurto: String(t.rotuloCurto || '').trim() || undefined,
-      numero: String(t.numero).trim(),
-      tipo: t.tipo || 'outro',
-      semTel: !!t.semTel || undefined
-    }));
+    .map((t) => {
+      // Sem chave em vez de chave com null: o telefone é gravado inteiro, não
+      // como diferença, então null aqui só sujaria a exportação.
+      const novo = {
+        rotulo: String(t.rotulo || '').trim() || 'Atendimento',
+        numero: String(t.numero).trim(),
+        tipo: t.tipo || 'outro'
+      };
+      const curto = String(t.rotuloCurto || '').trim();
+      if (curto) novo.rotuloCurto = curto;
+      if (t.semTel) novo.semTel = true;
+      // A procedência (o bloco vermelho) só some quando ele marcar que ligou,
+      // ou quando o próprio número mudar — aí o texto capturado se refere a
+      // outro número e vira mentira. Antes ela sumia em QUALQUER gravação:
+      // corrigir o site apagava o aviso dos três telefones sem ninguém ter
+      // conferido nada, e o vendedor perdia a única pista de onde vieram.
+      const numeroIntacto = String(t.numero).trim() === String(t._numeroOriginal ?? t.numero).trim();
+      if (!conferido && numeroIntacto) {
+        if (t._contexto) novo._contexto = t._contexto;
+        if (t._fonte) novo._fonte = t._fonte;
+      }
+      return novo;
+    });
 
-  if (el.segConferido.checked && !telefones.length) {
+  if (conferido && !telefones.length) {
     alert('Marcou como conferido mas não há telefone nenhum. Cadastre os números primeiro.');
     return;
   }
@@ -2571,16 +2670,23 @@ function salvarSeguradoraDoEditor() {
   const cia = {
     id: emEdicao.id || idNovaSeguradora(nome),
     nome,
-    exemplo: !el.segConferido.checked,
-    logo: emEdicao.logo || undefined,
-    site: el.segSite.value.trim() || undefined,
+    exemplo: !conferido,
+    // null e não undefined: JSON.stringify DESCARTA chave com undefined, então
+    // "remover o logo" nunca chegava ao disco e ele voltava na recarga. O merge
+    // em catalogoEfetivo trata null como apagado.
+    logo: emEdicao.logo || null,
+    site: el.segSite.value.trim() || null,
+    produtos: produtosDoEditor(),
     telefones
   };
 
   const ajustes = lerAjustesCatalogo();
   const ehDaBase = estado.seguradorasBase.some((s) => s.id === cia.id);
   if (ehDaBase) {
-    ajustes.editadas[cia.id] = cia;
+    // Só o que difere da base. Guardando o registro inteiro, uma seguradora
+    // editada ficava para sempre imune às correções publicadas no projeto: se
+    // eu corrigisse um telefone da Yelum, a cópia local continuaria por cima.
+    ajustes.editadas[cia.id] = soAsDiferencas(cia, estado.seguradorasBase.find((s) => s.id === cia.id));
   } else {
     const i = ajustes.novas.findIndex((s) => s.id === cia.id);
     if (i >= 0) ajustes.novas[i] = cia;
@@ -2921,7 +3027,7 @@ async function iniciar() {
     'diagnostico', 'diagLista', 'btnCopiarDiag',
     'btnCatalogo', 'btnBannerCatalogo', 'dlgCatalogo', 'vistaLista', 'vistaEditor', 'listaCatalogo',
     'btnNovaSeguradora', 'btnFecharCatalogo', 'btnExportarCatalogo', 'inpImportarCatalogo',
-    'tituloEditor', 'segNome', 'segSite', 'segLogo', 'segLogoPrevia', 'segLogoRemover',
+    'tituloEditor', 'segNome', 'segSite', 'segProdutos', 'segLogo', 'segLogoPrevia', 'segLogoRemover',
     'listaTelefonesEditor', 'btnNovoTelefone', 'segConferido', 'btnSalvarSeguradora',
     'btnCancelarSeguradora', 'btnExcluirSeguradora',
     'dlgConfig', 'formConfig', 'cfgCorretor', 'cfgWhats',
@@ -3196,6 +3302,10 @@ async function iniciar() {
   if ('serviceWorker' in navigator && window.isSecureContext && !window.DADOS_EMBUTIDOS) {
     registrarServiceWorker();
   }
+
+  // Em segundo plano: não trava a abertura, e o aviso entra nas pendências
+  // assim que a resposta chega. No arquivo único não há o que buscar.
+  if (!window.DADOS_EMBUTIDOS) conferirCorretora();
 }
 
 document.addEventListener('DOMContentLoaded', iniciar);

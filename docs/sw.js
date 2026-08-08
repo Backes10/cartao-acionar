@@ -18,12 +18,13 @@
  * MEXEU EM QUALQUER ARQUIVO DA CASCA? Suba o número do VERSAO abaixo.
  */
 
-const VERSAO = 'acionar-v45';
+const VERSAO = 'acionar-v46';
 
 const CASCA = [
   '.',
   'index.html',
   'styles.css',
+  'comum.js',
   'app.js',
   'manifest.webmanifest',
   'assets/logo-acionar.png',

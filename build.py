@@ -26,6 +26,7 @@ RAIZ = os.path.dirname(os.path.abspath(__file__))
 # build.py, PLANO.md, o zip e a pasta .claude para um endereco publico.
 PUBLICAVEIS = [
     'index.html',
+    'comum.js',   # regras compartilhadas com a pagina do link
     'app.js',
     'styles.css',
     'sw.js',
@@ -59,6 +60,7 @@ def data_uri(*caminho):
 
 html = ler('index.html')
 css = ler('styles.css')
+comum = ler('comum.js')
 js = ler('app.js')
 produtos = json.loads(ler('data', 'produtos.json'))
 seguradoras = json.loads(ler('data', 'seguradoras.json'))
@@ -75,7 +77,7 @@ if os.path.isdir(dir_cia):
 
 # Só o conteúdo do <body>: o Artifact fornece o próprio esqueleto da página.
 corpo = re.search(r'<body[^>]*>(.*)</body>', html, re.S).group(1)
-corpo = re.sub(r'<script[^>]*src=[\'"]app\.js[\'"][^>]*>\s*</script>', '', corpo)
+corpo = re.sub(r'<script[^>]*src=[\'"](?:app|comum)\.js[\'"][^>]*>\s*</script>', '', corpo)
 
 titulo = re.search(r'<title>(.*?)</title>', html, re.S).group(1).strip()
 
@@ -107,6 +109,8 @@ partes = [
     '<script>\nwindow.DADOS_EMBUTIDOS = %s;\nwindow.LOGO_EMBUTIDO = %s;\n</script>'
     % (sem_fechar_script(json.dumps(dados, ensure_ascii=False, separators=(',', ':'))),
        json.dumps(logo)),
+    # comum.js antes de app.js: app.js chama telParaDiscagem e companhia.
+    '<script>\n%s\n</script>' % sem_fechar_script(comum),
     '<script>\n%s\n</script>' % sem_fechar_script(js),
 ]
 
@@ -176,6 +180,7 @@ with open(alvo_html, encoding='utf-8') as f:
     html_site = f.read()
 antes = html_site
 html_site = html_site.replace('src="app.js"', 'src="app.js?v=%s"' % carimbo)
+html_site = html_site.replace('src="comum.js"', 'src="comum.js?v=%s"' % carimbo)
 html_site = html_site.replace('href="styles.css"', 'href="styles.css?v=%s"' % carimbo)
 if html_site == antes:
     raise SystemExit('ERRO: nao achei app.js/styles.css no index.html para carimbar a versao. '
