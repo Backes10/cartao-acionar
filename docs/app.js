@@ -8,7 +8,7 @@
 // Precisa bater com o VERSAO do sw.js. O diagnóstico mostra os dois lado a
 // lado justamente para o vendedor perceber quando o aparelho está preso numa
 // versão antiga: se divergirem, o service worker ainda não trocou.
-const VERSAO_APP = 'v42';
+const VERSAO_APP = 'v43';
 
 const CHAVE_CONFIG = 'acionar.config';
 const CHAVE_CATALOGO = 'acionar.seguradoras';
@@ -630,14 +630,13 @@ function mensagemWhatsApp(cartao) {
     l.push(cartao.instrucaoAgenda);
   }
 
-  l.push('');
-  l.push('Qualquer dúvida, me chama.');
-  // Uma linha por coisa. Juntando as duas com travessão, o WhatsApp quebrava no
-  // meio e saía "— Sergio Luis Backes" / "— Acionar Corretora de Seguros",
-  // parecendo duas assinaturas.
-  if (estado.config.corretor) l.push('— ' + estado.config.corretor);
-  if (estado.config.corretora) {
-    l.push(estado.config.corretor ? estado.config.corretora : '— ' + estado.config.corretora);
+  // Uma linha de assinatura, e só. O nome da corretora sai do rodapé da imagem
+  // que vai junto, com o logo e os telefones dela — repetir aqui era a terceira
+  // vez que a mesma informação aparecia na mesma conversa.
+  const assina = estado.config.corretor || estado.config.corretora;
+  if (assina) {
+    l.push('');
+    l.push('— ' + assina);
   }
   return l.join('\n');
 }
