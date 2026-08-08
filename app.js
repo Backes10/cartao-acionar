@@ -8,7 +8,7 @@
 // Precisa bater com o VERSAO do sw.js. O diagnóstico mostra os dois lado a
 // lado justamente para o vendedor perceber quando o aparelho está preso numa
 // versão antiga: se divergirem, o service worker ainda não trocou.
-const VERSAO_APP = 'v27';
+const VERSAO_APP = 'v28';
 
 const CHAVE_CONFIG = 'acionar.config';
 const CHAVE_CATALOGO = 'acionar.seguradoras';
@@ -1193,20 +1193,19 @@ function renderPendencias() {
 /** Trava tudo que gera um entregável enquanto o cartão estiver incompleto. */
 function atualizarAcoes() {
   const pronto = !!estado.artefatos && !estado.bloqueado;
-  for (const botao of [el.btnEnviar, el.btnEnviarVcf, el.btnEnviarPng,
-    el.btnVcf, el.btnPng, el.btnMensagem]) {
+  for (const botao of [el.btnEnviar, el.btnVcf, el.btnPng, el.btnMensagem]) {
     if (botao) botao.disabled = !pronto;
   }
 
-  // O contato fica SEMPRE disponível onde ele não pode ser compartilhado
-  // (Android), não só depois de um envio bem-sucedido.
+  // Os dois passos existem SEMPRE, em todo aparelho, na ordem de uso.
   //
-  // Antes ele só aparecia após a imagem ir. Quem voltasse ao app pelo botão
-  // "voltar" perdia o botão e tinha de reenviar a imagem só para reavê-lo.
-  // No Android o fluxo é de dois passos sempre — então os dois botões existem
-  // sempre, na ordem de uso.
+  // Antes este botão ficava escondido no iOS, porque eu supunha que lá os dois
+  // arquivos iam juntos num toque só. Não iam: o iPhone mandava só o contato e
+  // não sobrava botão nenhum para a imagem. Esconder um passo com base numa
+  // suposição sobre a plataforma foi o erro; agora os dois estão à vista e cada
+  // um faz o que o rótulo diz.
   if (el.btnContatoDepois) {
-    el.btnContatoDepois.hidden = !pronto || vcfPodeSerCompartilhado();
+    el.btnContatoDepois.hidden = !pronto;
     el.btnContatoDepois.disabled = !pronto;
   }
 }
@@ -1309,13 +1308,6 @@ function statusEnvio(texto, tipo) {
   el.statusEnvio.className = 'status' + (tipo ? ' status--' + tipo : '');
 }
 
-function arquivosParaEnvio(art, tipoVcf) {
-  const arquivos = [];
-  if (art.pngBlob) arquivos.push(new File([art.pngBlob], art.nomePng, { type: 'image/png' }));
-  arquivos.push(new File([art.vcfTexto], art.nomeVcf, { type: tipoVcf }));
-  return arquivos;
-}
-
 function baixar(blob, nome) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -1363,6 +1355,14 @@ function vcfPodeSerCompartilhado() {
   return !/Android/i.test(navigator.userAgent);
 }
 
+/** O passo 2 muda de natureza conforme o aparelho: no iOS o contato vai por
+ *  compartilhamento, no Android só por download. O rótulo precisa dizer o que o
+ *  toque faz de verdade — prometer "enviar" onde só dá para baixar é o tipo de
+ *  mentira que faz o vendedor ficar procurando um envio que nunca aconteceu. */
+function rotuloPasso2() {
+  return vcfPodeSerCompartilhado() ? '2. Enviar o contato' : '2. Baixar o contato';
+}
+
 function prepararEnvio(art) {
   const tipos = ['text/vcard', 'text/x-vcard'];
   const png = art.pngBlob ? new File([art.pngBlob], art.nomePng, { type: 'image/png' }) : null;
@@ -1397,13 +1397,20 @@ function prepararEnvio(art) {
     return null;
   };
 
+  // Não existe mais envio combinado, e a razão é de campo: ele falhou nas duas
+  // plataformas, de formas diferentes. No Android o .vcf está fora da lista do
+  // Chromium, então o par nunca passa. No iOS o canShare recusa a mistura
+  // imagem+vcard, e a escada antiga caía no candidato seguinte — "só contato" —
+  // mandando o .vcf sozinho e descartando a imagem sem dizer nada. Um toque
+  // entregava o artefato errado.
+  //
+  // Dois passos explícitos em todo aparelho: a imagem primeiro, que é o que o
+  // cliente lê, e o contato depois, que tem plano B (baixar e anexar).
   const parVcf = comVcf ? tipos.map((t) => new File([art.vcfTexto], art.nomeVcf, { type: t })) : [];
   const soVcf = parVcf.map((v, i) => ({ nome: `só contato (${tipos[i]})`, arquivos: [v] }));
-  const comImagem = png ? parVcf.map((v, i) => ({ nome: `imagem+contato (${tipos[i]})`, arquivos: [png, v] })) : [];
   const soPng = png ? [{ nome: 'só imagem', arquivos: [png] }] : [];
 
   return {
-    ambos: primeiroAceito([...comImagem, ...soVcf, ...soPng]),
     vcf: primeiroAceito(soVcf),
     png: primeiroAceito(soPng),
     relatorio
@@ -1462,37 +1469,30 @@ function enviar(selecao) {
   }
 
   registroEnvio = envio.relatorio.slice();
-  anotar(`pedido: ${selecao === 'ambos' ? 'imagem + contato' : (selecao === 'vcf' ? 'só o contato' : 'só a imagem')}`);
+  anotar(`pedido: ${selecao === 'vcf' ? 'só o contato' : 'só a imagem'}`);
   anotar(`chamei navigator.share com [${descreverArquivos(arquivos)}], sem campo text, como 1ª instrução do toque`);
-  const soContato = arquivos.length === 1 && /vcard/.test(arquivos[0].type);
 
   promessa
     .then(async () => {
       anotar('navigator.share resolveu sem erro');
       registrarHistorico(art.cartao);
+      if (selecao === 'vcf') {
+        statusEnvio('Contato enviado. O cliente já tem o cartão completo: imagem e contato.', 'ok');
+        return;
+      }
+      // A mensagem é legenda da imagem, então a cópia acontece só aqui. No passo
+      // do contato ela não serve para nada e ainda trocaria a área de
+      // transferência bem quando ele fosse colar a legenda.
       const copiou = await copiar(art.mensagem).catch(() => false);
       anotar('mensagem copiada: ' + (copiou ? 'sim' : 'não'));
       const sobreMensagem = copiou
         ? 'A mensagem está copiada: cole na legenda antes de tocar em enviar.'
         : 'Não consegui copiar a mensagem — toque em "Copiar mensagem" e cole na legenda.';
-      const soImagem = arquivos.length === 1 && /^image\//.test(arquivos[0].type);
-      if (soContato && selecao === 'ambos') {
-        baixar(art.pngBlob, art.nomePng);
-        statusEnvio('Contato enviado. Este aparelho não anexa a imagem junto, então baixei ela para você mandar em seguida. ' + sobreMensagem, 'ok');
-      } else if (soImagem && selecao === 'ambos') {
-        // Caso do Android: a imagem vai por compartilhamento, o contato não pode.
-        //
-        // O download NÃO acontece aqui. Baixando junto, o diálogo "Baixar o
-        // arquivo?" do Chrome pulava por cima da bandeja de compartilhamento,
-        // no meio do envio, sem o vendedor ter pedido. Agora é um botão que
-        // aparece depois e ele toca quando quiser.
-        // statusEnvio() esconde o botão, então mostrar depois dele.
-        // Sem texto: o rótulo do botão já diz tudo, e o botão do contato já
-        // está na tela desde sempre (ver atualizarAcoes).
-        statusEnvio('');
-      } else {
-        statusEnvio('Mandei para o WhatsApp. ' + sobreMensagem, 'ok');
-      }
+      // O rótulo vem do próprio botão, não de rotuloPasso2(): o diagnóstico
+      // reescreve esse texto quando o navegador não compartilha arquivo nenhum,
+      // e a mensagem mandaria procurar um botão com outro nome.
+      statusEnvio('Imagem enviada. ' + sobreMensagem
+        + '\n\nFalta o passo 2: volte para cá e toque em "' + el.btnContatoDepois.textContent + '".', 'ok');
     })
     .catch((erro) => {
       anotar(`navigator.share deu ${erro && erro.name}: ${erro && erro.message}`);
@@ -2229,7 +2229,8 @@ async function renderDiagnostico() {
 
   const semCompartilhar = itens.some((i) => i.rot === 'Compartilha arquivos' && i.estado === 'ruim');
   // Botão não pode prometer o que este navegador não faz.
-  el.btnEnviar.textContent = semCompartilhar ? 'Preparar para o WhatsApp' : 'Enviar no WhatsApp';
+  el.btnEnviar.textContent = semCompartilhar ? 'Preparar para o WhatsApp' : '1. Enviar a imagem';
+  el.btnContatoDepois.textContent = semCompartilhar ? '2. Baixar o contato' : rotuloPasso2();
 }
 
 /** Registro do service worker com caminho de atualização.
@@ -2289,7 +2290,7 @@ async function iniciar() {
     'btnAtualizar', 'topoLogo', 'btnConfig',
     'chipsProduto', 'selSeguradora', 'listaTelefones', 'formDados', 'inpWhatsCliente',
     'nomeContato', 'pendencias', 'canvasCartao', 'btnEnviar', 'btnMensagem', 'btnVcf', 'btnPng',
-    'btnEnviarVcf', 'btnEnviarPng', 'maisEnvio', 'btnContatoDepois',
+    'maisEnvio', 'btnContatoDepois',
     'btnLimpar', 'statusEnvio', 'listaHistorico', 'btnLimparHistorico',
     'diagnostico', 'diagLista', 'btnCopiarDiag',
     'btnCatalogo', 'btnBannerCatalogo', 'dlgCatalogo', 'vistaLista', 'vistaEditor', 'listaCatalogo',
@@ -2364,9 +2365,8 @@ async function iniciar() {
     salvarRascunho();
   });
 
-  el.btnEnviar.addEventListener('click', () => enviar('ambos'));
-  el.btnEnviarVcf.addEventListener('click', () => enviar('vcf'));
-  el.btnEnviarPng.addEventListener('click', () => enviar('png'));
+  el.btnEnviar.addEventListener('click', () => enviar('png'));
+  el.btnContatoDepois.textContent = rotuloPasso2();
 
   el.btnMensagem.addEventListener('click', () => {
     if (!estado.artefatos) return;
@@ -2403,6 +2403,12 @@ async function iniciar() {
   el.btnContatoDepois.addEventListener('click', () => {
     const art = estado.artefatos;
     if (!art) return;
+    // Onde o .vcf pode ser compartilhado (iOS), ele vai direto para o WhatsApp;
+    // enviar('vcf') já cai sozinho no download se a bandeja recusar.
+    if (vcfPodeSerCompartilhado()) {
+      enviar('vcf');
+      return;
+    }
     baixarVcf(art);
     // O aviso de NÃO abrir é o mais importante daqui: abrir o .vcf salva o
     // contato no celular do próprio vendedor e não manda nada para o cliente.
