@@ -8,7 +8,7 @@
 // Precisa bater com o VERSAO do sw.js. O diagnóstico mostra os dois lado a
 // lado justamente para o vendedor perceber quando o aparelho está preso numa
 // versão antiga: se divergirem, o service worker ainda não trocou.
-const VERSAO_APP = 'v38';
+const VERSAO_APP = 'v39';
 
 const CHAVE_CONFIG = 'acionar.config';
 const CHAVE_CATALOGO = 'acionar.seguradoras';
@@ -77,7 +77,9 @@ const estado = {
   dados: {},
   whatsCliente: '',
   config: { ...CONFIG_PADRAO },
-  artefatos: null
+  artefatos: null,
+  // Liga o botão de mandar a mensagem, que só faz sentido depois da imagem.
+  imagemEnviada: false
 };
 
 const $ = (sel) => document.querySelector(sel);
@@ -1695,6 +1697,18 @@ function atualizarAcoes() {
     el.btnContatoDepois.disabled = !pronto;
   }
 
+  // Só aparece depois que a imagem foi, porque é aí que ele serve: o app
+  // compartilha a imagem SEM texto (no Android, texto junto com arquivo faz o
+  // WhatsApp descartar o anexo), então a mensagem depende de colar na legenda.
+  // Quem não cola manda a foto sem o link e sem nada escrito. Este botão manda
+  // a mensagem como mensagem separada — que, de quebra, é o único jeito de o
+  // WhatsApp montar o cartão de prévia, que legenda de imagem não ganha.
+  if (el.btnMensagemDepois) {
+    const mostrar = pronto && estado.imagemEnviada;
+    el.btnMensagemDepois.hidden = !mostrar;
+    el.btnMensagemDepois.disabled = !mostrar;
+  }
+
   // O link mora dentro da mensagem, que o app nunca exibe. Sem mostrá-lo aqui,
   // não há como saber que ele existe nem como conferir a página antes de mandar
   // para um cliente — e a primeira reação a ele foi "não tem os links".
@@ -1983,14 +1997,26 @@ function enviar(selecao) {
       // transferência bem quando ele fosse colar a legenda.
       const copiou = await copiar(art.mensagem).catch(() => false);
       anotar('mensagem copiada: ' + (copiou ? 'sim' : 'não'));
-      const sobreMensagem = copiou
-        ? 'A mensagem está copiada: cole na legenda antes de tocar em enviar.'
-        : 'Não consegui copiar a mensagem — toque em "Copiar mensagem" e cole na legenda.';
+
+      // A imagem vai sozinha, sem texto. Quem não colar a legenda manda a foto
+      // sem uma palavra escrita — e sem o link. Por isso o botão de mandar a
+      // mensagem aparece agora, e o aviso fala dele antes de falar em colar.
+      estado.imagemEnviada = true;
+      atualizarAcoes();
+
+      const passos = ['Imagem enviada.', ''];
+      passos.push('A mensagem NÃO vai junto com a foto. Para o cliente receber o link, '
+        + 'toque em "Mandar a mensagem com o link" aqui embaixo.');
+      passos.push('');
+      passos.push(copiou
+        ? 'Ela também está copiada, se preferir colar na legenda da foto.'
+        : 'Não consegui copiar a mensagem para colar — use o botão acima.');
+      passos.push('');
       // O rótulo vem do próprio botão, não de rotuloPasso2(): o diagnóstico
       // reescreve esse texto quando o navegador não compartilha arquivo nenhum,
       // e a mensagem mandaria procurar um botão com outro nome.
-      statusEnvio('Imagem enviada. ' + sobreMensagem
-        + '\n\nFalta o passo 2: volte para cá e toque em "' + el.btnContatoDepois.textContent + '".', 'ok');
+      passos.push('Depois, o passo 2: "' + (el.btnContatoDepois ? el.btnContatoDepois.textContent : 'Enviar o contato') + '".');
+      statusEnvio(passos.join('\n'), 'ok');
     })
     .catch((erro) => {
       anotar(`navigator.share deu ${erro && erro.name}: ${erro && erro.message}`);
@@ -2002,6 +2028,19 @@ function enviar(selecao) {
       registrarHistorico(art.cartao);
       baixarTudo(art);
     });
+}
+
+/** Plano B do envio da mensagem: se o navegador não compartilha texto, ela
+ *  ainda pode ser colada à mão — mas o vendedor precisa saber disso. */
+function semCompartilharTexto(art, erro) {
+  anotar(`share de texto falhou: ${erro && erro.name}: ${erro && erro.message}`);
+  copiar(art.mensagem).then((copiou) => {
+    statusEnvio(copiou
+      ? 'Este navegador não abre o compartilhamento de texto. A mensagem está copiada — '
+        + 'abra a conversa no WhatsApp e cole.'
+      : 'Não consegui compartilhar nem copiar a mensagem. Em "Não funcionou? Outras opções", '
+        + 'toque em "Copiar mensagem".', copiou ? 'ok' : 'erro');
+  });
 }
 
 function baixarVcf(art) {
@@ -2815,7 +2854,7 @@ async function iniciar() {
     'chipsProduto', 'selSeguradora', 'rotuloSeguradora', 'tituloPasso2',
     'listaTelefones', 'formDados', 'inpWhatsCliente',
     'nomeContato', 'pendencias', 'canvasCartao', 'btnEnviar', 'btnMensagem', 'btnVcf', 'btnPng',
-    'maisEnvio', 'btnContatoDepois', 'blocoLink', 'linkCliente',
+    'maisEnvio', 'btnContatoDepois', 'btnMensagemDepois', 'blocoLink', 'linkCliente',
     'btnLimpar', 'statusEnvio', 'listaHistorico', 'btnLimparHistorico',
     'diagnostico', 'diagLista', 'btnCopiarDiag',
     'btnCatalogo', 'btnBannerCatalogo', 'dlgCatalogo', 'vistaLista', 'vistaEditor', 'listaCatalogo',
@@ -2942,6 +2981,34 @@ async function iniciar() {
     renderFormulario();
     atualizar();
     statusEnvio('Formulário limpo.');
+  });
+
+  el.btnMensagemDepois?.addEventListener('click', () => {
+    const art = estado.artefatos;
+    if (!art) return;
+    // Texto puro, sem arquivo: é justamente a mistura dos dois que faz o
+    // WhatsApp descartar o anexo no Android. Como mensagem separada ela ainda
+    // ganha o cartão de prévia, que legenda de foto não ganha.
+    //
+    // O share é a PRIMEIRA instrução depois do toque. Qualquer coisa antes
+    // consome o gesto do usuário e o navegador recusa com NotAllowedError.
+    let promessa;
+    try {
+      promessa = navigator.share({ text: art.mensagem });
+    } catch (erro) {
+      semCompartilharTexto(art, erro);
+      return;
+    }
+    promessa
+      .then(() => statusEnvio('Mensagem enviada. Agora o passo 2: "'
+        + (el.btnContatoDepois ? el.btnContatoDepois.textContent : 'Enviar o contato') + '".', 'ok'))
+      .catch((erro) => {
+        if (erro && erro.name === 'AbortError') {
+          statusEnvio('Envio da mensagem cancelado.');
+          return;
+        }
+        semCompartilharTexto(art, erro);
+      });
   });
 
   el.btnContatoDepois?.addEventListener('click', () => {
