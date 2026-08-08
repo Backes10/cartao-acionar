@@ -8,7 +8,7 @@
 // Precisa bater com o VERSAO do sw.js. O diagnóstico mostra os dois lado a
 // lado justamente para o vendedor perceber quando o aparelho está preso numa
 // versão antiga: se divergirem, o service worker ainda não trocou.
-const VERSAO_APP = 'v28';
+const VERSAO_APP = 'v29';
 
 const CHAVE_CONFIG = 'acionar.config';
 const CHAVE_CATALOGO = 'acionar.seguradoras';
@@ -429,6 +429,9 @@ function montarCartao() {
     telefones.push({
       rotulo: `WhatsApp ${marcaCorretora}`,
       rotuloAgenda: `Acionar WhatsApp${cfg.corretor ? ' (' + marcaCorretora + ')' : ''}`,
+      // No rodapé do cartão o nome da corretora está na linha de cima: repetir
+      // "Acionar" aqui só rouba espaço de uma faixa que já é apertada.
+      rotuloRodape: 'WhatsApp',
       numero: cfg.whatsapp,
       movel: true,
       grupo: 'corretor'
@@ -438,6 +441,7 @@ function montarCartao() {
     telefones.push({
       rotulo: 'Acionar — escritório (horário comercial)',
       rotuloAgenda: 'Acionar Escritório',
+      rotuloRodape: 'Escritório',
       numero: cfg.telefone,
       movel: false,
       grupo: 'corretor'
@@ -572,6 +576,9 @@ const fnt = (peso, tam) => `${peso} ${tam}px ${FONTE}`;
 const LARGURA = 1080;
 const PAD = 76;
 const ALTURA_MAX = 2600;
+// Altura máxima que o balão do WhatsApp mostra sem cortar, em múltiplos da
+// largura. Acima disso ele exibe só o miolo da imagem.
+const PROPORCAO_MAX = 1.25;
 
 // Map, não uma vaga só: o cartão carrega o logo da Acionar E o da seguradora.
 // Com cache de uma posição os dois se expulsavam a cada desenho.
@@ -633,6 +640,149 @@ function larguraEspacada(ctx, texto, espaco) {
   return Math.max(0, total - espaco);
 }
 
+/* ==========================================================================
+   Ícones dos serviços da corretora
+   ========================================================================== */
+
+/** Cada ícone é desenhado no próprio canvas, em coordenadas de 0 a 1 dentro de
+ *  uma caixa lado×lado a partir de (x, y).
+ *
+ *  Não são emoji de propósito. Emoji tem desenho próprio em cada sistema: o
+ *  mesmo cartão sairia com um carrinho azul no iPhone e um cinza no Android,
+ *  conforme o celular de quem gerou. Traço desenhado à mão sai igual em todo
+ *  lugar e acompanha a cor da marca. */
+const icones = {
+  auto(ctx, p) {
+    ctx.beginPath();
+    ctx.moveTo(...p(0.10, 0.56));
+    ctx.lineTo(...p(0.24, 0.28));
+    ctx.lineTo(...p(0.76, 0.28));
+    ctx.lineTo(...p(0.90, 0.56));
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(...p(0.08, 0.56));
+    ctx.lineTo(...p(0.92, 0.56));
+    ctx.lineTo(...p(0.92, 0.74));
+    ctx.lineTo(...p(0.08, 0.74));
+    ctx.closePath();
+    ctx.stroke();
+    for (const cx of [0.28, 0.72]) {
+      ctx.beginPath();
+      ctx.arc(...p(cx, 0.78), 0.09 * p.lado, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+  },
+
+  residencial(ctx, p) {
+    ctx.beginPath();
+    ctx.moveTo(...p(0.08, 0.50));
+    ctx.lineTo(...p(0.50, 0.16));
+    ctx.lineTo(...p(0.92, 0.50));
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(...p(0.20, 0.46));
+    ctx.lineTo(...p(0.20, 0.86));
+    ctx.lineTo(...p(0.80, 0.86));
+    ctx.lineTo(...p(0.80, 0.46));
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(...p(0.42, 0.86));
+    ctx.lineTo(...p(0.42, 0.62));
+    ctx.lineTo(...p(0.58, 0.62));
+    ctx.lineTo(...p(0.58, 0.86));
+    ctx.stroke();
+  },
+
+  vida(ctx, p) {
+    ctx.beginPath();
+    ctx.moveTo(...p(0.50, 0.84));
+    ctx.bezierCurveTo(...p(0.16, 0.62), ...p(0.08, 0.44), ...p(0.10, 0.34));
+    ctx.bezierCurveTo(...p(0.13, 0.18), ...p(0.36, 0.14), ...p(0.50, 0.32));
+    ctx.bezierCurveTo(...p(0.64, 0.14), ...p(0.87, 0.18), ...p(0.90, 0.34));
+    ctx.bezierCurveTo(...p(0.92, 0.44), ...p(0.84, 0.62), ...p(0.50, 0.84));
+    ctx.closePath();
+    ctx.stroke();
+  },
+
+  bike(ctx, p) {
+    for (const cx of [0.22, 0.78]) {
+      ctx.beginPath();
+      ctx.arc(...p(cx, 0.68), 0.20 * p.lado, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.beginPath();
+    ctx.moveTo(...p(0.22, 0.68));
+    ctx.lineTo(...p(0.44, 0.68));
+    ctx.lineTo(...p(0.60, 0.38));
+    ctx.lineTo(...p(0.78, 0.68));
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(...p(0.44, 0.68));
+    ctx.lineTo(...p(0.54, 0.38));
+    ctx.lineTo(...p(0.70, 0.38));
+    ctx.stroke();
+  },
+
+  licitacao(ctx, p) {
+    // martelo de leilão: cabo na diagonal, cabeça atravessada, base embaixo
+    ctx.beginPath();
+    ctx.moveTo(...p(0.24, 0.76));
+    ctx.lineTo(...p(0.58, 0.42));
+    ctx.stroke();
+    ctx.save();
+    ctx.lineWidth = p.lado * 0.20;
+    ctx.beginPath();
+    ctx.moveTo(...p(0.54, 0.20));
+    ctx.lineTo(...p(0.84, 0.50));
+    ctx.stroke();
+    ctx.restore();
+    ctx.beginPath();
+    ctx.moveTo(...p(0.10, 0.90));
+    ctx.lineTo(...p(0.54, 0.90));
+    ctx.stroke();
+  },
+
+  consorcio(ctx, p) {
+    // Chave. Com um dente só ela virava lupa: anel mais cabo diagonal é
+    // exatamente o ícone de busca. São dois dentes, e bem destacados.
+    ctx.beginPath();
+    ctx.arc(...p(0.27, 0.29), 0.19 * p.lado, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(...p(0.40, 0.42));
+    ctx.lineTo(...p(0.86, 0.88));
+    ctx.moveTo(...p(0.64, 0.66));
+    ctx.lineTo(...p(0.52, 0.78));
+    ctx.moveTo(...p(0.75, 0.77));
+    ctx.lineTo(...p(0.63, 0.89));
+    ctx.stroke();
+  },
+
+  saude(ctx, p) {
+    ctx.beginPath();
+    ctx.moveTo(...p(0.50, 0.14));
+    ctx.lineTo(...p(0.50, 0.86));
+    ctx.moveTo(...p(0.14, 0.50));
+    ctx.lineTo(...p(0.86, 0.50));
+    ctx.stroke();
+  }
+};
+
+/** Serviços divulgados no rodapé do cartão.
+ *
+ *  A ordem é a da peça que a corretora já usa. `curto` é o que cabe embaixo do
+ *  ícone: sete rótulos dividem a largura do cartão, então "Seguro Residencial"
+ *  não entra — vira "Residencial". */
+const SERVICOS = [
+  { id: 'auto', curto: 'Auto' },
+  { id: 'residencial', curto: 'Residencial' },
+  { id: 'vida', curto: 'Vida' },
+  { id: 'bike', curto: 'Bike' },
+  { id: 'licitacao', curto: 'Licitação' },
+  { id: 'consorcio', curto: 'Consórcio' },
+  { id: 'saude', curto: 'Saúde' }
+];
+
 async function desenharCartao(cartao) {
   const cfg = estado.config;
   const marca = cfg.cor1 || '#0E3A5E';
@@ -651,8 +801,11 @@ async function desenharCartao(cartao) {
   ctx.fillRect(0, 0, LARGURA, ALTURA_MAX);
   ctx.textBaseline = 'alphabetic';
 
-  /* ---- faixa do topo ---- */
-  const alturaTopo = 232;
+  /* ---- faixa do topo ----
+   *  Altura ditada pelo logo mais uma respiração. Era 232 com logo de 116: mais
+   *  da metade da faixa era ar, e cada pixel gasto aqui empurra os telefones
+   *  para fora do que o WhatsApp mostra no balão. */
+  const alturaTopo = 176;
   ctx.fillStyle = marca;
   ctx.fillRect(0, 0, LARGURA, alturaTopo);
 
@@ -660,7 +813,7 @@ async function desenharCartao(cartao) {
   if (logo) {
     // Logo de marca já traz o nome escrito nele. Desenha no tamanho natural e
     // não repete "ACIONAR" ao lado — antes saía o nome duas vezes.
-    const alturaMax = 116;
+    const alturaMax = 104;
     const larguraMax = larguraUtil * 0.62;
     const escala = Math.min(alturaMax / logo.height, larguraMax / logo.width);
     const lw = logo.width * escala;
@@ -687,37 +840,36 @@ async function desenharCartao(cartao) {
     ctx.fillText(cfg.corretora || 'Corretora de Seguros', xTexto, alturaTopo / 2 + 40);
   }
 
-  let y = alturaTopo + 62;
+  let y = alturaTopo + 46;
 
   /* ---- produto + bem segurado ---- */
   ctx.fillStyle = destaque;
   ctx.font = fnt(800, 25);
   textoEspacado(ctx, cartao.eyebrow, PAD, y, 3.4);
-  y += 52;
+  y += 44;
 
   if (cartao.titulo) {
     ctx.fillStyle = tinta;
-    ctx.font = fnt(800, 62);
+    ctx.font = fnt(800, 58);
     for (const linha of quebrarTexto(ctx, cartao.titulo, larguraUtil)) {
       ctx.fillText(linha, PAD, y);
-      y += 70;
+      y += 64;
     }
-    y += 4;
   }
 
   if (cartao.subtitulo) {
     ctx.fillStyle = tintaFraca;
-    ctx.font = fnt(600, 38);
+    ctx.font = fnt(600, 36);
     for (const linha of quebrarTexto(ctx, cartao.subtitulo, larguraUtil)) {
       ctx.fillText(linha, PAD, y);
-      y += 46;
+      y += 42;
     }
   }
 
   /* ---- selo da seguradora ---- */
   if (cartao.seguradora) {
-    y += 26;
-    const alturaSelo = 74;
+    y += 18;
+    const alturaSelo = 62;
     // Logo da marca quando existe; senão o nome em texto, que funciona para
     // qualquer seguradora. O logo tem de ser a variante escura: o cartão é
     // branco e marca clara (o amarelo da Yelum) desaparece.
@@ -756,7 +908,7 @@ async function desenharCartao(cartao) {
 
   /* ---- detalhes da apólice, em duas colunas ---- */
   if (cartao.detalhes.length) {
-    y += 46;
+    y += 42;
     const larguraColuna = (larguraUtil - 40) / 2;
     let coluna = 0;
     let yLinha = y;
@@ -768,12 +920,12 @@ async function desenharCartao(cartao) {
       textoEspacado(ctx, d.label.toUpperCase(), x, yLinha, 1.6);
       ctx.fillStyle = tinta;
       ctx.font = fnt(700, 34);
-      let yv = yLinha + 40;
+      let yv = yLinha + 36;
       for (const linha of quebrarTexto(ctx, d.valor, larguraColuna).slice(0, 2)) {
         ctx.fillText(linha, x, yv);
-        yv += 40;
+        yv += 38;
       }
-      fundoDaLinha = Math.max(fundoDaLinha, yv + 22);
+      fundoDaLinha = Math.max(fundoDaLinha, yv + 14);
       if (coluna === 1) {
         yLinha = fundoDaLinha;
         coluna = 0;
@@ -786,11 +938,11 @@ async function desenharCartao(cartao) {
 
   /* ---- coberturas ---- */
   if (cartao.extras.length) {
-    y += 20;
+    y += 14;
     ctx.fillStyle = tintaFraca;
     ctx.font = fnt(700, 22);
     textoEspacado(ctx, 'COBERTURAS', PAD, y, 1.6);
-    y += 40;
+    y += 34;
     ctx.font = fnt(500, 30);
     for (const linha of cartao.extras.slice(0, 6)) {
       ctx.fillStyle = destaque;
@@ -798,28 +950,28 @@ async function desenharCartao(cartao) {
       ctx.fillStyle = tinta;
       for (const parte of quebrarTexto(ctx, linha, larguraUtil - 34)) {
         ctx.fillText(parte, PAD + 30, y);
-        y += 40;
+        y += 36;
       }
-      y += 4;
+      y += 2;
     }
   }
 
   /* ---- telefones ---- */
   const telSeguradora = cartao.telefones.filter((t) => t.grupo === 'seguradora');
   if (telSeguradora.length) {
-    y += 30;
+    y += 22;
     ctx.strokeStyle = '#EBE4DF';
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(PAD, y);
     ctx.lineTo(LARGURA - PAD, y);
     ctx.stroke();
-    y += 52;
+    y += 44;
 
     ctx.fillStyle = tintaFraca;
     ctx.font = fnt(700, 22);
     textoEspacado(ctx, 'EM CASO DE SINISTRO OU REBOQUE', PAD, y, 1.6);
-    y += 48;
+    y += 42;
 
     for (const t of telSeguradora) {
       ctx.fillStyle = destaque;
@@ -831,59 +983,87 @@ async function desenharCartao(cartao) {
       ctx.fillStyle = tinta;
       ctx.font = fnt(800, 46);
       ctx.fillText(t.numero, PAD + 26, y + 56);
-      y += 96;
+      y += 88;
     }
   }
 
   /* ---- corretor ---- */
   const telCorretor = cartao.telefones.filter((t) => t.grupo === 'corretor');
-  if (telCorretor.length || cfg.corretor) {
-    y += 22;
-    const alturaBox = 108 + telCorretor.length * 66;
-    ctx.fillStyle = hexParaRgba(destaque, 0.12);
-    retanguloArredondado(ctx, PAD, y, larguraUtil, alturaBox, 18);
-    ctx.fill();
-
-    ctx.fillStyle = hexParaRgba(tinta, 0.62);
-    ctx.font = fnt(700, 22);
-    textoEspacado(ctx, 'SEU CORRETOR', PAD + 30, y + 44, 1.6);
-    ctx.fillStyle = tinta;
-    ctx.font = fnt(700, 32);
-    ctx.fillText(cfg.corretor || cfg.corretora || 'Acionar', PAD + 30, y + 86);
-
-    let yc = y + 134;
-    for (const t of telCorretor) {
-      ctx.fillStyle = hexParaRgba(tinta, 0.6);
-      ctx.font = fnt(600, 22);
-      const largRot = ctx.measureText(t.rotulo).width;
-      ctx.fillText(t.rotulo, PAD + 30, yc);
-      ctx.fillStyle = tinta;
-      ctx.font = fnt(800, 34);
-      ctx.fillText(t.numero, PAD + 30 + Math.min(largRot + 18, larguraUtil - 260), yc);
-      yc += 66;
-    }
-    y += alturaBox;
-  }
-
-  /* ---- rodapé: como salvar ---- */
-  y += 44;
+  /* ---- rodapé: a corretora e o que mais ela vende ----
+   *
+   *  Aqui havia duas faixas separadas: a caixa "SEU CORRETOR" e, embaixo, uma
+   *  tarja da marca dizendo "Salve este contato na sua agenda". A tarja
+   *  prometia o que a imagem não faz — quem salva o contato é o .vcf, que vai
+   *  num arquivo à parte — então virava instrução morta ocupando o pé do
+   *  cartão. O espaço passou a divulgar o resto do que a corretora vende, que é
+   *  o que o cliente tem em mãos justo quando acabou de fechar um seguro.
+   *
+   *  A faixa é pintada até o fim da tela de trabalho e o recorte final corta na
+   *  altura real: assim não preciso somar as alturas antes de desenhar. */
+  y += 30;
   const inicioRodape = y;
-  ctx.font = fnt(700, 32);
-  const linhasNome = quebrarTexto(ctx, cartao.nomeContato, larguraUtil);
-  const alturaRodape = 54 + 42 * linhasNome.length + 44;
   ctx.fillStyle = marca;
-  ctx.fillRect(0, inicioRodape, LARGURA, alturaRodape);
-  ctx.fillStyle = hexParaRgba('#FFFFFF', 0.78);
-  ctx.font = fnt(500, 26);
-  ctx.fillText('Salve este contato na sua agenda:', PAD, inicioRodape + 50);
+  ctx.fillRect(0, inicioRodape, LARGURA, ALTURA_MAX - inicioRodape);
+
+  // Sem rótulo "SEU CORRETOR" e sem divisor: o logo da corretora já está no
+  // topo do mesmo cartão, e cada linha de enfeite aqui empurra os telefones da
+  // seguradora para fora do que o balão do WhatsApp mostra.
+  let yr = inicioRodape + 52;
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = fnt(700, 32);
-  let yn = inicioRodape + 96;
-  for (const linha of linhasNome) {
-    ctx.fillText(linha, PAD, yn);
-    yn += 42;
+  ctx.font = fnt(800, 34);
+  ctx.fillText(cfg.corretor || cfg.corretora || 'Acionar', PAD, yr);
+
+  if (telCorretor.length) {
+    ctx.font = fnt(600, 26);
+    ctx.fillStyle = hexParaRgba('#FFFFFF', 0.86);
+    // Quebra entre telefones, nunca dentro de um. Quebrando por palavra, o
+    // rótulo ficava numa linha e o número dele na seguinte — no primeiro teste
+    // saiu "Escritório (horário comercial)" acima e o número solto embaixo,
+    // colado no celular do corretor.
+    const separador = '   ·   ';
+    const escrever = (texto) => { yr += 34; ctx.fillText(texto, PAD, yr); };
+    let linha = '';
+    for (const t of telCorretor) {
+      const unidade = `${t.rotuloRodape || t.rotulo} ${t.numero}`;
+      const teste = linha ? linha + separador + unidade : unidade;
+      if (linha && ctx.measureText(teste).width > larguraUtil) {
+        escrever(linha);
+        linha = unidade;
+      } else {
+        linha = teste;
+      }
+    }
+    if (linha) escrever(linha);
   }
-  y = inicioRodape + alturaRodape;
+
+  yr += 48;
+  ctx.fillStyle = hexParaRgba('#FFFFFF', 0.66);
+  ctx.font = fnt(700, 21);
+  textoEspacado(ctx, 'A ACIONAR TAMBÉM CUIDA DE', PAD, yr, 2.4);
+  yr += 24;
+
+  const larguraItem = larguraUtil / SERVICOS.length;
+  const ladoIcone = 54;
+  ctx.textAlign = 'center';
+  for (let i = 0; i < SERVICOS.length; i += 1) {
+    const centro = PAD + larguraItem * (i + 0.5);
+    const ix = centro - ladoIcone / 2;
+    const p = (a, b) => [ix + a * ladoIcone, yr + b * ladoIcone];
+    p.lado = ladoIcone;
+    ctx.save();
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.fillStyle = '#FFFFFF';
+    ctx.lineWidth = Math.max(2, ladoIcone * 0.085);
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    icones[SERVICOS[i].id](ctx, p);
+    ctx.restore();
+    ctx.fillStyle = hexParaRgba('#FFFFFF', 0.92);
+    ctx.font = fnt(600, 21);
+    ctx.fillText(SERVICOS[i].curto, centro, yr + ladoIcone + 30);
+  }
+  ctx.textAlign = 'left';
+  y = yr + ladoIcone + 30 + 34;
 
   /* ---- marca d'água de exemplo ---- */
   if (cartao.ehExemplo) {
@@ -904,18 +1084,40 @@ async function desenharCartao(cartao) {
     ctx.restore();
   }
 
-  /* ---- recorta na altura real ----
-     Devolve um canvas próprio, nunca o da tela: redimensionar o canvas visível
-     enquanto um toBlob dele está pendente descarta o callback, e a geração da
-     imagem trava sem erro. */
+  /* ---- recorta na altura real, dentro da proporção que o WhatsApp mostra ----
+   *
+   *  O balão da conversa corta imagem em pé mais alta que 4:5 e exibe só o
+   *  miolo. O cartão chegava sem o logo em cima e sem o rodapé embaixo, e quem
+   *  recebe não abre a imagem para conferir — lê o que aparece no balão.
+   *
+   *  O layout foi apertado para caber em 4:5, mas cartão com muitas coberturas
+   *  ou muitos telefones ainda estoura. Aí a folha cresce para os lados em vez
+   *  de perder conteúdo: aparecer menor no balão é ruim, chegar sem o logo e
+   *  sem os telefones é pior.
+   *
+   *  A margem não é branca — é a coluna de pixels da borda esticada. Assim as
+   *  faixas do topo e do rodapé continuam sangrando até o canto, em vez de
+   *  virarem tarjas soltas no meio de uma folha branca, e o corpo do cartão,
+   *  que já é branco, segue branco.
+   *
+   *  Devolve um canvas próprio, nunca o da tela: redimensionar o canvas visível
+   *  enquanto um toBlob dele está pendente descarta o callback, e a geração da
+   *  imagem trava sem erro. */
   const alturaFinal = Math.min(ALTURA_MAX, Math.round(y));
+  const larguraFinal = Math.max(LARGURA, Math.ceil(alturaFinal / PROPORCAO_MAX));
+  const margem = Math.round((larguraFinal - LARGURA) / 2);
   const recorte = document.createElement('canvas');
-  recorte.width = LARGURA;
+  recorte.width = larguraFinal;
   recorte.height = alturaFinal;
   const saida = recorte.getContext('2d');
   saida.fillStyle = '#FFFFFF';
-  saida.fillRect(0, 0, LARGURA, alturaFinal);
-  saida.drawImage(trabalho, 0, 0);
+  saida.fillRect(0, 0, larguraFinal, alturaFinal);
+  if (margem > 0) {
+    saida.drawImage(trabalho, 0, 0, 1, alturaFinal, 0, 0, margem + 1, alturaFinal);
+    saida.drawImage(trabalho, LARGURA - 1, 0, 1, alturaFinal,
+      margem + LARGURA - 1, 0, larguraFinal - margem - LARGURA + 1, alturaFinal);
+  }
+  saida.drawImage(trabalho, 0, 0, LARGURA, alturaFinal, margem, 0, LARGURA, alturaFinal);
   return recorte;
 }
 
