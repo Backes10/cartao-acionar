@@ -8,7 +8,7 @@
 // Precisa bater com o VERSAO do sw.js. O diagnóstico mostra os dois lado a
 // lado justamente para o vendedor perceber quando o aparelho está preso numa
 // versão antiga: se divergirem, o service worker ainda não trocou.
-const VERSAO_APP = 'v41';
+const VERSAO_APP = 'v42';
 
 const CHAVE_CONFIG = 'acionar.config';
 const CHAVE_CATALOGO = 'acionar.seguradoras';
@@ -51,21 +51,21 @@ const CONFIG_PADRAO = {
  *  o cliente ganha telefone de um toque, contato de um toque, e números que
  *  continuam certos quando a seguradora trocar de central.
  *
- *  Viajam três coisas só: a seguradora, o produto e o nome do contato. Apólice,
- *  franquia e vigência ficam de fora porque não precisam ser clicáveis (já
- *  estão legíveis na imagem) e porque assim um link encaminhado não mostra o
- *  valor da franquia de ninguém. */
+ *  Viaja uma coisa só: qual seguradora. Telefone é dela, não da apólice — e o
+ *  contato personalizado já vai no .vcf do passo 3, com nome melhor do que a
+ *  página conseguiria dar.
+ *
+ *  A versão anterior levava também o produto e o nome do contato, em base64. O
+ *  endereço saía com 112 caracteres e ocupava seis linhas de texto azul na
+ *  conversa. Agora são cerca de 50, legíveis, e a placa do carro não viaja
+ *  mais dentro do link. */
 // O caminho é lido pelo cliente antes de ele decidir tocar. "/c/" não dizia
 // nada; "/telefones/" diz. O que vem depois do # continua opaco de propósito.
 const RAIZ_LINK = 'https://backes10.github.io/cartao-acionar/telefones/#';
 
 function linkDoCartao(cartao) {
   if (!estado.config.linkNaMensagem || !estado.seguradoraId || !cartao) return '';
-  const carga = [estado.seguradoraId, cartao.produtoId, cartao.nomeContato].join('|');
-  let bin = '';
-  for (const b of new TextEncoder().encode(carga)) bin += String.fromCharCode(b);
-  const b64 = btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-  return RAIZ_LINK + b64;
+  return RAIZ_LINK + estado.seguradoraId;
 }
 
 const estado = {
@@ -632,8 +632,13 @@ function mensagemWhatsApp(cartao) {
 
   l.push('');
   l.push('Qualquer dúvida, me chama.');
-  const assina = [estado.config.corretor, estado.config.corretora].filter(Boolean).join(' — ');
-  if (assina) l.push('— ' + assina);
+  // Uma linha por coisa. Juntando as duas com travessão, o WhatsApp quebrava no
+  // meio e saía "— Sergio Luis Backes" / "— Acionar Corretora de Seguros",
+  // parecendo duas assinaturas.
+  if (estado.config.corretor) l.push('— ' + estado.config.corretor);
+  if (estado.config.corretora) {
+    l.push(estado.config.corretor ? estado.config.corretora : '— ' + estado.config.corretora);
+  }
   return l.join('\n');
 }
 

@@ -73,21 +73,32 @@ function dobrarLinha(linha) {
   return partes.join('\r\n ');
 }
 
-/** O que vem no endereço: seguradora, produto e o nome do contato, separados
- *  por barra vertical e embrulhados em base64url. Embrulhado por dois motivos:
- *  o endereço fica curto o bastante para caber na mensagem sem virar três
- *  linhas azuis, e a placa do carro não fica legível para quem só recebe o
- *  link encaminhado. */
+/** O endereço traz só a seguradora: "#yelum".
+ *
+ *  Antes levava também o produto e o nome do contato, embrulhados em base64. O
+ *  resultado ocupava seis linhas de texto azul na conversa — e não servia para
+ *  nada, porque o contato personalizado já vai no arquivo .vcf que a corretora
+ *  manda em seguida, com nome melhor. Telefone é da seguradora, não da apólice.
+ *
+ *  Efeito colateral bom: sem o nome, a placa do carro deixa de viajar no link.
+ *
+ *  A forma antiga (base64 com barras verticais) continua sendo aceita, para não
+ *  quebrar link que já tenha sido enviado. */
 function lerEndereco() {
-  const bruto = (location.hash || '').replace(/^#/, '').trim();
+  const bruto = decodeURIComponent((location.hash || '').replace(/^#/, '').trim());
   if (!bruto) return null;
+  // Sem a bandeira /i de propósito: id de seguradora é sempre minúsculo (o
+  // cadastro gera com toLowerCase), e base64 tem maiúsculas. Com /i, um
+  // endereço antigo cujo base64 caísse só em letras e números era lido como se
+  // fosse um id — e a página dizia que não achou a seguradora.
+  if (/^[a-z0-9-]+$/.test(bruto)) return { seguradoraId: bruto, nome: '' };
   try {
     const b64 = bruto.replace(/-/g, '+').replace(/_/g, '/');
     const bin = atob(b64 + '='.repeat((4 - (b64.length % 4)) % 4));
     const texto = new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0)));
-    const [seguradoraId, produtoId, nome] = texto.split('|');
+    const [seguradoraId, , nome] = texto.split('|');
     if (!seguradoraId) return null;
-    return { seguradoraId, produtoId: produtoId || '', nome: nome || '' };
+    return { seguradoraId, nome: nome || '' };
   } catch (_) {
     return null;
   }
@@ -184,11 +195,12 @@ async function iniciar() {
     return;
   }
 
-  let seguradoras, produtos, corretora;
+  // produtos.json saiu: a página não usa mais nada de lá desde que o cabeçalho
+  // de seção e o rótulo "Seguradora/Administradora" foram removidos.
+  let seguradoras, corretora;
   try {
-    [seguradoras, produtos, corretora] = await Promise.all([
+    [seguradoras, corretora] = await Promise.all([
       fetch('../data/seguradoras.json', { cache: 'no-cache' }).then((r) => r.json()),
-      fetch('../data/produtos.json', { cache: 'no-cache' }).then((r) => r.json()),
       fetch('../data/corretora.json', { cache: 'no-cache' }).then((r) => r.json())
     ]);
   } catch (_) {
@@ -201,9 +213,7 @@ async function iniciar() {
     mostrarErro('Não encontrei esta seguradora no cadastro. Peça para a sua corretora reenviar.');
     return;
   }
-  const produto = (produtos.produtos || {})[pedido.produtoId];
-
-  document.title = (pedido.nome || 'Telefones') + ' — ' + (corretora.nome || 'Acionar');
+  document.title = cia.nome + ' — ' + (corretora.nome || 'Acionar');
   el('titulo').textContent = pedido.nome || cia.nome;
 
   const doSeguro = (cia.telefones || [])
