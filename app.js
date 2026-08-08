@@ -8,7 +8,7 @@
 // Precisa bater com o VERSAO do sw.js. O diagnóstico mostra os dois lado a
 // lado justamente para o vendedor perceber quando o aparelho está preso numa
 // versão antiga: se divergirem, o service worker ainda não trocou.
-const VERSAO_APP = 'v36';
+const VERSAO_APP = 'v37';
 
 const CHAVE_CONFIG = 'acionar.config';
 const CHAVE_CATALOGO = 'acionar.seguradoras';
@@ -2811,7 +2811,7 @@ async function iniciar() {
     'chipsProduto', 'selSeguradora', 'rotuloSeguradora', 'tituloPasso2',
     'listaTelefones', 'formDados', 'inpWhatsCliente',
     'nomeContato', 'pendencias', 'canvasCartao', 'btnEnviar', 'btnMensagem', 'btnVcf', 'btnPng',
-    'maisEnvio', 'btnContatoDepois', 'blocoLink', 'linkCliente', 'btnCopiarLink',
+    'maisEnvio', 'btnContatoDepois', 'blocoLink', 'linkCliente',
     'btnLimpar', 'statusEnvio', 'listaHistorico', 'btnLimparHistorico',
     'diagnostico', 'diagLista', 'btnCopiarDiag',
     'btnCatalogo', 'btnBannerCatalogo', 'dlgCatalogo', 'vistaLista', 'vistaEditor', 'listaCatalogo',
@@ -2888,15 +2888,6 @@ async function iniciar() {
 
   el.btnEnviar.addEventListener('click', () => enviar('png'));
   el.btnContatoDepois.textContent = rotuloPasso2();
-
-  el.btnCopiarLink.addEventListener('click', () => {
-    const url = el.linkCliente.href;
-    if (!url) return;
-    copiar(url).then((copiou) => {
-      statusEnvio(copiou ? 'Link copiado.' : 'Não consegui copiar — toque no endereço e copie da barra do navegador.',
-        copiou ? 'ok' : 'erro');
-    });
-  });
 
   el.btnMensagem.addEventListener('click', () => {
     if (!estado.artefatos) return;
