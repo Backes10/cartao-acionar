@@ -8,7 +8,7 @@
 // Precisa bater com o VERSAO do sw.js. O diagnóstico mostra os dois lado a
 // lado justamente para o vendedor perceber quando o aparelho está preso numa
 // versão antiga: se divergirem, o service worker ainda não trocou.
-const VERSAO_APP = 'v31';
+const VERSAO_APP = 'v32';
 
 const CHAVE_CONFIG = 'acionar.config';
 const CHAVE_CATALOGO = 'acionar.seguradoras';
@@ -497,6 +497,14 @@ function montarCartao() {
     // com "EM CASO DE SINISTRO OU REBOQUE" em cima do telefone da
     // administradora, e a mensagem mandava o cliente ligar depois de bater o
     // carro que a cota não cobre.
+    // Ícone ao lado do título, escolhido por um campo do formulário. Sai na cor
+    // de destaque e some quando o campo não foi preenchido — melhor sem ícone
+    // que com o ícone errado.
+    iconeTitulo: (() => {
+      const m = produto.iconePorTipo;
+      const id = m && m.valores[String(dados[m.campo] || '').trim()];
+      return id && icones[id] ? id : null;
+    })(),
     tituloTelefones: produto.tituloTelefones || 'EM CASO DE SINISTRO OU REBOQUE',
     instrucaoAgenda: produto.instrucaoAgenda
       || 'Salve na sua agenda: em caso de sinistro ou reboque, procure por "Seguro" no telefone e ligue direto — todos os números já estão lá.',
@@ -804,6 +812,68 @@ const icones = {
     ctx.moveTo(...p(0.14, 0.50));
     ctx.lineTo(...p(0.86, 0.50));
     ctx.stroke();
+  },
+
+  moto(ctx, p) {
+    for (const cx of [0.19, 0.81]) {
+      ctx.beginPath();
+      ctx.arc(...p(cx, 0.70), 0.17 * p.lado, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.beginPath();
+    ctx.moveTo(...p(0.19, 0.70));
+    ctx.lineTo(...p(0.36, 0.50));
+    ctx.lineTo(...p(0.60, 0.50));
+    ctx.lineTo(...p(0.81, 0.70));
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(...p(0.28, 0.44));
+    ctx.lineTo(...p(0.50, 0.44));
+    ctx.moveTo(...p(0.66, 0.36));
+    ctx.lineTo(...p(0.84, 0.36));
+    ctx.stroke();
+  },
+
+  caminhao(ctx, p) {
+    ctx.beginPath();
+    ctx.moveTo(...p(0.06, 0.30));
+    ctx.lineTo(...p(0.56, 0.30));
+    ctx.lineTo(...p(0.56, 0.68));
+    ctx.lineTo(...p(0.06, 0.68));
+    ctx.closePath();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(...p(0.56, 0.44));
+    ctx.lineTo(...p(0.76, 0.44));
+    ctx.lineTo(...p(0.92, 0.58));
+    ctx.lineTo(...p(0.92, 0.68));
+    ctx.lineTo(...p(0.56, 0.68));
+    ctx.stroke();
+    for (const cx of [0.26, 0.78]) {
+      ctx.beginPath();
+      ctx.arc(...p(cx, 0.76), 0.09 * p.lado, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+  },
+
+  servicos(ctx, p) {
+    ctx.beginPath();
+    ctx.moveTo(...p(0.38, 0.30));
+    ctx.lineTo(...p(0.38, 0.20));
+    ctx.lineTo(...p(0.62, 0.20));
+    ctx.lineTo(...p(0.62, 0.30));
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(...p(0.10, 0.30));
+    ctx.lineTo(...p(0.90, 0.30));
+    ctx.lineTo(...p(0.90, 0.82));
+    ctx.lineTo(...p(0.10, 0.82));
+    ctx.closePath();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(...p(0.10, 0.54));
+    ctx.lineTo(...p(0.90, 0.54));
+    ctx.stroke();
   }
 };
 
@@ -888,10 +958,32 @@ async function desenharCartao(cartao) {
   y += 44;
 
   if (cartao.titulo) {
+    // Ícone à esquerda do título, na altura das maiúsculas. Fica aqui e não
+    // numa linha própria porque não custa altura nenhuma: o cartão já briga
+    // para caber na proporção que o WhatsApp mostra inteira.
+    const temIcone = !!cartao.iconeTitulo;
+    const ladoIco = 54;
+    const recuo = temIcone ? ladoIco + 20 : 0;
+
+    if (temIcone) {
+      const ix = PAD;
+      const iy = y - 48;
+      const p = (a, b) => [ix + a * ladoIco, iy + b * ladoIco];
+      p.lado = ladoIco;
+      ctx.save();
+      ctx.strokeStyle = destaque;
+      ctx.fillStyle = destaque;
+      ctx.lineWidth = Math.max(2, ladoIco * 0.085);
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+      icones[cartao.iconeTitulo](ctx, p);
+      ctx.restore();
+    }
+
     ctx.fillStyle = tinta;
     ctx.font = fnt(800, 58);
-    for (const linha of quebrarTexto(ctx, cartao.titulo, larguraUtil)) {
-      ctx.fillText(linha, PAD, y);
+    for (const linha of quebrarTexto(ctx, cartao.titulo, larguraUtil - recuo)) {
+      ctx.fillText(linha, PAD + recuo, y);
       y += 64;
     }
   }
@@ -1368,6 +1460,32 @@ function renderTelefonesSeguradora() {
   }
 }
 
+/** Sugestão que depende de outro campo.
+ *
+ *  O consórcio pergunta o tipo do bem antes da descrição, e a sugestão
+ *  "Apartamento" ficava na tela mesmo depois de escolher Automóvel. Sugestão
+ *  errada é pior que sugestão nenhuma: ela parece instrução. */
+function placeholderDoCampo(campo) {
+  const dep = campo.placeholderPor;
+  if (dep) {
+    const escolhido = dep.valores[String(estado.dados[dep.campo] || '').trim()];
+    if (escolhido) return escolhido;
+  }
+  return campo.placeholder || '';
+}
+
+/** O formulário só é remontado ao trocar de produto, então quem depende de
+ *  outro campo precisa ser atualizado a cada digitação. */
+function atualizarPlaceholders() {
+  const produto = produtoAtual();
+  if (!produto) return;
+  for (const campo of produto.campos) {
+    if (!campo.placeholderPor) continue;
+    const entrada = document.getElementById('campo-' + campo.id);
+    if (entrada) entrada.placeholder = placeholderDoCampo(campo);
+  }
+}
+
 function renderFormulario() {
   const produto = produtoAtual();
   el.formDados.innerHTML = '';
@@ -1415,7 +1533,10 @@ function renderFormulario() {
     entrada.id = 'campo-' + campo.id;
     entrada.dataset.campo = campo.id;
     entrada.dataset.tipo = campo.tipo;
-    if (campo.placeholder && campo.tipo !== 'select') entrada.placeholder = campo.placeholder;
+    if (campo.tipo !== 'select') {
+      const ph = placeholderDoCampo(campo);
+      if (ph) entrada.placeholder = ph;
+    }
     if (campo.tipo !== 'textarea' && campo.tipo !== 'select') {
       entrada.type = campo.tipo === 'data' ? 'date' : 'text';
       entrada.autocomplete = 'off';
@@ -1434,6 +1555,7 @@ function renderFormulario() {
         entrada.value = v;
       }
       estado.dados[campo.id] = v;
+      atualizarPlaceholders();
       agendarAtualizacao();
     };
     entrada.addEventListener('input', anotarValor);

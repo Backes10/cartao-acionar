@@ -145,6 +145,17 @@
       "templateNome": "Consórcio {tipoBem} - Grupo {grupo} Cota {cota}",
       "tituloCartao": "{bem}",
       "subtituloCartao": "Grupo {grupo} · Cota {cota}",
+      "_sobre_icone": "Desenhado ao lado do titulo do cartao, na cor de destaque. Os nomes sao os do conjunto de icones do rodape (auto, residencial, moto, caminhao, servicos...).",
+      "iconePorTipo": {
+        "campo": "tipoBem",
+        "valores": {
+          "Imóvel": "residencial",
+          "Automóvel": "auto",
+          "Moto": "moto",
+          "Caminhão": "caminhao",
+          "Serviços": "servicos"
+        }
+      },
       "resumoCurto": "{tipoBem} - {bem}",
       "rotuloFornecedor": "Administradora",
       "rotuloFornecedorPlural": "Administradoras",
@@ -156,7 +167,13 @@
       "campos": [
         { "id": "segurado", "label": "Consorciado", "tipo": "texto", "placeholder": "João da Silva", "obrigatorio": true, "largura": "full" },
         { "id": "tipoBem", "label": "Tipo do bem", "tipo": "select", "opcoes": ["Imóvel", "Automóvel", "Moto", "Caminhão", "Serviços"], "obrigatorio": true, "largura": "half" },
-        { "id": "bem", "label": "Bem em referência", "tipo": "texto", "placeholder": "Apartamento", "obrigatorio": true, "largura": "half", "ajuda": "Vira o título do cartão. Use como o cliente chama: 'Apartamento', 'Honda CG 160'." },
+        { "id": "bem", "label": "Bem em referência", "tipo": "texto", "placeholder": "Apartamento", "obrigatorio": true, "largura": "half", "ajuda": "Vira o título do cartão. Use como o cliente chama.",
+          "placeholderPor": { "campo": "tipoBem", "valores": {
+            "Imóvel": "Apartamento 2 dormitórios",
+            "Automóvel": "Honda Civic EXL",
+            "Moto": "Honda CG 160 Titan",
+            "Caminhão": "Volvo FH 460",
+            "Serviços": "Reforma da casa" } } },
         { "id": "grupo", "label": "Grupo", "tipo": "texto", "placeholder": "1234", "obrigatorio": true, "largura": "half" },
         { "id": "cota", "label": "Cota", "tipo": "texto", "placeholder": "056", "obrigatorio": true, "largura": "half", "ajuda": "Grupo e cota são o que a administradora pede em toda ligação." },
         { "id": "credito", "label": "Valor do crédito", "tipo": "dinheiro", "placeholder": "300.000,00", "obrigatorio": true, "largura": "half" },
