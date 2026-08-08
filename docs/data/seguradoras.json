@@ -207,7 +207,8 @@
           "_fonte": "https://www.bradescoseguros.com.br/clientes",
           "semTel": true
         }
-      ]
+      ],
+      "logo": "assets/seguradoras/bradesco-consorcio.png"
     },
     {
       "id": "allianz",
@@ -576,7 +577,7 @@
       "produtos": [
         "consorcio"
       ],
-      "logo": "",
+      "logo": "assets/seguradoras/porto-seguro.png",
       "site": "https://www.portoseguro.com.br/consorcio",
       "telefones": [
         {
@@ -612,7 +613,7 @@
       "produtos": [
         "consorcio"
       ],
-      "logo": "",
+      "logo": "assets/seguradoras/embracon.png",
       "site": "https://www.embracon.com.br",
       "telefones": [
         {
@@ -649,7 +650,7 @@
       "produtos": [
         "consorcio"
       ],
-      "logo": "",
+      "logo": "assets/seguradoras/rodobens.png",
       "site": "https://www.rodobens.com.br/consorcio/",
       "telefones": [
         {
@@ -685,7 +686,7 @@
       "produtos": [
         "consorcio"
       ],
-      "logo": "",
+      "logo": "assets/seguradoras/ademicon.png",
       "site": "https://www.ademicon.com.br",
       "telefones": [
         {
@@ -794,7 +795,7 @@
       "produtos": [
         "consorcio"
       ],
-      "logo": "",
+      "logo": "assets/seguradoras/bradesco-consorcio.png",
       "site": "https://banco.bradesco/consorcio",
       "telefones": [
         {
@@ -875,7 +876,7 @@
       "produtos": [
         "consorcio"
       ],
-      "logo": "",
+      "logo": "assets/seguradoras/caixa-consorcio.png",
       "site": "https://www.caixaconsorcio.com.br",
       "telefones": [
         {
