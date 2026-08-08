@@ -2,48 +2,18 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Seus telefones — Acionar Corretora de Seguros</title>
-<meta name="theme-color" content="#EB6522">
 <meta name="robots" content="noindex, nofollow">
-<meta property="og:title" content="Seus telefones de emergência">
-<meta property="og:description" content="Toque para ligar. Enviado pela Acionar Corretora de Seguros.">
-<meta property="og:type" content="website">
-<link rel="stylesheet" href="pagina.css">
+<title>Redirecionando…</title>
 </head>
 <body>
-  <header class="topo">
-    <img id="logo" class="topo__logo" src="../assets/logo-acionar.png" alt="Acionar Corretora de Seguros">
-  </header>
-
-  <main class="folha">
-    <p id="rotulo" class="rotulo"></p>
-    <h1 id="titulo" class="titulo">Carregando…</h1>
-
-    <div id="erro" class="erro" hidden></div>
-
-    <section id="blocoSeguradora" hidden>
-      <p id="tituloTelefones" class="secao">EM CASO DE SINISTRO OU REBOQUE</p>
-      <div id="telefones" class="telefones"></div>
-    </section>
-
-    <section id="blocoContato" hidden>
-      <button id="btnContato" class="botao botao--primario" type="button">Salvar na minha agenda</button>
-      <p class="nota">Salva todos estes telefones de uma vez, com o nome acima.</p>
-    </section>
-
-    <section id="blocoCorretora" class="corretora" hidden>
-      <p class="secao">SEU CORRETOR</p>
-      <p id="nomeCorretora" class="corretora__nome"></p>
-      <div id="telefonesCorretora" class="telefones telefones--claro"></div>
-    </section>
-
-    <p class="rodape">
-      Esta página foi enviada pela sua corretora. Os números são os que ela mantém
-      atualizados — se algum deles mudar, esta página muda junto.
-    </p>
-  </main>
-
-  <script src="pagina.js"></script>
+<p>Um momento…</p>
+<script>
+/* A página mudou de /c/ para /telefones/ para o endereço dizer o que é.
+   Este arquivo existe só para não quebrar link já enviado. O redirecionamento
+   é por JavaScript e não por meta refresh porque o fragmento (o que vem depois
+   do #) é o que identifica o cartão, e o meta refresh não o carrega junto. */
+location.replace('../telefones/' + (location.hash || ''));
+</script>
+<noscript><a href="../telefones/">Toque aqui para abrir seus telefones</a></noscript>
 </body>
 </html>

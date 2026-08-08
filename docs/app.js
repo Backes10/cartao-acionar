@@ -8,7 +8,7 @@
 // Precisa bater com o VERSAO do sw.js. O diagnóstico mostra os dois lado a
 // lado justamente para o vendedor perceber quando o aparelho está preso numa
 // versão antiga: se divergirem, o service worker ainda não trocou.
-const VERSAO_APP = 'v35';
+const VERSAO_APP = 'v36';
 
 const CHAVE_CONFIG = 'acionar.config';
 const CHAVE_CATALOGO = 'acionar.seguradoras';
@@ -55,7 +55,9 @@ const CONFIG_PADRAO = {
  *  franquia e vigência ficam de fora porque não precisam ser clicáveis (já
  *  estão legíveis na imagem) e porque assim um link encaminhado não mostra o
  *  valor da franquia de ninguém. */
-const RAIZ_LINK = 'https://backes10.github.io/cartao-acionar/c/#';
+// O caminho é lido pelo cliente antes de ele decidir tocar. "/c/" não dizia
+// nada; "/telefones/" diz. O que vem depois do # continua opaco de propósito.
+const RAIZ_LINK = 'https://backes10.github.io/cartao-acionar/telefones/#';
 
 function linkDoCartao(cartao) {
   if (!estado.config.linkNaMensagem || !estado.seguradoraId || !cartao) return '';
@@ -610,7 +612,12 @@ function mensagemWhatsApp(cartao) {
   const link = linkDoCartao(cartao);
   if (link) {
     l.push('');
-    l.push('Ou abra aqui e ligue com um toque:');
+    // A linha nomeia o destino. "Abra aqui" não diz o que tem do outro lado, e
+    // um endereço de github.io não ajuda ninguém a adivinhar — o cliente
+    // simplesmente não toca. Com o nome da seguradora ele sabe o que vai achar.
+    l.push(cartao.seguradora
+      ? `Telefones da ${cartao.seguradora}, é só tocar para ligar:`
+      : 'Telefones para emergência, é só tocar para ligar:');
     l.push(link);
   }
   l.push('');

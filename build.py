@@ -32,7 +32,8 @@ PUBLICAVEIS = [
     'manifest.webmanifest',
     'data',
     'assets',   # inclui assets/seguradoras/
-    'c',        # a pagina do link que o cliente recebe no WhatsApp
+    'telefones',  # a pagina do link que o cliente recebe no WhatsApp
+    'c',          # redirecionamento do endereco antigo, para nao quebrar link enviado
 ]
 
 # So estes tipos saem de dentro de pastas. Ja aconteceu de dois PDFs de origem
