@@ -8,7 +8,7 @@
 // Precisa bater com o VERSAO do sw.js. O diagnóstico mostra os dois lado a
 // lado justamente para o vendedor perceber quando o aparelho está preso numa
 // versão antiga: se divergirem, o service worker ainda não trocou.
-const VERSAO_APP = 'v43';
+const VERSAO_APP = 'v44';
 
 const CHAVE_CONFIG = 'acionar.config';
 const CHAVE_CATALOGO = 'acionar.seguradoras';
@@ -78,8 +78,6 @@ const estado = {
   whatsCliente: '',
   config: { ...CONFIG_PADRAO },
   artefatos: null,
-  // Liga o botão de mandar a mensagem, que só faz sentido depois da imagem.
-  imagemEnviada: false
 };
 
 const $ = (sel) => document.querySelector(sel);
@@ -1706,16 +1704,17 @@ function atualizarAcoes() {
     el.btnContatoDepois.disabled = !pronto;
   }
 
-  // Só aparece depois que a imagem foi, porque é aí que ele serve: o app
-  // compartilha a imagem SEM texto (no Android, texto junto com arquivo faz o
-  // WhatsApp descartar o anexo), então a mensagem depende de colar na legenda.
-  // Quem não cola manda a foto sem o link e sem nada escrito. Este botão manda
-  // a mensagem como mensagem separada — que, de quebra, é o único jeito de o
-  // WhatsApp montar o cartão de prévia, que legenda de imagem não ganha.
+  // Sempre visível, como os outros dois. Tentei mostrá-lo só depois do envio da
+  // imagem, para a tela ficar mais limpa, e o resultado foi o oposto: a marca
+  // de "imagem enviada" vive na memória da página, e o iPhone recarrega a
+  // página quando se volta do WhatsApp. O botão sumia exatamente no momento em
+  // que era necessário. É o mesmo erro que o botão do contato já tinha tido.
+  //
+  // Três passos à vista, numerados, na ordem de uso. Previsível ganha de
+  // esperto.
   if (el.btnMensagemDepois) {
-    const mostrar = pronto && estado.imagemEnviada;
-    el.btnMensagemDepois.hidden = !mostrar;
-    el.btnMensagemDepois.disabled = !mostrar;
+    el.btnMensagemDepois.hidden = !pronto;
+    el.btnMensagemDepois.disabled = !pronto;
   }
 
   // O link mora dentro da mensagem, que o app nunca exibe. Sem mostrá-lo aqui,
@@ -1876,12 +1875,12 @@ function vcfPodeSerCompartilhado() {
   return !/Android/i.test(navigator.userAgent);
 }
 
-/** O passo 2 muda de natureza conforme o aparelho: no iOS o contato vai por
+/** O passo 3 muda de natureza conforme o aparelho: no iOS o contato vai por
  *  compartilhamento, no Android só por download. O rótulo precisa dizer o que o
  *  toque faz de verdade — prometer "enviar" onde só dá para baixar é o tipo de
  *  mentira que faz o vendedor ficar procurando um envio que nunca aconteceu. */
-function rotuloPasso2() {
-  return vcfPodeSerCompartilhado() ? '2. Enviar o contato' : '2. Baixar o contato';
+function rotuloPasso3() {
+  return vcfPodeSerCompartilhado() ? '3. Enviar o contato' : '3. Baixar o contato';
 }
 
 function prepararEnvio(art) {
@@ -2007,24 +2006,21 @@ function enviar(selecao) {
       const copiou = await copiar(art.mensagem).catch(() => false);
       anotar('mensagem copiada: ' + (copiou ? 'sim' : 'não'));
 
-      // A imagem vai sozinha, sem texto. Quem não colar a legenda manda a foto
-      // sem uma palavra escrita — e sem o link. Por isso o botão de mandar a
-      // mensagem aparece agora, e o aviso fala dele antes de falar em colar.
-      estado.imagemEnviada = true;
-      atualizarAcoes();
-
+      // A imagem vai sozinha, sem texto: quem não colar a legenda manda a foto
+      // sem uma palavra escrita, e sem o link. Por isso o aviso aponta o passo 2
+      // antes de falar em colar.
       const passos = ['Imagem enviada.', ''];
       passos.push('A mensagem NÃO vai junto com a foto. Para o cliente receber o link, '
-        + 'toque em "Mandar a mensagem com o link" aqui embaixo.');
+        + 'toque no passo 2 aqui embaixo.');
       passos.push('');
       passos.push(copiou
         ? 'Ela também está copiada, se preferir colar na legenda da foto.'
-        : 'Não consegui copiar a mensagem para colar — use o botão acima.');
+        : 'Não consegui copiar a mensagem para colar — use o passo 2.');
       passos.push('');
-      // O rótulo vem do próprio botão, não de rotuloPasso2(): o diagnóstico
+      // O rótulo vem do próprio botão, não de rotuloPasso3(): o diagnóstico
       // reescreve esse texto quando o navegador não compartilha arquivo nenhum,
       // e a mensagem mandaria procurar um botão com outro nome.
-      passos.push('Depois, o passo 2: "' + (el.btnContatoDepois ? el.btnContatoDepois.textContent : 'Enviar o contato') + '".');
+      passos.push('Depois, o passo 3: "' + (el.btnContatoDepois ? el.btnContatoDepois.textContent : 'Enviar o contato') + '".');
       statusEnvio(passos.join('\n'), 'ok');
     })
     .catch((erro) => {
@@ -2853,7 +2849,7 @@ async function renderDiagnostico() {
   const semCompartilhar = itens.some((i) => i.rot === 'Compartilha arquivos' && i.estado === 'ruim');
   // Botão não pode prometer o que este navegador não faz.
   el.btnEnviar.textContent = semCompartilhar ? 'Preparar para o WhatsApp' : '1. Enviar a imagem';
-  el.btnContatoDepois.textContent = semCompartilhar ? '2. Baixar o contato' : rotuloPasso2();
+  el.btnContatoDepois.textContent = semCompartilhar ? '3. Baixar o contato' : rotuloPasso3();
 }
 
 /** Registro do service worker com caminho de atualização.
@@ -3009,7 +3005,7 @@ async function iniciar() {
   });
 
   el.btnEnviar?.addEventListener('click', () => enviar('png'));
-  if (el.btnContatoDepois) el.btnContatoDepois.textContent = rotuloPasso2();
+  if (el.btnContatoDepois) el.btnContatoDepois.textContent = rotuloPasso3();
 
   el.btnMensagem?.addEventListener('click', () => {
     if (!estado.artefatos) return;
@@ -3060,7 +3056,7 @@ async function iniciar() {
       return;
     }
     promessa
-      .then(() => statusEnvio('Mensagem enviada. Agora o passo 2: "'
+      .then(() => statusEnvio('Mensagem enviada. Agora o passo 3: "'
         + (el.btnContatoDepois ? el.btnContatoDepois.textContent : 'Enviar o contato') + '".', 'ok'))
       .catch((erro) => {
         if (erro && erro.name === 'AbortError') {
