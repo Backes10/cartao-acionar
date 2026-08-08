@@ -3,7 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Telefones</title>
+<!-- Sem <title> aqui de propósito, e sem og: nenhum.
+     É daí que o WhatsApp monta o cartão de prévia acima do link, e ele só
+     repetia o que a imagem do cartão já diz. O robô do WhatsApp lê o HTML e vai
+     embora sem executar JavaScript, então não acha título nenhum e não tem o
+     que montar. Quem abre no navegador recebe o título por JavaScript, em
+     pagina.js — ver `document.title`. -->
 <meta name="theme-color" content="#EB6522">
 <meta name="robots" content="noindex, nofollow">
 <!-- Sem og: nenhum e sem meta description, de propósito. É daí que o WhatsApp
@@ -20,6 +25,7 @@
   </header>
 
   <main class="folha">
+    <img id="logoSeguradora" class="seguradora__logo" alt="" hidden>
     <h1 id="titulo" class="titulo">Carregando…</h1>
 
     <div id="erro" class="erro" hidden></div>

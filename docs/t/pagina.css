@@ -40,6 +40,19 @@ body {
   padding-bottom: max(40px, env(safe-area-inset-bottom));
 }
 
+/* Logo primeiro, nome embaixo. No cartão o logo SUBSTITUI o nome, porque lá o
+   espaço é disputado; aqui há folga, e ver a marca antes de ler ajuda quem abre
+   correndo. Três administradoras não publicam logo utilizável — nelas fica só o
+   nome, e o layout aguenta. */
+.seguradora__logo {
+  display: block;
+  height: 38px;
+  width: auto;
+  max-width: 70%;
+  object-fit: contain;
+  margin: 0 0 10px;
+}
+
 .titulo {
   margin: 0 0 18px;
   font-size: 20px;

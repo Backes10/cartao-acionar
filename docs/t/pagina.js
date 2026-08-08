@@ -152,7 +152,20 @@ async function iniciar() {
     mostrarErro('Não encontrei esta seguradora no cadastro. Peça para a sua corretora reenviar.');
     return;
   }
+  // O título vem por aqui e não do HTML: sem <title> no arquivo, o robô do
+  // WhatsApp não tem o que usar para montar o cartão de prévia acima do link.
   document.title = cia.nome + ' — ' + (corretora.nome || 'Acionar');
+
+  // Caminho relativo ao site; a página mora em /t/. Logo enviado pelo editor
+  // vem como data: e é usado como está.
+  if (cia.logo) {
+    const img = el('logoSeguradora');
+    img.src = /^(data:|https?:)/.test(cia.logo) ? cia.logo : '../' + cia.logo;
+    img.alt = cia.nome;
+    // Logo que não carrega não pode deixar um espaço vazio no lugar do nome.
+    img.onerror = () => { img.hidden = true; };
+    img.hidden = false;
+  }
   el('titulo').textContent = pedido.nome || cia.nome;
 
   const doSeguro = ordenarTelefones(cia.telefones);
