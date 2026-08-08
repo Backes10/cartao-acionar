@@ -18,7 +18,7 @@
  * MEXEU EM QUALQUER ARQUIVO DA CASCA? Suba o número do VERSAO abaixo.
  */
 
-const VERSAO = 'acionar-v39';
+const VERSAO = 'acionar-v40';
 
 const CASCA = [
   '.',
@@ -37,7 +37,18 @@ self.addEventListener('install', (evento) => {
   evento.waitUntil(
     caches.open(VERSAO)
       // addAll falha inteiro se um item falhar; ícone faltando não pode derrubar o app.
-      .then((cache) => Promise.allSettled([...CASCA, ...DADOS].map((url) => cache.add(url))))
+      //
+      // `cache: 'reload'` é o detalhe que faltava e que fez o cache v39 nascer
+      // com os arquivos da v38: sem ele, o cache.add busca pelo cache HTTP do
+      // navegador, e o GitHub Pages manda max-age=600. Por dez minutos depois
+      // de publicar, o navegador entrega o app.js antigo sem perguntar ao
+      // servidor — e o service worker guarda esse arquivo velho sob o nome
+      // novo. O aparelho ficava dizendo "cache guardado é v39" enquanto rodava
+      // a v38, e recarregar não adiantava porque o cache novo já estava
+      // envenenado. Com 'reload' a busca ignora o cache HTTP e vai na rede.
+      .then((cache) => Promise.allSettled(
+        [...CASCA, ...DADOS].map((url) => cache.add(new Request(url, { cache: 'reload' })))
+      ))
   );
   // Sem skipWaiting aqui de propósito: quem decide a troca é a página, no
   // aviso de atualização. Trocar sozinho deixaria HTML novo rodando JS velho.
@@ -91,7 +102,10 @@ self.addEventListener('fetch', (evento) => {
   // activate — dentro de uma versão o carimbo é sempre o mesmo.
   evento.respondWith(
     caches.match(requisicao, { ignoreSearch: true }).then((emCache) => {
-      const daRede = fetch(requisicao)
+      // 'reload' aqui pela mesma razão do install: sem ele a busca de fundo
+      // pode ser respondida pelo cache HTTP com o arquivo antigo, e a correção
+      // publicada nunca entra — o app se atualizaria para ele mesmo.
+      const daRede = fetch(new Request(requisicao.url, { cache: 'reload' }))
         .then((resposta) => {
           guardar(requisicao, resposta);
           return resposta;

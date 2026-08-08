@@ -8,7 +8,7 @@
 // Precisa bater com o VERSAO do sw.js. O diagnóstico mostra os dois lado a
 // lado justamente para o vendedor perceber quando o aparelho está preso numa
 // versão antiga: se divergirem, o service worker ainda não trocou.
-const VERSAO_APP = 'v39';
+const VERSAO_APP = 'v40';
 
 const CHAVE_CONFIG = 'acionar.config';
 const CHAVE_CATALOGO = 'acionar.seguradoras';
@@ -2711,8 +2711,17 @@ function compartilhaArquivos() {
   }
 }
 
+/** Compara "v39" com "v38". Só serve para versões deste app, que são v + número. */
+function maiorQue(a, b) {
+  const n = (v) => parseInt(String(v).replace(/^v/, ''), 10);
+  const na = n(a);
+  const nb = n(b);
+  return Number.isFinite(na) && Number.isFinite(nb) && na > nb;
+}
+
 async function coletarDiagnostico() {
   let versoes = [];
+  let limparEBuscar = false;
   let swEstado = 'não registrado';
   try {
     // Tira o prefixo de CADA cache. Antes usava replace(/^acionar-/) na string
@@ -2752,12 +2761,22 @@ async function coletarDiagnostico() {
     // cache offline estar atrás. O que falta é aplicar a atualização.
     valorVersoes = `cache guardado é ${versoes.join(', ')} — toque em Recarregar`;
     estadoVersoes = 'ruim';
+    // Divergência ao contrário: o cache tem um nome MAIS NOVO que o app que
+    // está rodando. Isso não é atualização pendente — é cache envenenado, um
+    // service worker que se instalou com nome novo e conteúdo velho. Aconteceu
+    // de verdade entre a v38 e a v39. Recarregar não resolve, porque o arquivo
+    // errado já está guardado; o jeito é apagar e buscar de novo.
+    if (versoes.some((v) => maiorQue(v, VERSAO_APP))) {
+      valorVersoes = `cache diz ${versoes.join(', ')} mas o app é ${VERSAO_APP}. `
+        + 'Recarregar não resolve: o arquivo guardado está errado.';
+      limparEBuscar = true;
+    }
   }
 
   const compartilha = compartilhaArquivos();
   return [
     { rot: 'Versão do app', val: VERSAO_APP },
-    { rot: 'Versão guardada no aparelho', val: valorVersoes, estado: estadoVersoes },
+    { rot: 'Versão guardada no aparelho', val: valorVersoes, estado: estadoVersoes, limpar: limparEBuscar },
     { rot: 'Service worker', val: swEstado, acao: !!swEsperando },
     { rot: 'Compartilha arquivos', val: compartilha ? 'sim' : 'NÃO — cai no plano B', estado: compartilha ? 'bom' : 'ruim' },
     { rot: 'Área de transferência', val: navigator.clipboard && navigator.clipboard.writeText ? 'sim' : 'não' },
@@ -2766,6 +2785,30 @@ async function coletarDiagnostico() {
     { rot: 'Navegador', val: navigator.userAgent },
     { rot: 'Último envio', val: registroEnvio.length ? registroEnvio.join('\n') : '(nenhum nesta sessão)' }
   ];
+}
+
+/** Saída de emergência para cache envenenado: apaga o service worker e os
+ *  arquivos guardados e busca tudo de novo.
+ *
+ *  NÃO toca no localStorage. É lá que moram o catálogo editado, as
+ *  configurações e o histórico — apagar isso para resolver um problema de
+ *  cache seria trocar um transtorno por uma perda. */
+async function limparCacheEBuscar(botao) {
+  if (botao) {
+    botao.disabled = true;
+    botao.textContent = 'Limpando…';
+  }
+  try {
+    const regs = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(regs.map((r) => r.unregister()));
+  } catch (_) { /* segue: o que importa é apagar o cache */ }
+  try {
+    const chaves = await caches.keys();
+    await Promise.all(chaves.map((c) => caches.delete(c)));
+  } catch (_) { /* idem */ }
+  // Endereço diferente para o navegador não responder do próprio cache HTTP,
+  // que é justamente quem serviu o arquivo velho em primeiro lugar.
+  location.replace(location.pathname + '?recarga=' + Date.now());
 }
 
 async function renderDiagnostico() {
@@ -2784,6 +2827,14 @@ async function renderDiagnostico() {
       b.className = 'botao diag__acao';
       b.textContent = 'Atualizar agora';
       b.addEventListener('click', () => aplicarAtualizacao(b));
+      dd.append(document.createElement('br'), b);
+    }
+    if (item.limpar) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'botao diag__acao';
+      b.textContent = 'Limpar e buscar de novo';
+      b.addEventListener('click', () => limparCacheEBuscar(b));
       dd.append(document.createElement('br'), b);
     }
     el.diagLista.append(dt, dd);
