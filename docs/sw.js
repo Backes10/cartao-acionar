@@ -18,7 +18,7 @@
  * MEXEU EM QUALQUER ARQUIVO DA CASCA? Suba o número do VERSAO abaixo.
  */
 
-const VERSAO = 'acionar-v37';
+const VERSAO = 'acionar-v38';
 
 const CASCA = [
   '.',
@@ -82,8 +82,15 @@ self.addEventListener('fetch', (evento) => {
   }
 
   // Casca: cache na hora, rede por trás para a próxima abertura.
+  //
+  // ignoreSearch porque o build carimba a versão no endereço ("app.js?v=v38")
+  // para o HTML nunca puxar um JavaScript de outra versão. Sem ignorar a
+  // query, o endereço carimbado não casaria com o "app.js" guardado e o app
+  // não abriria sem sinal na primeira vez. Não há risco de servir versão
+  // errada: cada VERSAO tem seu próprio cache, e o anterior é apagado no
+  // activate — dentro de uma versão o carimbo é sempre o mesmo.
   evento.respondWith(
-    caches.match(requisicao).then((emCache) => {
+    caches.match(requisicao, { ignoreSearch: true }).then((emCache) => {
       const daRede = fetch(requisicao)
         .then((resposta) => {
           guardar(requisicao, resposta);

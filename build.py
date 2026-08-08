@@ -160,6 +160,28 @@ for nome in PUBLICAVEIS:
 for r in recusados:
     print('  fora do site (extensao nao publicavel): %s' % r)
 
+# ---- carimbo de versao nos enderecos ----
+# index.html, app.js e styles.css sao baixados e guardados em cache separados.
+# Numa troca de versao o aparelho podia ficar com o HTML novo e o JS velho: foi
+# o que aconteceu ao remover um botao — o HTML ja nao tinha o elemento, o JS
+# antigo ainda o procurava, e um addEventListener nulo derrubou metade do app
+# sem nenhuma mensagem na tela.
+# Com ?v= no endereco, HTML novo so consegue pedir o JS e o CSS da mesma versao:
+# e outro endereco, entao o cache antigo nao serve.
+v_app_cedo = re.search(r"VERSAO_APP\s*=\s*'(v[\w.]+)'", ler('app.js'))
+carimbo = v_app_cedo.group(1) if v_app_cedo else '0'
+alvo_html = os.path.join(site, 'index.html')
+with open(alvo_html, encoding='utf-8') as f:
+    html_site = f.read()
+antes = html_site
+html_site = html_site.replace('src="app.js"', 'src="app.js?v=%s"' % carimbo)
+html_site = html_site.replace('href="styles.css"', 'href="styles.css?v=%s"' % carimbo)
+if html_site == antes:
+    raise SystemExit('ERRO: nao achei app.js/styles.css no index.html para carimbar a versao. '
+                     'Sem o carimbo, HTML e JS podem vir de versoes diferentes.')
+with open(alvo_html, 'w', encoding='utf-8') as f:
+    f.write(html_site)
+
 # Sobra de build anterior nao pode ir para o ar sem ninguem ver.
 sobrando = []
 for pasta, _, arquivos in os.walk(site):

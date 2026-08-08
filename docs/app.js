@@ -8,7 +8,7 @@
 // Precisa bater com o VERSAO do sw.js. O diagnóstico mostra os dois lado a
 // lado justamente para o vendedor perceber quando o aparelho está preso numa
 // versão antiga: se divergirem, o service worker ainda não trocou.
-const VERSAO_APP = 'v37';
+const VERSAO_APP = 'v38';
 
 const CHAVE_CONFIG = 'acionar.config';
 const CHAVE_CATALOGO = 'acionar.seguradoras';
@@ -82,6 +82,9 @@ const estado = {
 
 const $ = (sel) => document.querySelector(sel);
 const el = {};
+// Ids que o JavaScript espera e o HTML desta versão não tem. Ver o comentário
+// em iniciar(): é o sintoma de HTML e JS vindos de versões diferentes.
+const elFaltando = [];
 
 /* ==========================================================================
    Utilidades de texto e número
@@ -1469,6 +1472,7 @@ function trocarProduto(id) {
 }
 
 function renderSeguradoras() {
+  if (!el.selSeguradora) return;
   const lista = catalogoDoProduto();
   el.selSeguradora.innerHTML = '';
   const vazio = document.createElement('option');
@@ -2824,6 +2828,25 @@ async function iniciar() {
     'cfgFotoNoContato', 'cfgLinkMensagem', 'cfgLogo',
     'cfgLogoPrevia', 'cfgLogoRemover', 'cfgTemplate', 'cfgTemplateAjuda']) {
     el[id] = $('#' + id);
+    if (!el[id]) elFaltando.push(id);
+  }
+
+  // HTML e JavaScript são baixados e guardados em cache separadamente. Numa
+  // troca de versão o aparelho pode ficar, por alguns minutos, com o index.html
+  // novo e o app.js velho — foi o que aconteceu ao remover o botão "Copiar
+  // link": o HTML já não tinha o botão, o JavaScript antigo ainda o procurava,
+  // e o `addEventListener` num elemento nulo derrubou TUDO que seria registrado
+  // depois. O app abriu pela metade, sem "Copiar mensagem", sem o botão do
+  // contato e sem configurações, e nada na tela dizia por quê.
+  //
+  // Agora falta um elemento e perde-se só o que dependia dele. E o aviso
+  // aparece, porque app meio morto sem explicação é pior que app quebrado.
+  if (elFaltando.length && el.bannerErro) {
+    console.warn('Elementos ausentes (HTML e JS de versões diferentes):', elFaltando);
+    el.bannerErro.hidden = false;
+    el.bannerErro.innerHTML = '<strong>Atualização incompleta neste aparelho.</strong> '
+      + 'O app está usando arquivos de duas versões diferentes. Toque em <strong>Recarregar</strong> '
+      + 'na faixa do topo. Se não aparecer a faixa, feche e abra o app de novo.';
   }
 
   estado.config = lerConfig();
@@ -2874,22 +2897,22 @@ async function iniciar() {
   renderFormulario();
   renderHistorico();
 
-  el.selSeguradora.addEventListener('change', () => {
+  el.selSeguradora?.addEventListener('change', () => {
     estado.seguradoraId = el.selSeguradora.value || null;
     renderTelefonesSeguradora();
     atualizar();
   });
 
-  el.inpWhatsCliente.addEventListener('input', () => {
+  el.inpWhatsCliente?.addEventListener('input', () => {
     el.inpWhatsCliente.value = formatarTelBR(el.inpWhatsCliente.value);
     estado.whatsCliente = el.inpWhatsCliente.value;
     salvarRascunho();
   });
 
-  el.btnEnviar.addEventListener('click', () => enviar('png'));
-  el.btnContatoDepois.textContent = rotuloPasso2();
+  el.btnEnviar?.addEventListener('click', () => enviar('png'));
+  if (el.btnContatoDepois) el.btnContatoDepois.textContent = rotuloPasso2();
 
-  el.btnMensagem.addEventListener('click', () => {
+  el.btnMensagem?.addEventListener('click', () => {
     if (!estado.artefatos) return;
     copiar(estado.artefatos.mensagem).then((copiou) => {
       statusEnvio(
@@ -2899,20 +2922,20 @@ async function iniciar() {
     });
   });
 
-  el.btnVcf.addEventListener('click', () => {
+  el.btnVcf?.addEventListener('click', () => {
     if (!estado.artefatos) return;
     const a = estado.artefatos;
     baixar(new Blob([a.vcfTexto], { type: 'text/vcard;charset=utf-8' }), a.nomeVcf);
     statusEnvio('Contato baixado.', 'ok');
   });
 
-  el.btnPng.addEventListener('click', () => {
+  el.btnPng?.addEventListener('click', () => {
     if (!estado.artefatos || !estado.artefatos.pngBlob) return;
     baixar(estado.artefatos.pngBlob, estado.artefatos.nomePng);
     statusEnvio('Imagem baixada.', 'ok');
   });
 
-  el.btnLimpar.addEventListener('click', () => {
+  el.btnLimpar?.addEventListener('click', () => {
     estado.dados = {};
     estado.whatsCliente = '';
     el.inpWhatsCliente.value = '';
@@ -2921,7 +2944,7 @@ async function iniciar() {
     statusEnvio('Formulário limpo.');
   });
 
-  el.btnContatoDepois.addEventListener('click', () => {
+  el.btnContatoDepois?.addEventListener('click', () => {
     const art = estado.artefatos;
     if (!art) return;
     // Onde o .vcf pode ser compartilhado (iOS), ele vai direto para o WhatsApp;
@@ -2937,17 +2960,17 @@ async function iniciar() {
     statusEnvio('Contato em Downloads. No WhatsApp: clipe 📎 → Documento.', 'ok');
   });
 
-  el.btnLimparHistorico.addEventListener('click', () => {
+  el.btnLimparHistorico?.addEventListener('click', () => {
     localStorage.removeItem(CHAVE_HISTORICO);
     renderHistorico();
     statusEnvio('Histórico limpo.');
   });
 
-  el.diagnostico.addEventListener('toggle', () => {
+  el.diagnostico?.addEventListener('toggle', () => {
     if (el.diagnostico.open) renderDiagnostico();
   });
 
-  el.btnCopiarDiag.addEventListener('click', () => {
+  el.btnCopiarDiag?.addEventListener('click', () => {
     copiar(estado.diagnostico || '').then((copiou) => {
       el.btnCopiarDiag.textContent = copiou ? 'Copiado' : 'Não deu para copiar';
       setTimeout(() => { el.btnCopiarDiag.textContent = 'Copiar diagnóstico'; }, 2500);
@@ -2955,21 +2978,21 @@ async function iniciar() {
   });
 
   /* ---- editor do catálogo ---- */
-  el.btnCatalogo.addEventListener('click', abrirCatalogo);
-  el.btnBannerCatalogo.addEventListener('click', abrirCatalogo);
-  el.btnFecharCatalogo.addEventListener('click', () => el.dlgCatalogo.close());
-  el.btnNovaSeguradora.addEventListener('click', () => abrirEditorSeguradora(null));
-  el.btnCancelarSeguradora.addEventListener('click', mostrarListaCatalogo);
-  el.btnSalvarSeguradora.addEventListener('click', salvarSeguradoraDoEditor);
-  el.btnExcluirSeguradora.addEventListener('click', excluirSeguradoraDoEditor);
+  el.btnCatalogo?.addEventListener('click', abrirCatalogo);
+  el.btnBannerCatalogo?.addEventListener('click', abrirCatalogo);
+  el.btnFecharCatalogo?.addEventListener('click', () => el.dlgCatalogo.close());
+  el.btnNovaSeguradora?.addEventListener('click', () => abrirEditorSeguradora(null));
+  el.btnCancelarSeguradora?.addEventListener('click', mostrarListaCatalogo);
+  el.btnSalvarSeguradora?.addEventListener('click', salvarSeguradoraDoEditor);
+  el.btnExcluirSeguradora?.addEventListener('click', excluirSeguradoraDoEditor);
 
-  el.btnNovoTelefone.addEventListener('click', () => {
+  el.btnNovoTelefone?.addEventListener('click', () => {
     emEdicao.telefones.push({ rotulo: '', rotuloCurto: '', numero: '', tipo: 'assistencia' });
     renderTelefonesEditor();
     el.listaTelefonesEditor.lastElementChild.scrollIntoView({ block: 'nearest' });
   });
 
-  el.segLogo.addEventListener('change', async () => {
+  el.segLogo?.addEventListener('change', async () => {
     const arquivo = el.segLogo.files && el.segLogo.files[0];
     if (!arquivo || !emEdicao) return;
     try {
@@ -2982,31 +3005,31 @@ async function iniciar() {
     }
   });
 
-  el.segLogoRemover.addEventListener('click', () => {
+  el.segLogoRemover?.addEventListener('click', () => {
     if (!emEdicao) return;
     emEdicao.logo = '';
     el.segLogoPrevia.hidden = true;
     el.segLogo.value = '';
   });
 
-  el.btnExportarCatalogo.addEventListener('click', exportarCatalogo);
-  el.inpImportarCatalogo.addEventListener('change', () => {
+  el.btnExportarCatalogo?.addEventListener('click', exportarCatalogo);
+  el.inpImportarCatalogo?.addEventListener('change', () => {
     const arquivo = el.inpImportarCatalogo.files && el.inpImportarCatalogo.files[0];
     if (arquivo) importarCatalogo(arquivo);
     el.inpImportarCatalogo.value = '';
   });
 
-  el.btnConfig.addEventListener('click', abrirConfig);
+  el.btnConfig?.addEventListener('click', abrirConfig);
 
   // Salva no submit do formulário, não no evento 'close' do <dialog>: o 'close'
   // não dispara em parte dos navegadores e a configuração se perdia calada.
   // Efeito colateral bom: Esc e "Fechar" descartam, que é o esperado.
-  el.formConfig.addEventListener('submit', (evento) => {
+  el.formConfig?.addEventListener('submit', (evento) => {
     const botao = evento.submitter;
     if (botao && botao.value === 'salvar') salvarDoDialogo();
   });
 
-  el.cfgLogo.addEventListener('change', async () => {
+  el.cfgLogo?.addEventListener('change', async () => {
     const arquivo = el.cfgLogo.files && el.cfgLogo.files[0];
     if (!arquivo) return;
     try {
@@ -3022,7 +3045,7 @@ async function iniciar() {
     }
   });
 
-  el.cfgLogoRemover.addEventListener('click', () => {
+  el.cfgLogoRemover?.addEventListener('click', () => {
     estado.config.logo = '';
     cacheLogo.clear();
     salvarConfig();
