@@ -32,13 +32,17 @@ PUBLICAVEIS = [
     'manifest.webmanifest',
     'data',
     'assets',   # inclui assets/seguradoras/
+    'c',        # a pagina do link que o cliente recebe no WhatsApp
 ]
 
 # So estes tipos saem de dentro de pastas. Ja aconteceu de dois PDFs de origem
 # (o cartao antigo e o logo vetorizado) ficarem em assets/ e irem para o ar num
 # endereco publico, 4,3 MB em cada deploy — provavel causa do estouro de credito
 # da hospedagem. Arquivo de origem mora em fontes/, que nao e publicavel.
-EXTENSOES_OK = {'.png', '.jpg', '.jpeg', '.webp', '.svg', '.ico', '.json'}
+EXTENSOES_OK = {'.png', '.jpg', '.jpeg', '.webp', '.svg', '.ico', '.json',
+                # a pasta c/ tem pagina propria; sao os mesmos tipos que ja saem
+                # na raiz do site, entao nao afrouxam o filtro contra PDF
+                '.html', '.js', '.css'}
 
 
 def ler(*caminho):

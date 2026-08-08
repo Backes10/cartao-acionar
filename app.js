@@ -8,7 +8,7 @@
 // Precisa bater com o VERSAO do sw.js. O diagnóstico mostra os dois lado a
 // lado justamente para o vendedor perceber quando o aparelho está preso numa
 // versão antiga: se divergirem, o service worker ainda não trocou.
-const VERSAO_APP = 'v33';
+const VERSAO_APP = 'v34';
 
 const CHAVE_CONFIG = 'acionar.config';
 const CHAVE_CATALOGO = 'acionar.seguradoras';
@@ -38,8 +38,33 @@ const CONFIG_PADRAO = {
   // interpretar o arquivo. Sem ela o contato cai de 21 KB para ~7 KB. É só o
   // avatar na agenda do cliente — bonito, não essencial.
   fotoNoContato: false,
+  // Ligado enquanto estamos testando o link. É a chave para voltar atrás sem
+  // mexer em código: desligou, a mensagem volta a ser a de antes.
+  linkNaMensagem: true,
   templates: {}
 };
+
+/** Endereço da página que abre os telefones clicáveis.
+ *
+ *  A imagem do cartão não aceita link: chega ao WhatsApp como mapa de pixels,
+ *  sem camada clicável, nos dois sistemas. A mensagem aceita — e é por ela que
+ *  o cliente ganha telefone de um toque, contato de um toque, e números que
+ *  continuam certos quando a seguradora trocar de central.
+ *
+ *  Viajam três coisas só: a seguradora, o produto e o nome do contato. Apólice,
+ *  franquia e vigência ficam de fora porque não precisam ser clicáveis (já
+ *  estão legíveis na imagem) e porque assim um link encaminhado não mostra o
+ *  valor da franquia de ninguém. */
+const RAIZ_LINK = 'https://backes10.github.io/cartao-acionar/c/#';
+
+function linkDoCartao(cartao) {
+  if (!estado.config.linkNaMensagem || !estado.seguradoraId || !cartao) return '';
+  const carga = [estado.seguradoraId, cartao.produtoId, cartao.nomeContato].join('|');
+  let bin = '';
+  for (const b of new TextEncoder().encode(carga)) bin += String.fromCharCode(b);
+  const b64 = btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  return RAIZ_LINK + b64;
+}
 
 const estado = {
   produtos: null,
@@ -582,6 +607,12 @@ function mensagemWhatsApp(cartao) {
   l.push('');
   l.push(`Estou mandando junto um contato chamado "${cartao.nomeContato}".`);
   l.push(cartao.instrucaoAgenda);
+  const link = linkDoCartao(cartao);
+  if (link) {
+    l.push('');
+    l.push('Ou abra aqui e ligue com um toque:');
+    l.push(link);
+  }
   l.push('');
   l.push('Qualquer dúvida, me chama.');
   const assina = [estado.config.corretor, estado.config.corretora].filter(Boolean).join(' — ');
@@ -2139,6 +2170,7 @@ function abrirConfig() {
   el.cfgCor1.value = c.cor1;
   el.cfgCor2.value = c.cor2;
   el.cfgFotoNoContato.checked = !!c.fotoNoContato;
+  el.cfgLinkMensagem.checked = !!c.linkNaMensagem;
   el.cfgTemplate.value = templateDoProduto(estado.produtoId);
   const produto = produtoAtual();
   el.cfgTemplateAjuda.textContent = produto
@@ -2160,6 +2192,7 @@ function salvarDoDialogo() {
   c.cor1 = el.cfgCor1.value;
   c.cor2 = el.cfgCor2.value;
   c.fotoNoContato = el.cfgFotoNoContato.checked;
+  c.linkNaMensagem = el.cfgLinkMensagem.checked;
   const tpl = el.cfgTemplate.value.trim();
   if (estado.produtoId) {
     if (tpl && tpl !== estado.produtos[estado.produtoId].templateNome) {
@@ -2769,7 +2802,7 @@ async function iniciar() {
     'btnCancelarSeguradora', 'btnExcluirSeguradora',
     'dlgConfig', 'formConfig', 'cfgCorretor', 'cfgWhats',
     'cfgTelefone', 'cfgEmail', 'cfgCorretora', 'cfgSite', 'cfgCor1', 'cfgCor2',
-    'cfgFotoNoContato', 'cfgLogo',
+    'cfgFotoNoContato', 'cfgLinkMensagem', 'cfgLogo',
     'cfgLogoPrevia', 'cfgLogoRemover', 'cfgTemplate', 'cfgTemplateAjuda']) {
     el[id] = $('#' + id);
   }

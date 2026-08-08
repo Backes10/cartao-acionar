@@ -1,0 +1,123 @@
+/* Página do link que o cliente recebe no WhatsApp.
+ *
+ * Regras que valem aqui e não valem no app: quem abre isto está,
+ * possivelmente, parado no acostamento. Alvo de toque grande, contraste alto,
+ * número maior que qualquer outra coisa na tela, e nada que precise de
+ * interpretação. Tema claro fixo — cartão de emergência não segue o tema do
+ * celular. */
+
+:root {
+  --marca: #EB6522;
+  --tinta: #1A1512;
+  --fraca: #6E635C;
+  --borda: #EBE4DF;
+  --fundo: #FBF9F8;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--fundo);
+  color: var(--tinta);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  line-height: 1.45;
+}
+
+.topo {
+  background: var(--marca);
+  padding: 18px 20px;
+  padding-top: max(18px, env(safe-area-inset-top));
+}
+.topo__logo { height: 34px; width: auto; display: block; }
+
+.folha {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 22px 20px 40px;
+  padding-bottom: max(40px, env(safe-area-inset-bottom));
+}
+
+.rotulo {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: var(--marca);
+  text-transform: uppercase;
+}
+.titulo {
+  margin: 4px 0 22px;
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.secao {
+  margin: 26px 0 10px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--fraca);
+  text-transform: uppercase;
+}
+
+.telefones { display: flex; flex-direction: column; gap: 10px; }
+
+/* O bloco inteiro é o alvo, não só o número: dedo tremendo não acerta link de
+   uma linha. 64px de altura mínima é o que a Apple e o Google recomendam com
+   folga. */
+.tel {
+  display: block;
+  min-height: 64px;
+  padding: 12px 16px;
+  border: 2px solid var(--borda);
+  border-left: 6px solid var(--marca);
+  border-radius: 14px;
+  background: #FFFFFF;
+  text-decoration: none;
+  color: inherit;
+}
+.tel:active { background: #FFF3E9; }
+.tel__rot { display: block; font-size: 13.5px; color: var(--fraca); }
+.tel__num { display: block; font-size: 25px; font-weight: 800; letter-spacing: -0.01em; }
+
+/* Número que o aparelho reescreve errado ao virar contato: aparece, mas não é
+   link. Ver o comentário de semTel no app. */
+.tel--semlink { border-left-color: var(--fraca); }
+.tel--semlink .tel__aviso {
+  display: block; font-size: 12.5px; color: var(--fraca); margin-top: 2px;
+}
+
+.botao {
+  display: block;
+  width: 100%;
+  min-height: 58px;
+  border: 0;
+  border-radius: 14px;
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.botao--primario { background: var(--marca); color: #FFFFFF; }
+.botao--primario:active { background: #D2571A; }
+
+.nota { margin: 8px 0 0; font-size: 13px; color: var(--fraca); }
+
+.corretora { margin-top: 30px; padding-top: 8px; border-top: 1px solid var(--borda); }
+.corretora__nome { margin: 0 0 10px; font-size: 17px; font-weight: 700; }
+.telefones--claro .tel { border-left-color: var(--fraca); }
+
+.rodape { margin-top: 30px; font-size: 12.5px; color: var(--fraca); }
+
+.erro {
+  margin: 16px 0;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: #FEE4E2;
+  color: #7A271A;
+  font-size: 14.5px;
+}

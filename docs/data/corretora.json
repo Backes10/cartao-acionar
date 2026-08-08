@@ -1,0 +1,7 @@
+{
+  "_leia_me": "Dados da corretora usados pela PAGINA DO LINK (pasta c/). O app usa os dados de Configuracoes, que ficam no celular do vendedor; a pagina e publica e nao tem acesso a eles, entao le daqui. Se voce mudar o WhatsApp em Configuracoes, mude aqui tambem — senao o link manda o cliente para o numero antigo.",
+  "nome": "Acionar Corretora de Seguros",
+  "whatsapp": "(51) 99741-4049",
+  "telefone": "(51) 3566-0010",
+  "email": "acionarseguros@acionarseguros.com.br"
+}
