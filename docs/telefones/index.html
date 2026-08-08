@@ -2,37 +2,19 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Telefones</title>
-<meta name="theme-color" content="#EB6522">
 <meta name="robots" content="noindex, nofollow">
-<!-- Sem og: nenhum e sem meta description, de propósito. É daí que o WhatsApp
-     monta aquele cartão de prévia acima da mensagem, e ele só repetia o que a
-     imagem do cartão já diz. Sem esses dados não há o que montar.
-     Ressalva honesta: quem decide exibir a prévia é o WhatsApp, não a página.
-     Sem metadados ele tende a não mostrar nada, mas pode ainda exibir uma
-     tarja fina com o domínio — isso está fora do alcance daqui. -->
-<link rel="stylesheet" href="pagina.css">
+<title>Telefones</title>
 </head>
 <body>
-  <header class="topo">
-    <img class="topo__logo" src="../assets/logo-acionar.png" alt="Acionar Corretora de Seguros">
-  </header>
-
-  <main class="folha">
-    <h1 id="titulo" class="titulo">Carregando…</h1>
-
-    <div id="erro" class="erro" hidden></div>
-
-    <div id="telefones" class="telefones"></div>
-
-    <button id="btnContato" class="botao botao--primario" type="button" hidden>
-      Salvar na minha agenda
-    </button>
-
-    <div id="telefonesCorretora" class="telefones telefones--claro"></div>
-  </main>
-
-  <script src="pagina.js"></script>
+<p>Um momento…</p>
+<script>
+/* A página mudou de /telefones/ para /t/ para encurtar o endereço na mensagem.
+   Este arquivo existe só para não quebrar link já enviado. O redirecionamento é
+   por JavaScript e não por meta refresh porque o fragmento (o que vem depois do
+   #) é o que diz de qual seguradora são os telefones, e o meta refresh não o
+   carrega junto. */
+location.replace('../t/' + (location.hash || ''));
+</script>
+<noscript><a href="../t/">Toque aqui para abrir seus telefones</a></noscript>
 </body>
 </html>

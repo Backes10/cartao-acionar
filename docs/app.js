@@ -8,7 +8,7 @@
 // Precisa bater com o VERSAO do sw.js. O diagnóstico mostra os dois lado a
 // lado justamente para o vendedor perceber quando o aparelho está preso numa
 // versão antiga: se divergirem, o service worker ainda não trocou.
-const VERSAO_APP = 'v44';
+const VERSAO_APP = 'v45';
 
 const CHAVE_CONFIG = 'acionar.config';
 const CHAVE_CATALOGO = 'acionar.seguradoras';
@@ -59,9 +59,10 @@ const CONFIG_PADRAO = {
  *  endereço saía com 112 caracteres e ocupava seis linhas de texto azul na
  *  conversa. Agora são cerca de 50, legíveis, e a placa do carro não viaja
  *  mais dentro do link. */
-// O caminho é lido pelo cliente antes de ele decidir tocar. "/c/" não dizia
-// nada; "/telefones/" diz. O que vem depois do # continua opaco de propósito.
-const RAIZ_LINK = 'https://backes10.github.io/cartao-acionar/telefones/#';
+// Caminho curto: cada caractere aqui é uma letra a mais de endereço azul na
+// conversa. "/telefones/" dizia o que era, mas isso agora está na linha logo
+// acima do link, escrita para o cliente ler e para a busca do WhatsApp achar.
+const RAIZ_LINK = 'https://backes10.github.io/cartao-acionar/t/#';
 
 function linkDoCartao(cartao) {
   if (!estado.config.linkNaMensagem || !estado.seguradoraId || !cartao) return '';
@@ -611,30 +612,35 @@ function montarObservacoes(cartao, produto, dados) {
  *  seguradora e o nome do contato — tudo isso já está escrito na imagem que vai
  *  junto, e quem recebe as duas coisas lê duas vezes a mesma informação. Aqui
  *  fica só o que a imagem não faz: o link, que é tocável. */
+/** Três linhas. Nada mais.
+ *
+ *  A do meio existe para ser ACHADA: meses depois, o cliente vai procurar
+ *  "Yelum" ou "seguro auto" na busca do WhatsApp, e é esta mensagem que tem de
+ *  aparecer. Por isso ela junta o nome da seguradora com o do produto, mesmo
+ *  parecendo telegráfica — quem lê no momento do envio já está vendo a imagem
+ *  logo acima, com tudo escrito por extenso.
+ *
+ *  Assinatura não entra: o nome e os telefones do corretor estão no rodapé
+ *  daquela mesma imagem. */
 function mensagemWhatsApp(cartao) {
   const nome = primeiroNome(cartao.segurado);
   const l = [];
   l.push(nome ? `Olá, ${nome}!` : 'Olá!');
-  l.push('');
+
+  const produto = rotuloProduto(cartao.produtoId);
+  // "Porto Seguro Consórcio" + "Consórcio" sairia com a palavra repetida.
+  const repete = produto && cartao.seguradora
+    && cartao.seguradora.toLowerCase().includes(produto.toLowerCase());
+  const busca = ['Telefones', cartao.seguradora, repete ? '' : produto]
+    .filter(Boolean).join(' ');
 
   const link = linkDoCartao(cartao);
   if (link) {
-    l.push(cartao.seguradora
-      ? `Telefones da ${cartao.seguradora}, é só tocar para ligar:`
-      : 'Telefones para ligar com um toque:');
+    l.push(busca);
     l.push(link);
   } else {
     // Sem link, a única coisa que a imagem não resolve sozinha é o contato.
     l.push(cartao.instrucaoAgenda);
-  }
-
-  // Uma linha de assinatura, e só. O nome da corretora sai do rodapé da imagem
-  // que vai junto, com o logo e os telefones dela — repetir aqui era a terceira
-  // vez que a mesma informação aparecia na mesma conversa.
-  const assina = estado.config.corretor || estado.config.corretora;
-  if (assina) {
-    l.push('');
-    l.push('— ' + assina);
   }
   return l.join('\n');
 }
