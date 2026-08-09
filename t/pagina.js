@@ -55,7 +55,13 @@ function lerEndereco() {
 }
 
 function mostrarErro(texto) {
-  el('titulo').textContent = 'Não consegui abrir este cartão';
+  const cabecalho = 'Não consegui abrir este cartão';
+  el('titulo').textContent = cabecalho;
+  // O arquivo não tem <title> de propósito, para o WhatsApp não montar prévia, e
+  // quem preenche isso é o caminho de sucesso. No caminho de erro ninguém
+  // preenchia: a aba ficava sem nome nenhum, o que é falha de acessibilidade e
+  // deixa o cliente sem saber qual das abas abertas é esta.
+  document.title = cabecalho;
   el('erro').hidden = false;
   el('erro').textContent = texto;
 }

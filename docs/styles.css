@@ -234,6 +234,10 @@ main { padding: 0 16px 8px; max-width: 620px; margin: 0 auto; }
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
+/* O chip é o único controle da tela que não é campo de formulário, e sem isto
+   quem navega por teclado perdia o cursor ao entrar no passo 1. */
+.chip:focus-visible { outline: 2px solid var(--marca); outline-offset: 2px; }
+.chip[aria-checked="true"]:focus-visible { outline-color: var(--texto); }
 .chip[aria-checked="true"] {
   border-color: var(--marca);
   background: var(--marca);
@@ -488,6 +492,18 @@ textarea.campo__input { min-height: 78px; resize: vertical; line-height: 1.35; }
 }
 .tel-editor__origem a { color: inherit; font-weight: 600; }
 .tel-editor__nota { opacity: .85; }
+
+/* Aviso de número de central, colado embaixo do campo do número. Mesma cor do
+   bloco de procedência: os dois dizem "confira antes de confiar nisto". */
+.tel-editor__central {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border-left: 4px solid var(--erro-borda);
+  background: var(--erro-fundo);
+  color: var(--erro-texto);
+  font-size: 12.5px;
+  line-height: 1.35;
+}
 
 .botao--linha-clara {
   padding: 7px 12px; font-size: 13.5px;

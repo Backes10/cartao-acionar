@@ -17,10 +17,20 @@ Roda inteiro no aparelho. Nenhum dado de cliente sai do celular, não existe ser
 **A Yelum já está com os números reais**, tirados da imagem oficial que a Acionar envia hoje.
 Cartão de Yelum sai limpo, pronto para mandar.
 
-> **As outras 12 seguradoras estão com telefones FICTÍCIOS** (`0800 000 0001` e parecidos).
-> Enquanto estiverem assim, a imagem sai com a marca **EXEMPLO** atravessada e o
-> arquivo do contato vem com `EXEMPLO-` no nome. É de propósito: mandar um número
-> de sinistro errado é o único jeito de esse app causar um problema real.
+> **As outras 21 entradas do catálogo** (12 seguradoras e 9 administradoras de
+> consórcio) **estão com telefones não conferidos** — parte fictícios
+> (`0800 000 0001`), parte raspados do site da própria empresa sem ninguém ter
+> ligado para confirmar. Enquanto estiverem assim:
+>
+> - a imagem sai com a marca **EXEMPLO** atravessada;
+> - o arquivo do contato vem com `EXEMPLO-` no nome;
+> - o passo 4 mostra um aviso amarelo dizendo de qual empresa é o problema;
+> - **a página do link avisa o cliente**, não deixa nenhum número virar toque e
+>   esconde o botão de salvar na agenda. Os telefones da Acionar continuam
+>   clicáveis, que é para onde esse cliente deve ligar.
+>
+> É de propósito: mandar um número de sinistro errado é o único jeito de esse app
+> causar um problema real.
 
 ### Cadastrando pela tela (jeito fácil)
 
@@ -107,17 +117,17 @@ em vez de ajudar.
 
 ---
 
-## Link de teste (já no ar)
+## No ar
 
-https://claude.ai/code/artifact/8f02b211-e012-456c-94cc-6a2cd881b519
+**https://backes10.github.io/cartao-acionar/**
 
-É a versão de **arquivo único**, gerada por `python build.py`. Serve para testar de ponta
-a ponta hoje: abre no celular, monta um cartão, manda pra si mesmo no WhatsApp e vê o
-contato entrando na agenda.
+É a versão completa, servida pelo GitHub Pages a partir da pasta `docs/`. Funciona
+offline, instala como app e é dela que sai o link que o cliente recebe
+(`/t/#seguradora`).
 
-O que essa versão **não** tem, por ser um arquivo só: não funciona offline e não instala
-como app de verdade (dá para adicionar à tela de início, mas abre no navegador). Para
-produção, publique a pasta completa — instruções abaixo.
+`python build.py` também gera `dist/cartao-acionar.html`, o app inteiro num arquivo só,
+para hospedagem que aceita um arquivo apenas. Essa versão **não** funciona offline nem
+instala como app de verdade — serve para mandar por e-mail ou abrir de um pendrive.
 
 ## Como saber qual versão está no aparelho
 
@@ -161,21 +171,42 @@ toque dele, para não trocar a versão no meio de um cartão sendo preenchido.
 Os dois JSON de `data/` são exceção: vão sempre pela rede, então telefone de seguradora
 atualiza sem depender disso.
 
-**Preso numa versão velha?** No Android: menu do navegador → Configurações do site →
-o endereço → Excluir dados. Depois abra de novo.
+**Preso numa versão velha?** No diagnóstico, se o cache disser um número **maior** que a
+versão do app, aparece o botão *Limpar e buscar de novo* — use ele. No Android também dá
+pela mão: menu do navegador → Configurações do site → o endereço → Excluir dados.
 
-## Como colocar no ar
+## Como publicar
 
-O app é um site estático — qualquer hospedagem grátis serve.
+O site no ar é o **GitHub Pages servindo a pasta `docs/`** do `main`. Editar o código não
+publica nada: `docs/` é gerado pelo `build.py` e precisa ir junto no commit.
 
-1. Suba a pasta inteira no [Netlify Drop](https://app.netlify.com/drop) (arrasta e solta),
-   na Vercel ou no GitHub Pages.
-2. Abra o endereço no celular.
-3. **iPhone:** Safari → Compartilhar → *Adicionar à Tela de Início*.
-   **Android:** Chrome → menu → *Instalar app* / *Adicionar à tela inicial*.
+```bash
+python build.py
+```
 
-Precisa de HTTPS (que essas hospedagens já dão) para o app funcionar offline e para o
-botão *Enviar no WhatsApp* anexar os arquivos.
+```bash
+git add -A && git commit -m "o que mudou" && git push
+```
+
+O `build.py` faz mais do que copiar — ele recusa o build quando algo está errado:
+
+| Trava | Por que existe |
+|---|---|
+| `sw.js` e `app.js` com versões diferentes | o diagnóstico acusaria aparelho desatualizado num aparelho recém-atualizado |
+| arquivo em `docs/` sem estar previsto | sobra de build anterior indo para o ar sem ninguém ver |
+| extensão fora da lista (PDF, zip…) | já foram para o ar 4,3 MB de PDFs de origem, provável causa do estouro de crédito da hospedagem |
+| `docs/` acima de 2 MB | algo grande entrou sem ninguém perceber |
+| `index.html` sem o carimbo `?v=` | HTML e JavaScript poderiam vir de versões diferentes |
+
+O Pages leva de 30 s a 2 min para publicar. Para confirmar que subiu:
+
+```bash
+curl -s https://backes10.github.io/cartao-acionar/app.js | grep VERSAO_APP
+```
+
+No celular: **iPhone** Safari → Compartilhar → *Adicionar à Tela de Início*;
+**Android** Chrome → menu → *Instalar app*. Precisa de HTTPS (o Pages já dá) para
+funcionar offline e para o botão de enviar anexar os arquivos.
 
 ### Rodar no computador para testar
 
@@ -325,10 +356,12 @@ problema que já aconteceu e está resolvido:
 
 Estas coisas o app **não** faz e estão planejadas (ver `PLANO.md`):
 
-- Consórcio (a estrutura já suporta, falta cadastrar o produto e as administradoras).
-- Editar o catálogo de seguradoras pela tela, sem abrir o JSON.
 - Gerar cartões em lote a partir de uma planilha de apólices.
 - Aviso de renovação.
+- Publicar pela tela o catálogo que o vendedor cadastrou. Hoje o que ele edita
+  vale no aparelho dele, e o link do cliente só vê o que está no projeto — o app
+  detecta a diferença e deixa o link fora da mensagem, mas quem publica sou eu,
+  a partir do JSON exportado.
 
 E o teste que só dá para fazer com aparelho na mão: **importar o contato num iPhone, num
 Android com Google Contatos e num Samsung**, conferindo etiqueta, discagem e foto.

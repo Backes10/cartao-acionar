@@ -7,6 +7,11 @@ fontes/
 # docs/ NÃO entra aqui: é de lá que o GitHub Pages serve o site.
 dist/
 
+# Estado local da CLI da Netlify (id do site, cache de funções). Hoje só tem
+# pastas vazias, então o git nem mostra — mas mostra na primeira vez que ela
+# rodar de verdade.
+.netlify/
+
 # Lixo de sistema
 Thumbs.db
 desktop.ini

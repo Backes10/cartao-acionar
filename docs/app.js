@@ -8,7 +8,7 @@
 // Precisa bater com o VERSAO do sw.js. O diagnóstico mostra os dois lado a
 // lado justamente para o vendedor perceber quando o aparelho está preso numa
 // versão antiga: se divergirem, o service worker ainda não trocou.
-const VERSAO_APP = 'v49';
+const VERSAO_APP = 'v50';
 
 const CHAVE_CONFIG = 'acionar.config';
 const CHAVE_CATALOGO = 'acionar.seguradoras';
@@ -66,13 +66,85 @@ const RAIZ_LINK = 'https://backes10.github.io/cartao-acionar/t/#';
 
 function linkDoCartao() {
   if (!estado.config.linkNaMensagem || !estado.seguradoraId) return '';
+  // Link que levaria o cliente para dado diferente do que está no cartão não
+  // vai. Ver divergenciaDoLink().
+  if (divergenciaDoLink().omitir) return '';
   return RAIZ_LINK + estado.seguradoraId;
+}
+
+/** O link é público e a página lê o `data/seguradoras.json` PUBLICADO — nunca o
+ *  que o vendedor cadastrou no aparelho dele.
+ *
+ *  Daí três situações, e nenhuma delas dava sinal nenhum antes:
+ *
+ *  1. Seguradora criada pela tela. O id só existe no aparelho, a página não
+ *     acha nada e o cliente lê "Não encontrei esta seguradora no cadastro".
+ *     O app mostrava o endereço como se estivesse tudo certo.
+ *  2. Telefone ou nome corrigidos pela tela. Pior que o caso 1, porque
+ *     funciona: o cartão mostra o número novo, o link entrega o antigo, e o
+ *     cliente fica com duas fontes que se contradizem. Ninguém descobre até
+ *     alguém ligar para a central errada.
+ *  3. Só o "já conferi" mudou. Aqui o link continua servindo, e o cliente vai
+ *     ver o aviso vermelho de não conferido até eu publicar a base nova. É
+ *     chato, não é perigoso — então o link vai, com o vendedor avisado.
+ *
+ *  Nos casos 1 e 2 o link é omitido: a mensagem sai com a imagem e o contato,
+ *  que estão certos. Melhor mensagem sem link do que link mentindo.
+ *
+ *  Não custa requisição nenhuma: `seguradorasBase` É o arquivo publicado, já
+ *  carregado na abertura. É o mesmo mecanismo do conferirCorretora(), que existe
+ *  para o mesmo risco do lado dos dados da corretora. */
+function divergenciaDoLink() {
+  const nada = { omitir: false, aviso: '' };
+  if (!estado.config.linkNaMensagem || !estado.seguradoraId) return nada;
+
+  const base = (estado.seguradorasBase || []).find((s) => s.id === estado.seguradoraId);
+  const efetiva = seguradoraAtual();
+  if (!efetiva) return nada;
+
+  if (!base) {
+    return {
+      omitir: true,
+      aviso: `A ${efetiva.nome} existe só neste aparelho, então a página do link não a conhece `
+        + 'e o cliente veria um erro. Deixei o link fora da mensagem — a imagem e o contato vão '
+        + 'completos. Em Cadastrar → Backup do catálogo, exporte e me mande o arquivo para eu '
+        + 'publicar; aí o link volta.'
+    };
+  }
+
+  const igual = (a, b) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
+  const mudou = [];
+  if (!igual(efetiva.telefones, base.telefones)) mudou.push('os telefones');
+  if (!igual(efetiva.nome, base.nome)) mudou.push('o nome');
+  if (mudou.length) {
+    return {
+      omitir: true,
+      aviso: `Você corrigiu ${mudou.join(' e ')} da ${efetiva.nome} neste aparelho, e a página do `
+        + 'link ainda serve a versão publicada. O cliente veria dado diferente do que está na '
+        + 'imagem, então deixei o link fora da mensagem. Exporte o catálogo em Cadastrar → '
+        + 'Backup e me mande, que eu publico.'
+    };
+  }
+
+  if (!efetiva.exemplo && base.exemplo) {
+    return {
+      omitir: false,
+      aviso: `Você marcou a ${efetiva.nome} como conferida aqui, mas a base publicada ainda não `
+        + 'sabe disso: a imagem sai limpa e a página do link vai avisar o cliente que os '
+        + 'telefones não foram conferidos. Me mande o catálogo exportado para eu publicar.'
+    };
+  }
+
+  return nada;
 }
 
 const estado = {
   produtos: null,
   ordemProdutos: [],
   seguradoras: [],
+  // O catálogo como está publicado, sem os ajustes do aparelho. É exatamente o
+  // que a página do link enxerga, e é com ele que divergenciaDoLink() compara.
+  seguradorasBase: [],
   produtoId: null,
   seguradoraId: null,
   dados: {},
@@ -133,6 +205,17 @@ function hojeBR() {
   const d = new Date();
   const p = (n) => String(n).padStart(2, '0');
   return `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()}`;
+}
+
+/** Hoje no formato dos campos de data, para comparar com a vigência.
+ *
+ *  Montado a partir das partes locais, e não de toISOString(): aquele devolve
+ *  UTC, e das 21h em diante no Brasil ele já está no dia seguinte. Uma apólice
+ *  que vence hoje seria dada como vencida três horas antes da meia-noite. */
+function hojeISO() {
+  const d = new Date();
+  const p = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 }
 
 function primeiroNome(nomeCompleto) {
@@ -646,6 +729,18 @@ function conferirCartao() {
       : 'A vigência termina antes de começar. Confira as datas.');
   }
 
+  // Vigência que já passou é da mesma família das duas de cima, e é a mais
+  // provável de todas: o Histórico existe justamente para recarregar um cartão e
+  // trocar só a vigência. Esquecer de trocar é o erro mais fácil de cometer
+  // aqui, e o resultado é um cartão afirmando ao cliente que ele está coberto
+  // por um seguro que terminou. Impede, como as outras.
+  //
+  // O `<` e não `<=`: apólice que vence hoje vale hoje.
+  if (fim && fim < hojeISO()) {
+    impedimentos.push(`A vigência terminou em ${dataParaBR(fim)}. `
+      + 'Se é uma renovação, troque as duas datas antes de enviar.');
+  }
+
   const avisos = [];
   // Primeiro da lista de propósito. A proteção do EXEMPLO existia em três
   // lugares — marca d'água na imagem, prefixo no nome do arquivo, "NÃO USE" nas
@@ -663,6 +758,10 @@ function conferirCartao() {
       + 'cliente de verdade, ligue em cada número e marque "Já liguei em todos estes números" '
       + 'no cadastro.');
   }
+  // O catálogo daqui contra o catálogo publicado. Mesmo risco do
+  // divergenciaCorretora abaixo, do outro lado dos dados.
+  const doLink = divergenciaDoLink();
+  if (doLink.aviso) avisos.push(doLink.aviso);
   if (estado.divergenciaCorretora) {
     avisos.push('Os dados da corretora na página do link estão diferentes dos daqui ('
       + estado.divergenciaCorretora + '). O cliente que abrir o link vai ver os antigos — me avise para eu publicar a correção.');
@@ -1036,13 +1135,13 @@ async function desenharCartao(cartao) {
     ctx.fillText(cfg.corretora || 'Corretora de Seguros', xTexto, alturaTopo / 2 + 40);
   }
 
-  let y = alturaTopo + 46;
+  let y = alturaTopo + 38;
 
   /* ---- produto + bem segurado ---- */
   ctx.fillStyle = destaque;
   ctx.font = fnt(800, 25);
   textoEspacado(ctx, cartao.eyebrow, PAD, y, 3.4);
-  y += 44;
+  y += 40;
 
   if (cartao.titulo) {
     // Ícone à esquerda do título, na altura das maiúsculas. Fica aqui e não
@@ -1071,7 +1170,7 @@ async function desenharCartao(cartao) {
     ctx.font = fnt(800, 58);
     for (const linha of quebrarTexto(ctx, cartao.titulo, larguraUtil - recuo)) {
       ctx.fillText(linha, PAD + recuo, y);
-      y += 64;
+      y += 62;
     }
   }
 
@@ -1080,13 +1179,13 @@ async function desenharCartao(cartao) {
     ctx.font = fnt(600, 36);
     for (const linha of quebrarTexto(ctx, cartao.subtitulo, larguraUtil)) {
       ctx.fillText(linha, PAD, y);
-      y += 42;
+      y += 40;
     }
   }
 
   /* ---- selo da seguradora ---- */
   if (cartao.seguradora) {
-    y += 18;
+    y += 12;
     const alturaSelo = 62;
     // Logo da marca quando existe; senão o nome em texto, que funciona para
     // qualquer seguradora. O logo tem de ser a variante escura: o cartão é
@@ -1126,7 +1225,7 @@ async function desenharCartao(cartao) {
 
   /* ---- detalhes da apólice, em duas colunas ---- */
   if (cartao.detalhes.length) {
-    y += 42;
+    y += 32;
     const larguraColuna = (larguraUtil - 40) / 2;
     let coluna = 0;
     let yLinha = y;
@@ -1143,7 +1242,7 @@ async function desenharCartao(cartao) {
         ctx.fillText(linha, x, yv);
         yv += 38;
       }
-      fundoDaLinha = Math.max(fundoDaLinha, yv + 14);
+      fundoDaLinha = Math.max(fundoDaLinha, yv + 8);
       if (coluna === 1) {
         yLinha = fundoDaLinha;
         coluna = 0;
@@ -1160,7 +1259,7 @@ async function desenharCartao(cartao) {
     ctx.fillStyle = tintaFraca;
     ctx.font = fnt(700, 22);
     textoEspacado(ctx, 'COBERTURAS', PAD, y, 1.6);
-    y += 34;
+    y += 30;
     ctx.font = fnt(500, 30);
     for (const linha of cartao.extras.slice(0, 6)) {
       ctx.fillStyle = destaque;
@@ -1177,19 +1276,19 @@ async function desenharCartao(cartao) {
   /* ---- telefones ---- */
   const telSeguradora = cartao.telefones.filter((t) => t.grupo === 'seguradora');
   if (telSeguradora.length) {
-    y += 22;
+    y += 16;
     ctx.strokeStyle = '#EBE4DF';
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(PAD, y);
     ctx.lineTo(LARGURA - PAD, y);
     ctx.stroke();
-    y += 44;
+    y += 34;
 
     ctx.fillStyle = tintaFraca;
     ctx.font = fnt(700, 22);
     textoEspacado(ctx, cartao.tituloTelefones, PAD, y, 1.6);
-    y += 42;
+    y += 36;
 
     for (const t of telSeguradora) {
       ctx.fillStyle = destaque;
@@ -1201,7 +1300,7 @@ async function desenharCartao(cartao) {
       ctx.fillStyle = tinta;
       ctx.font = fnt(800, 46);
       ctx.fillText(t.numero, PAD + 26, y + 56);
-      y += 88;
+      y += 84;
     }
   }
 
@@ -1218,7 +1317,7 @@ async function desenharCartao(cartao) {
    *
    *  A faixa é pintada até o fim da tela de trabalho e o recorte final corta na
    *  altura real: assim não preciso somar as alturas antes de desenhar. */
-  y += 30;
+  y += 22;
   const inicioRodape = y;
   ctx.fillStyle = marca;
   ctx.fillRect(0, inicioRodape, LARGURA, ALTURA_MAX - inicioRodape);
@@ -1226,7 +1325,7 @@ async function desenharCartao(cartao) {
   // Sem rótulo "SEU CORRETOR" e sem divisor: o logo da corretora já está no
   // topo do mesmo cartão, e cada linha de enfeite aqui empurra os telefones da
   // seguradora para fora do que o balão do WhatsApp mostra.
-  let yr = inicioRodape + 52;
+  let yr = inicioRodape + 44;
   ctx.fillStyle = '#FFFFFF';
   ctx.font = fnt(800, 34);
   ctx.fillText(cfg.corretor || cfg.corretora || 'Acionar', PAD, yr);
@@ -1254,14 +1353,14 @@ async function desenharCartao(cartao) {
     if (linha) escrever(linha);
   }
 
-  yr += 48;
+  yr += 36;
   ctx.fillStyle = hexParaRgba('#FFFFFF', 0.66);
   ctx.font = fnt(700, 21);
   textoEspacado(ctx, 'A ACIONAR TAMBÉM CUIDA DE', PAD, yr, 2.4);
-  yr += 24;
+  yr += 18;
 
   const larguraItem = larguraUtil / SERVICOS.length;
-  const ladoIcone = 54;
+  const ladoIcone = 48;
   ctx.textAlign = 'center';
   for (let i = 0; i < SERVICOS.length; i += 1) {
     const centro = PAD + larguraItem * (i + 0.5);
@@ -1278,17 +1377,17 @@ async function desenharCartao(cartao) {
     ctx.restore();
     ctx.fillStyle = hexParaRgba('#FFFFFF', 0.92);
     ctx.font = fnt(600, 21);
-    ctx.fillText(SERVICOS[i].curto, centro, yr + ladoIcone + 30);
+    ctx.fillText(SERVICOS[i].curto, centro, yr + ladoIcone + 26);
   }
   ctx.textAlign = 'left';
-  yr += ladoIcone + 30;
+  yr += ladoIcone + 26;
 
   /* ---- ressalva ----
    *  Letra miúda de verdade, no pé, depois de tudo. O cartão é um resumo
    *  digitado à mão: se uma cobertura ou uma data saírem erradas, quem vale é o
    *  documento — e o cliente precisa ter lido isso antes de precisar. */
   if (cartao.ressalva) {
-    yr += 48;
+    yr += 34;
     ctx.fillStyle = hexParaRgba('#FFFFFF', 0.72);
     ctx.font = fnt(500, 20);
     for (const linha of quebrarTexto(ctx, cartao.ressalva, larguraUtil)) {
@@ -1297,7 +1396,7 @@ async function desenharCartao(cartao) {
     }
     yr -= 26;
   }
-  y = yr + 34;
+  y = yr + 26;
 
   /* ---- marca d'água de exemplo ---- */
   if (cartao.ehExemplo) {
@@ -1472,11 +1571,44 @@ function renderChipsProduto() {
     b.className = 'chip';
     b.setAttribute('role', 'radio');
     b.setAttribute('aria-checked', String(id === estado.produtoId));
+    // Um único ponto de tabulação no grupo, como manda o padrão de radiogroup:
+    // seis chips com tabIndex 0 obrigavam seis toques de Tab para atravessar o
+    // passo 1. Dentro do grupo quem anda são as setas, abaixo.
+    b.tabIndex = id === estado.produtoId ? 0 : -1;
     b.dataset.produto = id;
     b.textContent = `${p.icone || ''} ${p.nome}`.trim();
     b.addEventListener('click', () => trocarProduto(id));
     el.chipsProduto.appendChild(b);
   }
+}
+
+/** Setas, Home e End dentro do grupo de produtos.
+ *
+ *  O papel `radio` promete essa navegação a quem usa leitor de tela ou teclado:
+ *  anunciado como grupo de rádio e imóvel nas setas, o passo 1 parece quebrado.
+ *  Registrado no container e não em cada chip, porque a lista é remontada a cada
+ *  troca de produto — listener no container sobrevive. */
+function navegarChips(evento) {
+  const passo = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[evento.key];
+  const ordem = estado.ordemProdutos;
+  if (!ordem.length) return;
+
+  let destino = null;
+  if (passo) {
+    const i = ordem.indexOf(estado.produtoId);
+    destino = ordem[(((i < 0 ? 0 : i) + passo) + ordem.length) % ordem.length];
+  } else if (evento.key === 'Home') {
+    destino = ordem[0];
+  } else if (evento.key === 'End') {
+    destino = ordem[ordem.length - 1];
+  }
+  if (!destino) return;
+
+  evento.preventDefault();
+  trocarProduto(destino);
+  // Depois do trocarProduto, porque ele remonta os chips e o nó antigo já não
+  // existe. Sem devolver o foco, a seta seguinte não teria de onde sair.
+  el.chipsProduto.querySelector(`[data-produto="${destino}"]`)?.focus();
 }
 
 function trocarProduto(id) {
@@ -2292,7 +2424,29 @@ function lerRascunho() {
   try { return JSON.parse(localStorage.getItem(CHAVE_RASCUNHO) || 'null'); } catch (_) { return null; }
 }
 
+/* O logo como estava ao abrir Configurações, e qual botão do diálogo foi tocado.
+ *
+ * O logo era o único campo que Esc e "Fechar" NÃO descartavam: o `change` do
+ * arquivo gravava direto no disco, e não havia como voltar atrás — nem o logo
+ * anterior existia mais para restaurar. Agora a prévia e o cartão mostram o novo
+ * na hora, porque é isso que faz o vendedor decidir, mas o disco só é tocado no
+ * Salvar. Fechou sem salvar, volta o de antes. */
+let logoAoAbrirConfig = null;
+let acaoDoDialogoConfig = '';
+
+function restaurarLogoSeNaoSalvou() {
+  const anterior = logoAoAbrirConfig;
+  logoAoAbrirConfig = null;
+  if (anterior === null || anterior === estado.config.logo) return;
+  estado.config.logo = anterior;
+  cacheLogo.clear();
+  aplicarConfigNaTela();
+  atualizar();
+}
+
 function abrirConfig() {
+  logoAoAbrirConfig = estado.config.logo;
+  acaoDoDialogoConfig = '';
   const c = estado.config;
   el.cfgCorretor.value = c.corretor;
   el.cfgWhats.value = c.whatsapp;
@@ -2334,6 +2488,9 @@ function salvarDoDialogo() {
       delete c.templates[estado.produtoId];
     }
   }
+  // O logo escolhido no diálogo passa a valer agora, e não mais no instante em
+  // que o arquivo foi lido.
+  logoAoAbrirConfig = null;
   salvarConfig();
   aplicarConfigNaTela();
   atualizar();
@@ -2348,10 +2505,21 @@ function processarLogo(arquivo) {
       const img = new Image();
       img.onerror = () => reject(new Error('imagem inválida'));
       img.onload = () => {
+        // SVG sem width/height no próprio arquivo mede zero em parte dos
+        // navegadores. Com o Math.max(1, …) lá embaixo isso virava um logo de
+        // 1x1 pixel, gravado sem erro nenhum: o vendedor via a prévia vazia e
+        // não tinha como saber o que havia acontecido. Sem medida não há o que
+        // reduzir — melhor recusar e dizer o que fazer.
+        const largura = img.naturalWidth || img.width;
+        const altura = img.naturalHeight || img.height;
+        if (!largura || !altura) {
+          reject(new Error('imagem sem dimensão'));
+          return;
+        }
         const lado = 512;
-        const escala = Math.min(1, lado / Math.max(img.width, img.height));
-        const w = Math.max(1, Math.round(img.width * escala));
-        const h = Math.max(1, Math.round(img.height * escala));
+        const escala = Math.min(1, lado / Math.max(largura, altura));
+        const w = Math.max(1, Math.round(largura * escala));
+        const h = Math.max(1, Math.round(altura * escala));
         const c = document.createElement('canvas');
         c.width = w;
         c.height = h;
@@ -2427,9 +2595,13 @@ function renderListaCatalogo() {
     const meta = document.createElement('div');
     const qtd = (cia.telefones || []).length;
     meta.className = 'catalogo__meta' + (cia.exemplo ? ' catalogo__meta--exemplo' : '');
-    meta.textContent = cia.exemplo
-      ? `${qtd} telefone${qtd === 1 ? '' : 's'} — não conferidos`
-      : `${qtd} telefone${qtd === 1 ? '' : 's'} conferidos`;
+    // O adjetivo concorda com o substantivo. Saía "1 telefone — não conferidos",
+    // e é a tela onde o vendedor decide em quem confiar: erro de português aqui
+    // custa credibilidade no resto do cadastro.
+    const s = qtd === 1 ? '' : 's';
+    meta.textContent = qtd === 0
+      ? 'nenhum telefone cadastrado'
+      : `${qtd} telefone${s} ${cia.exemplo ? '— não conferido' : 'conferido'}${s}`;
     info.append(nome, meta);
 
     // Diz de qual produto é a entrada quando ela não serve o que está aberto.
@@ -2658,7 +2830,31 @@ function renderTelefonesEditor() {
       bloco.appendChild(ev);
     }
 
-    campo('Número', tel.numero, (v) => { tel.numero = v; }, 'Escreva como você escreveria para um cliente: 0800 701 4120, (11) 3132 1001.', 'tel');
+    // Aviso vivo sobre número de central (4004, 3003 e parentes).
+    //
+    // O telParaDiscagem já tira o DDD desses números para o discador não
+    // reescrever, mas ele não resolve tudo: o Android faz a própria reescrita ao
+    // IMPORTAR o contato, e é aí que 4004 5423 já virou o celular de uma pessoa
+    // real, com nome e foto, na agenda de um cliente. Quem sabe se aquele número
+    // é central ou fixo de verdade é quem cadastrou, não o app — então aqui o
+    // app aponta e explica, e a decisão fica com ele.
+    const alertaCentral = document.createElement('div');
+    alertaCentral.className = 'tel-editor__central';
+    const atualizarAlertaCentral = () => {
+      const mostrar = pareceCodigoCurto(tel.numero) && !tel.semTel;
+      alertaCentral.hidden = !mostrar;
+      if (mostrar) {
+        alertaCentral.textContent = 'Este parece número de central (4004, 3003 e afins). '
+          + 'O Android reescreve esses números ao salvar o contato, e o resultado já apontou '
+          + 'para o celular de uma pessoa de verdade. Se for central, marque a caixa abaixo.';
+      }
+    };
+
+    const entradaNumero = campo('Número', tel.numero, (v) => {
+      tel.numero = v;
+      atualizarAlertaCentral();
+    }, 'Escreva como você escreveria para um cliente: 0800 701 4120, (11) 3132 1001.', 'tel');
+    entradaNumero.insertAdjacentElement('afterend', alertaCentral);
     campo('Rótulo na imagem', tel.rotulo, (v) => { tel.rotulo = v; }, 'Use as palavras da própria seguradora.');
     campo('Rótulo curto na agenda', tel.rotuloCurto, (v) => { tel.rotuloCurto = v; },
       'Vai prefixado com o nome da seguradora. Curto, senão aparece cortado.');
@@ -2686,7 +2882,10 @@ function renderTelefonesEditor() {
     const chk = document.createElement('input');
     chk.type = 'checkbox';
     chk.checked = !!tel.semTel;
-    chk.addEventListener('change', () => { tel.semTel = chk.checked; });
+    chk.addEventListener('change', () => {
+      tel.semTel = chk.checked;
+      atualizarAlertaCentral();
+    });
     const txt = document.createElement('span');
     const t1 = document.createElement('span');
     t1.className = 'campo__label';
@@ -2699,6 +2898,7 @@ function renderTelefonesEditor() {
     wrapSem.append(chk, txt);
     bloco.appendChild(wrapSem);
 
+    atualizarAlertaCentral();
     el.listaTelefonesEditor.appendChild(bloco);
   });
 }
@@ -2823,8 +3023,19 @@ function importarCatalogo(arquivo) {
     const ajustes = { editadas: {}, novas: [], removidas: [] };
     for (const cia of lista) {
       if (!cia || !cia.id) continue;
-      if (estado.seguradorasBase.some((s) => s.id === cia.id)) ajustes.editadas[cia.id] = cia;
-      else ajustes.novas.push(cia);
+      const base = estado.seguradorasBase.find((s) => s.id === cia.id);
+      // Só a diferença, pelo mesmo motivo do editor: guardando o registro
+      // inteiro, importar um backup deixava as 22 seguradoras imunes para
+      // sempre às correções publicadas no projeto. Era o bug que o
+      // soAsDiferencas existe para evitar, entrando de novo pela porta do lado.
+      if (!base) {
+        ajustes.novas.push(cia);
+        continue;
+      }
+      const delta = soAsDiferencas(cia, base);
+      // Delta com só o `id` dentro é igual à base: não guarda. Sem isto,
+      // importar um backup gravava 22 entradas onde 21 não diziam nada.
+      if (Object.keys(delta).length > 1) ajustes.editadas[cia.id] = delta;
     }
     for (const base of estado.seguradorasBase) {
       if (!lista.some((c) => c && c.id === base.id)) ajustes.removidas.push(base.id);
@@ -3178,6 +3389,8 @@ async function iniciar() {
   renderFormulario();
   renderHistorico();
 
+  el.chipsProduto?.addEventListener('keydown', navegarChips);
+
   el.selSeguradora?.addEventListener('change', () => {
     estado.seguradoraId = el.selSeguradora.value || null;
     renderTelefonesSeguradora();
@@ -3333,17 +3546,47 @@ async function iniciar() {
   // Salva no submit do formulário, não no evento 'close' do <dialog>: o 'close'
   // não dispara em parte dos navegadores e a configuração se perdia calada.
   // Efeito colateral bom: Esc e "Fechar" descartam, que é o esperado.
+  //
+  // Anota qual botão foi tocado no clique, porque o evento.submitter do submit
+  // não existe no Safari abaixo do 15.4 — e sem ele o `botao.value` era
+  // undefined, o Salvar não salvava, e nada na tela dizia isso. O clique não
+  // depende de recurso novo nenhum.
+  for (const b of el.formConfig?.querySelectorAll('button[type="submit"]') || []) {
+    b.addEventListener('click', () => {
+      acaoDoDialogoConfig = b.value;
+      // Fechou sem salvar: o logo escolhido no diálogo não vale mais.
+      if (b.value !== 'salvar') restaurarLogoSeNaoSalvou();
+    });
+  }
   el.formConfig?.addEventListener('submit', (evento) => {
-    const botao = evento.submitter;
-    if (botao && botao.value === 'salvar') salvarDoDialogo();
+    // Enter dentro de um campo submete sem passar por clique nenhum. Aí vale o
+    // padrão do HTML, que é o primeiro botão de submit — o Salvar.
+    const acao = (evento.submitter && evento.submitter.value) || acaoDoDialogoConfig || 'salvar';
+    acaoDoDialogoConfig = '';
+    if (acao === 'salvar') salvarDoDialogo();
   });
+
+  // O Esc não passa por botão nenhum, então precisa do seu próprio caminho.
+  //
+  // O 'close' e o 'cancel' do <dialog> estão aqui só como reforço, e não como
+  // mecanismo: nem todo navegador os dispara — é a mesma razão pela qual a
+  // configuração é salva no submit e não no close, registrada no comentário
+  // acima. Medi neste navegador: dialog.close() NÃO disparou 'close'. Como
+  // restaurarLogoSeNaoSalvou é idempotente, sobrepor os caminhos não faz mal e
+  // cobre o navegador que dispara um e não o outro.
+  el.dlgConfig?.addEventListener('keydown', (evento) => {
+    if (evento.key === 'Escape') restaurarLogoSeNaoSalvou();
+  });
+  el.dlgConfig?.addEventListener('close', restaurarLogoSeNaoSalvou);
+  el.dlgConfig?.addEventListener('cancel', restaurarLogoSeNaoSalvou);
 
   el.cfgLogo?.addEventListener('change', async () => {
     const arquivo = el.cfgLogo.files && el.cfgLogo.files[0];
     if (!arquivo) return;
     try {
+      // Sem salvarConfig aqui: quem grava é o Salvar. Ver logoAoAbrirConfig.
       estado.config.logo = await processarLogo(arquivo);
-      salvarConfig();
+      cacheLogo.clear();
       aplicarConfigNaTela();
       el.cfgLogoPrevia.src = estado.config.logo;
       el.cfgLogoPrevia.hidden = false;
@@ -3357,7 +3600,6 @@ async function iniciar() {
   el.cfgLogoRemover?.addEventListener('click', () => {
     estado.config.logo = '';
     cacheLogo.clear();
-    salvarConfig();
     aplicarConfigNaTela();
     el.cfgLogoPrevia.hidden = true;
     atualizar();

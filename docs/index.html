@@ -12,7 +12,7 @@
 <!-- o iOS ignora os ícones do manifest ao "Adicionar à Tela de Início" -->
 <link rel="apple-touch-icon" href="assets/icone-192.png">
 <link rel="icon" type="image/png" href="assets/icone-192.png">
-<link rel="stylesheet" href="styles.css?v=v49">
+<link rel="stylesheet" href="styles.css?v=v50">
 </head>
 <body>
 
@@ -255,13 +255,16 @@
     </label>
 
     <div class="grade">
+      <!-- Os value= têm de ser os mesmos do CONFIG_PADRAO em app.js. Ficaram no
+           azul-marinho e no ouro do primeiro rascunho, e é o que a tela mostraria
+           se o abrirConfig() falhasse antes de preencher os campos. -->
       <label class="campo">
         <span class="campo__label">Cor principal</span>
-        <input id="cfgCor1" class="campo__input campo__input--cor" type="color" value="#0E3A5E">
+        <input id="cfgCor1" class="campo__input campo__input--cor" type="color" value="#EB6522">
       </label>
       <label class="campo">
         <span class="campo__label">Cor de destaque</span>
-        <input id="cfgCor2" class="campo__input campo__input--cor" type="color" value="#F2A93B">
+        <input id="cfgCor2" class="campo__input campo__input--cor" type="color" value="#3A3737">
       </label>
     </div>
 
@@ -310,7 +313,7 @@
   </form>
 </dialog>
 
-<script src="comum.js?v=v49"></script>
-<script src="app.js?v=v49"></script>
+<script src="comum.js?v=v50"></script>
+<script src="app.js?v=v50"></script>
 </body>
 </html>
