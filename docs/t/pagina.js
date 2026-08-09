@@ -219,6 +219,19 @@ async function iniciar() {
     }), nomeArquivoSeguro(nome, 'contato') + '.vcf');
   });
   el('btnContato').hidden = false;
+
+  /* ---- ressalva ----
+   *  O endereço não carrega o produto, mas o catálogo diz a que família a
+   *  empresa pertence — e é isso que decide a palavra: consórcio não tem
+   *  apólice, tem contrato. Assim a frase sai certa sem alongar o link. */
+  const ehConsorcio = Array.isArray(cia.produtos)
+    && cia.produtos.length === 1 && cia.produtos[0] === 'consorcio';
+  const doc = ehConsorcio ? 'no contrato do consórcio' : 'na apólice';
+  const res = el('ressalva');
+  res.textContent = 'Estes telefones são um resumo mantido pela sua corretora. '
+    + 'Coberturas, prazos e demais condições são as que constam ' + doc + ' — '
+    + 'em caso de divergência, vale o documento.';
+  res.hidden = false;
 }
 
 function destinoCorretora(t, corretora) {

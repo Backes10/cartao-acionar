@@ -105,6 +105,17 @@ body {
 
 .telefones--claro .tel { border-left-color: var(--fraca); }
 
+/* Letra miúda no pé: os telefones são o que importa, a ressalva é o que
+   protege. Nesta ordem. */
+.ressalva {
+  margin: 24px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--borda);
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--fraca);
+}
+
 .erro {
   margin: 16px 0;
   padding: 14px 16px;

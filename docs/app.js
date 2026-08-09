@@ -8,7 +8,7 @@
 // Precisa bater com o VERSAO do sw.js. O diagnóstico mostra os dois lado a
 // lado justamente para o vendedor perceber quando o aparelho está preso numa
 // versão antiga: se divergirem, o service worker ainda não trocou.
-const VERSAO_APP = 'v47';
+const VERSAO_APP = 'v48';
 
 const CHAVE_CONFIG = 'acionar.config';
 const CHAVE_CATALOGO = 'acionar.seguradoras';
@@ -509,6 +509,12 @@ function montarCartao() {
       return id && icones[id] ? id : null;
     })(),
     categoria: produto.rotuloResumo || 'Seguros',
+    // O cartão é um resumo digitado à mão a partir de outro documento. Se o
+    // vendedor errar uma cobertura ou uma data, quem manda é o documento — e o
+    // cliente precisa saber disso ANTES de precisar. Consórcio não tem apólice,
+    // tem contrato, então a palavra vem do produto.
+    ressalva: 'Resumo informativo. Em caso de divergência, vale o que consta '
+      + (produto.documento || 'na apólice') + '.',
     tituloTelefones: produto.tituloTelefones || 'EM CASO DE SINISTRO OU REBOQUE',
     instrucaoAgenda: produto.instrucaoAgenda
       || 'Salve na sua agenda: em caso de sinistro ou reboque, procure por "Seguro" no telefone e ligue direto — todos os números já estão lá.',
@@ -1259,7 +1265,23 @@ async function desenharCartao(cartao) {
     ctx.fillText(SERVICOS[i].curto, centro, yr + ladoIcone + 30);
   }
   ctx.textAlign = 'left';
-  y = yr + ladoIcone + 30 + 34;
+  yr += ladoIcone + 30;
+
+  /* ---- ressalva ----
+   *  Letra miúda de verdade, no pé, depois de tudo. O cartão é um resumo
+   *  digitado à mão: se uma cobertura ou uma data saírem erradas, quem vale é o
+   *  documento — e o cliente precisa ter lido isso antes de precisar. */
+  if (cartao.ressalva) {
+    yr += 48;
+    ctx.fillStyle = hexParaRgba('#FFFFFF', 0.72);
+    ctx.font = fnt(500, 20);
+    for (const linha of quebrarTexto(ctx, cartao.ressalva, larguraUtil)) {
+      ctx.fillText(linha, PAD, yr);
+      yr += 26;
+    }
+    yr -= 26;
+  }
+  y = yr + 34;
 
   /* ---- marca d'água de exemplo ---- */
   if (cartao.ehExemplo) {
