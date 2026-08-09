@@ -32,88 +32,15 @@ Cartão de Yelum sai limpo, pronto para mandar.
 > É de propósito: mandar um número de sinistro errado é o único jeito de esse app
 > causar um problema real.
 
-### Cadastrando pela tela (jeito fácil)
+### 📗 Como cadastrar: [MANUAL-CADASTRO.md](MANUAL-CADASTRO.md)
 
-No passo 2, toque em **Cadastrar / editar seguradoras**. Dá para:
+Cadastrar telefone de seguradora é o único cadastro deste app que pode causar dano real, e
+tem regra que não se adivinha. O manual está num arquivo à parte, para dar de ler a quem vai
+fazer o cadastro sem entregar junto um README de programador.
 
-- editar telefones, rótulos e tipo de qualquer seguradora
-- subir o **logo** dela (use a versão escura da marca — o cartão é branco)
-- criar seguradora nova e excluir as que ele não vende
-- marcar **"Já liguei em todos estes números"** — é isso que tira o EXEMPLO do cartão
-
-Cada telefone tem três campos que valem entender:
-
-| Campo | Onde aparece |
-|---|---|
-| **Número** | escreva como escreveria para um cliente: `0800 701 4120` |
-| **Rótulo na imagem** | as palavras da própria seguradora, na imagem do cartão |
-| **Rótulo curto na agenda** | curto, prefixado com o nome dela: `Yelum Capital e RM` |
-
-E a caixa **"Não virar telefone clicável"**: marque em números **4004** e **3003**. Eles não têm
-formato internacional válido e o Android reescreve — num teste real `4004 5423` virou um
-celular de DDD 47 que **pertence a uma pessoa de verdade**, e apareceu no contato com nome
-e foto dela. Marcado, o número fica visível na imagem para digitar à mão, sem risco de
-mandar o cliente ligar para uma estranha.
-
-> **O que ele cadastra fica só no aparelho dele.** Em *Backup do catálogo* → **Exportar**
-> sai um `seguradoras.json`. Mande esse arquivo para embutir no projeto — aí passa a valer
-> em qualquer celular, e sobrevive a trocar de aparelho.
->
-> Os ajustes locais **sobrepõem** o catálogo do projeto, não substituem: dá para publicar
-> uma seguradora nova na base sem apagar o que ele já cadastrou.
-
-### Editando o arquivo direto (jeito manual)
-
-Para liberar as demais:
-
-1. Abra `data/seguradoras.json`.
-2. Para cada seguradora, troque os números pelos reais — use a imagem de contatos que
-   a Acionar já manda hoje como fonte.
-3. Troque `"exemplo": true` por `"exemplo": false` **só** na seguradora que você já conferiu.
-4. **Ligue em cada número antes de liberar.** Sério.
-
-Seguradora que sobrar com `"exemplo": true` continua marcada, uma por uma. Você pode
-liberar Porto hoje e Azul na semana que vem.
-
-### Formato de um telefone
-
-```json
-{
-  "rotulo": "Capital e Região Metropolitana",
-  "rotuloCurto": "Capital e RM",
-  "numero": "4004 5423",
-  "tipo": "assistencia",
-  "semTel": true
-}
-```
-
-| Campo | Para que serve |
-|---|---|
-| `rotulo` | vai na **imagem** do cartão, que tem espaço e cabeçalho explicando |
-| `rotuloCurto` | vai no **contato da agenda**, prefixado com o nome da seguradora: `Yelum Capital e RM`. Opcional — sem ele usa o `rotulo` |
-| `semTel` | o número aparece na imagem e nas observações, mas **não** vira telefone clicável |
-
-**Por que `rotuloCurto` existe:** na agenda o rótulo longo aparece cortado no meio
-("Capital e Região Metro…"), e o cliente não sabe de quem é o número. Com a marca na
-frente e curto, ele lê `Yelum Capital e RM` inteiro.
-
-**Quando usar `semTel`:** números **4004** não têm formato internacional válido. Num teste
-real o Android reescreveu `4004 5423` como um celular de outro DDD que **pertence a uma
-pessoa de verdade** — ela apareceu no contato com nome e foto. Um cliente em pânico ligaria
-para uma estranha achando que era a seguradora. Número errado na agenda é pior que número
-ausente: marque `semTel` e ele fica visível na imagem, para digitar à mão.
-
-Números `0800` sobrevivem intactos e podem ser telefone normal.
-
-`tipo` pode ser `assistencia`, `sinistro`, `sac`, `whatsapp`, `ouvidoria` ou `outro` —
-ele só define a ordem no cartão. Escreva o número como você escreveria pra um cliente
-(`0800 727 2754`, `(11) 3003-9393`); o app converte pro formato que o telefone disca.
-
-**O `rotulo` tem de ser o mesmo que a seguradora publica.** A Yelum, por exemplo, separa
-os telefones por região (*Capital e Região Metropolitana*, *Demais Regiões*), não por
-finalidade. Não troque isso por "Sinistro" ou "Assistência 24h" para ficar mais bonito:
-se o cliente ligar no número errado achando que é outra coisa, o cartão piorou a situação
-em vez de ajudar.
+Cobre: onde fica, os cinco controles de cada telefone, a ordem no cartão, o aviso de número
+de central, o que o EXEMPLO faz em cinco lugares, por que o link do cliente depende de você
+me mandar o arquivo exportado, e o formato do `data/seguradoras.json` para quem edita à mão.
 
 ---
 
@@ -143,11 +70,17 @@ No pé da tela tem **"Versão e diagnóstico"**. Abre e mostra:
 O botão **Copiar diagnóstico** copia tudo isso em texto. É o jeito rápido de relatar
 problema: copia, cola no WhatsApp e manda.
 
-**Navegador importa.** Web Share com arquivos funciona bem no **Chrome do Android** e no
-**Safari do iPhone**. No Samsung Internet costuma vir `NÃO` — e aí o app baixa os dois
-arquivos e você anexa à mão. Se o diagnóstico disser `NÃO`, o rótulo do botão muda de
-*Enviar no WhatsApp* para *Preparar para o WhatsApp*, porque prometer envio que não
-acontece é pior que avisar.
+**Navegador importa, mas menos do que eu supunha.** Web Share com arquivos funciona no
+**Chrome do Android**, no **Safari do iPhone** e — medido no aparelho, contra o que estava
+escrito aqui antes — também no **Samsung Internet 30** (`sim`). Se algum dia o diagnóstico
+disser `NÃO`, o rótulo do botão muda de *1. Enviar a imagem* para *Preparar para o
+WhatsApp*, porque prometer envio que não acontece é pior que avisar, e o app baixa os dois
+arquivos para você anexar à mão.
+
+Esse `sim` vale para a **imagem**. O contato é outra história e não depende do navegador:
+`.vcf` não está na lista de extensões que o Chromium aceita no Web Share, e todo navegador
+de Android é Chromium. Por isso, no Android, o passo 3 diz **"Baixar o contato"** e não
+"Enviar" — ver *No Android são dois passos*, abaixo.
 
 ## Publicando uma correção
 
@@ -320,11 +253,17 @@ No seguro residencial e empresarial, use o campo de endereço só com bairro e c
 | Arquivo | O que é |
 |---|---|
 | `index.html` `styles.css` `app.js` | o app |
+| `comum.js` | regras de telefone e de vCard compartilhadas entre o app e a página do link. Já estiveram duplicadas e sete de oito cópias divergiram. |
+| `t/` | a página que o cliente abre pelo link da mensagem |
+| `c/` `telefones/` | endereços antigos da mesma página, redirecionando. Não apague: há link enviado apontando para eles. |
 | `data/seguradoras.json` | **catálogo de telefones — é o que você mantém** |
 | `data/produtos.json` | campos e padrão de nome de cada produto |
-| `assets/` | logo e ícones |
+| `data/corretora.json` | os dados da Acionar que a **página do link** usa. O app usa os de Configurações e compara os dois. |
+| `assets/` | logo, ícones e os logos das seguradoras |
 | `sw.js` `manifest.webmanifest` | fazem funcionar offline e instalar como app |
-| `build.py` | junta tudo num arquivo só, em `dist/` |
+| `build.py` | gera `docs/` (o site) e `dist/` (o arquivo único) |
+| `docs/` | **o que está no ar.** Gerado, mas vai no commit — é de lá que o Pages serve. |
+| `MANUAL-CADASTRO.md` | o manual de cadastrar seguradora e telefone |
 | `PLANO.md` | o plano completo, com as decisões e o que vem nas próximas fases |
 
 Para adicionar um produto novo (consórcio, por exemplo), o lugar é `data/produtos.json` —
