@@ -136,28 +136,41 @@ function baixar(texto, nome) {
 
 
 async function iniciar() {
+  // As duas buscas partem juntas — quem abre isto pode estar em 3G no
+  // acostamento — mas são esperadas SEPARADAS, e não num Promise.all.
+  //
+  // O Promise.all rejeita junto: se o seguradoras.json falhasse, o corretora.json
+  // ia embora com ele mesmo tendo chegado. E é justamente a corretora que
+  // sustenta os caminhos de erro aqui embaixo. Cada uma tem seu próprio catch
+  // para nenhuma rejeição ficar solta.
+  //
+  // produtos.json saiu: a página não usa mais nada de lá desde que o cabeçalho
+  // de seção e o rótulo "Seguradora/Administradora" foram removidos.
+  const buscaCorretora = fetch('../data/corretora.json', { cache: 'no-cache' })
+    .then((r) => r.json()).catch(() => ({}));
+  const buscaSeguradoras = fetch('../data/seguradoras.json', { cache: 'no-cache' })
+    .then((r) => r.json()).catch(() => null);
+
+  const corretora = await buscaCorretora;
+
   const pedido = lerEndereco();
   if (!pedido) {
     mostrarErro('O endereço veio incompleto. Peça para a sua corretora reenviar o link.');
+    mostrarCorretora(corretora);
     return;
   }
 
-  // produtos.json saiu: a página não usa mais nada de lá desde que o cabeçalho
-  // de seção e o rótulo "Seguradora/Administradora" foram removidos.
-  let seguradoras, corretora;
-  try {
-    [seguradoras, corretora] = await Promise.all([
-      fetch('../data/seguradoras.json', { cache: 'no-cache' }).then((r) => r.json()),
-      fetch('../data/corretora.json', { cache: 'no-cache' }).then((r) => r.json())
-    ]);
-  } catch (_) {
+  const seguradoras = await buscaSeguradoras;
+  if (!seguradoras) {
     mostrarErro('Não consegui carregar os telefones. Confira sua conexão e recarregue a página.');
+    mostrarCorretora(corretora);
     return;
   }
 
   const cia = (seguradoras.seguradoras || []).find((s) => s.id === pedido.seguradoraId);
   if (!cia) {
     mostrarErro('Não encontrei esta seguradora no cadastro. Peça para a sua corretora reenviar.');
+    mostrarCorretora(corretora);
     return;
   }
   // O título vem por aqui e não do HTML: sem <title> no arquivo, o robô do
@@ -215,16 +228,7 @@ async function iniciar() {
   }
 
   /* ---- a corretora ---- */
-  const daCorretora = [];
-  if (corretora.whatsapp) {
-    daCorretora.push({ rotulo: 'WhatsApp', numero: corretora.whatsapp, movel: true });
-  }
-  if (corretora.telefone) {
-    daCorretora.push({ rotulo: 'Escritório', numero: corretora.telefone, movel: false });
-  }
-  for (const t of daCorretora) {
-    destinoCorretora(t, corretora);
-  }
+  const daCorretora = mostrarCorretora(corretora);
 
   /* ---- salvar contato ---- */
   const paraContato = [
@@ -269,6 +273,32 @@ async function iniciar() {
     + 'Coberturas, prazos e demais condições são as que constam ' + doc + ' — '
     + 'em caso de divergência, vale o documento.';
   res.hidden = false;
+}
+
+/** Os telefones da corretora — em TODOS os caminhos, inclusive os de erro.
+ *
+ *  Quem cai numa tela de erro aqui é o cliente mais encalhado dos três: link
+ *  truncado no encaminhamento, seguradora que saiu do catálogo, arquivo que não
+ *  chegou. A tela mandava ele "pedir para a corretora reenviar o link" e não
+ *  dava um telefone dela — nem o WhatsApp, nem o escritório. Pedir para falar
+ *  com alguém sem dizer como é o mesmo que não dizer nada.
+ *
+ *  É o princípio que a página já aplicava no aviso de telefone não conferido:
+ *  os números da Acionar continuam à mão, porque é para lá que este cliente
+ *  deve ligar. Faltava valer também quando a página não abre.
+ *
+ *  Devolve a lista porque o botão de salvar na agenda monta o contato com ela. */
+function mostrarCorretora(corretora) {
+  const lista = [];
+  if (!corretora) return lista;
+  if (corretora.whatsapp) {
+    lista.push({ rotulo: 'WhatsApp', numero: corretora.whatsapp, movel: true });
+  }
+  if (corretora.telefone) {
+    lista.push({ rotulo: 'Escritório', numero: corretora.telefone, movel: false });
+  }
+  for (const t of lista) destinoCorretora(t, corretora);
+  return lista;
 }
 
 function destinoCorretora(t, corretora) {

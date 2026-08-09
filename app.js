@@ -8,7 +8,7 @@
 // Precisa bater com o VERSAO do sw.js. O diagnóstico mostra os dois lado a
 // lado justamente para o vendedor perceber quando o aparelho está preso numa
 // versão antiga: se divergirem, o service worker ainda não trocou.
-const VERSAO_APP = 'v50';
+const VERSAO_APP = 'v51';
 
 const CHAVE_CONFIG = 'acionar.config';
 const CHAVE_CATALOGO = 'acionar.seguradoras';
@@ -112,10 +112,11 @@ function divergenciaDoLink() {
     };
   }
 
-  const igual = (a, b) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
+  // mesmoValor e não JSON.stringify: a ordem das chaves do telefone não é dado.
+  // Comparando as strings, um Salvar que não mudou nada tirava o link daqui.
   const mudou = [];
-  if (!igual(efetiva.telefones, base.telefones)) mudou.push('os telefones');
-  if (!igual(efetiva.nome, base.nome)) mudou.push('o nome');
+  if (!mesmoValor(efetiva.telefones, base.telefones)) mudou.push('os telefones');
+  if (!mesmoValor(efetiva.nome, base.nome)) mudou.push('o nome');
   if (mudou.length) {
     return {
       omitir: true,
@@ -407,6 +408,44 @@ function limparNulos(obj) {
   return saida;
 }
 
+/** Dois valores são o MESMO DADO?
+ *
+ *  Existe porque o JSON.stringify não serve para isso, e usá-lo custou caro. Ele
+ *  compara a forma escrita, não o conteúdo: `{rotulo, numero}` e
+ *  `{numero, rotulo}` são o mesmo telefone e geram strings diferentes.
+ *
+ *  O catálogo do projeto grava o telefone como `{rotulo, rotuloCurto, numero,
+ *  tipo}`; o editor o remonta como `{rotulo, numero, tipo, rotuloCurto}`. Com o
+ *  stringify, abrir uma seguradora e tocar em Salvar SEM MUDAR NADA marcava os
+ *  telefones como alterados — em 20 das 22 entradas. E aí dois estragos, os dois
+ *  calados: a entrada ficava imune às correções publicadas (o mesmo bug que o
+ *  soAsDiferencas existe para evitar, entrando pela porta do lado) e o
+ *  divergenciaDoLink tirava o link da mensagem acusando o vendedor de uma
+ *  correção que ele não fez.
+ *
+ *  Vazio é vazio: '', null e ausente são a mesma coisa aqui. O editor normaliza
+ *  campo em branco para null, e o catálogo tem oito entradas com `"site": ""` e
+ *  três com `"logo": ""` — comparadas como strings, todas divergiam. */
+function mesmoValor(a, b) {
+  const vazio = (v) => v === null || v === undefined || v === '';
+  if (a === b) return true;
+  if (vazio(a) || vazio(b)) return vazio(a) && vazio(b);
+  if (Array.isArray(a) || Array.isArray(b)) {
+    return Array.isArray(a) && Array.isArray(b)
+      && a.length === b.length
+      && a.every((x, i) => mesmoValor(x, b[i]));
+  }
+  if (typeof a === 'object' && typeof b === 'object') {
+    // Chave com valor vazio não conta: gravar `rotuloCurto: ''` ou omitir a
+    // chave dizem a mesma coisa, e o editor faz um, o catálogo faz o outro.
+    const chaves = (o) => Object.keys(o).filter((k) => !vazio(o[k]));
+    const ka = chaves(a);
+    const kb = chaves(b);
+    return ka.length === kb.length && ka.every((k) => mesmoValor(a[k], b[k]));
+  }
+  return false;
+}
+
 /** Guarda só o que difere da base do projeto.
  *
  *  Antes o ajuste local guardava o registro inteiro, e isso tinha um efeito
@@ -416,10 +455,9 @@ function limparNulos(obj) {
  *  ele não tocou continua vindo do projeto e recebe correção. */
 function soAsDiferencas(cia, base) {
   if (!base) return cia;
-  const iguais = (a, b) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
   const delta = { id: cia.id };
   for (const chave of ['nome', 'exemplo', 'logo', 'site', 'produtos', 'telefones']) {
-    if (!iguais(cia[chave], base[chave])) delta[chave] = cia[chave] ?? null;
+    if (!mesmoValor(cia[chave], base[chave])) delta[chave] = cia[chave] ?? null;
   }
   return delta;
 }
@@ -2364,6 +2402,12 @@ function carregarDoHistorico(item) {
   renderChipsProduto();
   renderSeguradoras();
   renderTelefonesSeguradora();
+  // A faixa do topo conta as não conferidas DO PRODUTO ABERTO, e o histórico
+  // troca o produto. Sem esta linha, recarregar um cartão de consórcio deixava
+  // lá em cima "12 de 14 seguradoras" enquanto o resto da tela já dizia
+  // "Administradora" — o número errado, na palavra errada, no aviso que existe
+  // justamente para ninguém mandar telefone não conferido.
+  renderAvisoExemplo();
   renderFormulario();
   atualizar();
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -2494,6 +2538,12 @@ function salvarDoDialogo() {
   salvarConfig();
   aplicarConfigNaTela();
   atualizar();
+  // Aqui, e não só na abertura do app. O aviso de divergência existe para o
+  // caso "ele trocou o WhatsApp aqui e a página do link ainda serve o antigo" —
+  // e esse caso NASCE neste exato ponto. Rodando só no iniciar(), o vendedor
+  // trocava o número, mandava cartões o dia inteiro com o link apontando para o
+  // número velho, e só descobria na próxima vez que abrisse o app.
+  conferirCorretora();
 }
 
 /** Reduz o logo antes de guardar: localStorage tem ~5 MB no total. */
@@ -2960,7 +3010,13 @@ function salvarSeguradoraDoEditor() {
     // Só o que difere da base. Guardando o registro inteiro, uma seguradora
     // editada ficava para sempre imune às correções publicadas no projeto: se
     // eu corrigisse um telefone da Yelum, a cópia local continuaria por cima.
-    ajustes.editadas[cia.id] = soAsDiferencas(cia, estado.seguradorasBase.find((s) => s.id === cia.id));
+    const delta = soAsDiferencas(cia, estado.seguradorasBase.find((s) => s.id === cia.id));
+    // Delta com só o `id` dentro significa "igual à base": não guarda nada, e
+    // apaga o que houvesse. Mesma regra do importarCatalogo. Sem isto, abrir e
+    // salvar sem mudar nada deixava uma entrada morta no disco para sempre — e
+    // uma entrada em `editadas` é o sinal de "o vendedor mexeu aqui".
+    if (Object.keys(delta).length > 1) ajustes.editadas[cia.id] = delta;
+    else delete ajustes.editadas[cia.id];
   } else {
     const i = ajustes.novas.findIndex((s) => s.id === cia.id);
     if (i >= 0) ajustes.novas[i] = cia;

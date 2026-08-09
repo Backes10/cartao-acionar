@@ -66,6 +66,11 @@ function telParaWaMe(bruto) {
   const d = String(bruto || '').replace(/\D/g, '');
   if (!d) return '';
   if (/^0(800|300|500)/.test(d) || pareceCodigoCurto(d)) return '';
+  // Menos de 10 dígitos não é conta de WhatsApp em lugar nenhum do mundo: é
+  // código curto (*144), ramal, ou número que ficou pela metade no campo. Sem
+  // esta linha caía no `return d` do fim e virava "wa.me/144" — exatamente o
+  // link para ninguém que esta função existe para evitar do lado dos 0800.
+  if (d.length < 10) return '';
   if (d.length === 10 || d.length === 11) return '55' + d;
   if (d.startsWith('55') && d.length >= 12) return d;
   return d;
