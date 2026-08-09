@@ -253,17 +253,11 @@ function hexParaRgba(hex, alfa) {
 }
 
 /* ==========================================================================
-   Telefone no formato que o celular consegue discar
-
-   Ponto crítico: 0800/0300/4003/4004 NÃO completam a chamada com +55 na frente.
-   Só celular e fixo comum viram E.164.
-   ========================================================================== */
-
-
-/* ==========================================================================
    vCard 3.0
-   ========================================================================== */
 
+   As regras de discagem (0800/0300/4004 não aceitam +55), o escape e a dobra de
+   linha moram em comum.js, compartilhadas com a página do link.
+   ========================================================================== */
 
 function montarVCard(cartao) {
   const linhas = [];
@@ -555,7 +549,12 @@ function montarCartao() {
       rotulo: t.rotulo,
       rotuloAgenda: `${seguradora.nome} ${t.rotuloCurto || t.rotulo}`,
       numero: t.numero,
-      movel: t.tipo === 'whatsapp',
+      // Marcado como WhatsApp E capaz de ser um. O catálogo tem 0800 com
+      // `tipo: whatsapp` — raspagem que errou o rótulo — e só o tipo bastava
+      // para o contato sair com TYPE=CELL, pondo ícone de celular num número
+      // gratuito na agenda do cliente. O telParaWaMe já sabe o que não existe
+      // no WhatsApp; aqui é a mesma regra, reaproveitada.
+      movel: t.tipo === 'whatsapp' && !!telParaWaMe(t.numero),
       // Fica na imagem e nas observações, mas não vira telefone clicável.
       semTel: !!t.semTel,
       grupo: 'seguradora'
@@ -879,12 +878,6 @@ function textoEspacado(ctx, texto, x, y, espaco) {
     cursor += ctx.measureText(ch).width + espaco;
   }
   return cursor - espaco - x;
-}
-
-function larguraEspacada(ctx, texto, espaco) {
-  let total = 0;
-  for (const ch of String(texto)) total += ctx.measureText(ch).width + espaco;
-  return Math.max(0, total - espaco);
 }
 
 /* ==========================================================================
@@ -1873,7 +1866,13 @@ function renderPendencias() {
   }
 
   el.pendencias.hidden = blocos.length === 0;
-  el.pendencias.innerHTML = blocos.join('');
+  // Só escreve quando o texto MUDA. A caixa é uma região aria-live: reescrever
+  // o mesmo conteúdo a cada tecla digitada faria o leitor de tela repetir a
+  // lista inteira de impedimentos a cada letra do nome do segurado — aviso que
+  // não para de falar é aviso desligado. Assim ele anuncia uma vez, quando o
+  // que falta realmente muda.
+  const html = blocos.join('');
+  if (el.pendencias.innerHTML !== html) el.pendencias.innerHTML = html;
   el.pendencias.classList.toggle('pendencias--impede', estado.bloqueado);
   atualizarAcoes();
 }
@@ -2865,7 +2864,11 @@ function renderTelefonesEditor() {
         c.textContent = '“…' + tel._contexto + '”';
         ev.appendChild(c);
       }
-      if (tel._fonte) {
+      // Só http(s). A procedência vem do catálogo do projeto, mas também de
+      // qualquer JSON que o vendedor importe em Backup do catálogo — e um
+      // `_fonte` escrito como "javascript:…" viraria código rodando no app com
+      // um toque. Endereço que não é http(s) não é fonte: não vira link.
+      if (/^https?:\/\//i.test(String(tel._fonte || ''))) {
         const a = document.createElement('a');
         a.href = tel._fonte;
         a.target = '_blank';

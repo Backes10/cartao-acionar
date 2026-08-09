@@ -77,7 +77,11 @@
       <div id="nomeContato" class="nomecontato__valor">—</div>
     </div>
 
-    <div id="pendencias" class="pendencias" hidden></div>
+    <!-- Região viva: o que falta para o cartão sair muda enquanto ele digita, e
+         os botões de enviar ficam cinzas sem dizer por quê a quem não vê a
+         caixa. O renderPendencias só reescreve quando o texto muda de verdade,
+         senão isto viraria uma voz repetindo a lista a cada tecla. -->
+    <div id="pendencias" class="pendencias" role="status" aria-live="polite" hidden></div>
 
     <div class="previa">
       <canvas id="canvasCartao" class="previa__canvas" width="1080" height="1350"

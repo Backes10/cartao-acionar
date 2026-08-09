@@ -17,12 +17,6 @@
 
 const el = (id) => document.getElementById(id);
 
-/* ---- espelho de app.js: números brasileiros que não aceitam +55 ---- */
-
-
-/* ---- espelho de app.js ---- */
-
-
 /** O endereço traz só a seguradora: "#yelum".
  *
  *  Antes levava também o produto e o nome do contato, embrulhados em base64. O
@@ -237,7 +231,9 @@ async function iniciar() {
       rotuloAgenda: cia.nome + ' ' + (t.rotuloCurto || t.rotulo),
       numero: t.numero,
       semTel: !!t.semTel,
-      movel: t.tipo === 'whatsapp'
+      // Mesma regra do app: 0800 com `tipo: whatsapp` no catálogo não vira
+      // CELL no contato. Ver o comentário em montarCartao().
+      movel: t.tipo === 'whatsapp' && !!telParaWaMe(t.numero)
     })),
     ...daCorretora.map((t) => ({
       rotulo: 'Acionar ' + t.rotulo,
