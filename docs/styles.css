@@ -69,6 +69,25 @@
 
 * { box-sizing: border-box; }
 
+/* O atributo hidden do HTML tem de vencer QUALQUER display daqui.
+ *
+ * Sem esta linha ele não vencia nada: o navegador aplica [hidden]{display:none}
+ * na folha dele, e folha de autor sempre ganha da folha do navegador. Bastava
+ * um `.banner--novo { display: flex }` para o hidden virar enfeite — e virou.
+ * O aviso "Tem versão nova do app" ficou VISÍVEL em toda abertura, 73px
+ * grudados no topo da tela, com o hidden lá, verdadeiro, sem efeito nenhum.
+ *
+ * O que isso custava: o único mecanismo de atualização do app é esse aviso.
+ * Aparecendo sempre, ele não avisa nada — e no dia em que houvesse atualização
+ * de verdade ele ia passar batido junto com o resto. Pior, tocar em Recarregar
+ * sem nada esperando cai num location.reload() que não muda nada, e o vendedor
+ * aprende que o botão é decorativo.
+ *
+ * Valia também para .banner--alerta: no dia em que todas as seguradoras
+ * estivessem conferidas, a faixa continuaria na tela dizendo "Telefones não
+ * conferidos" com a contagem vazia. */
+[hidden] { display: none !important; }
+
 html { -webkit-text-size-adjust: 100%; }
 
 body {

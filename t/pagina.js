@@ -60,7 +60,7 @@ function mostrarErro(texto) {
   el('erro').textContent = texto;
 }
 
-function cartaoTelefone({ rotulo, numero, semTel, classe }) {
+function cartaoTelefone({ rotulo, numero, semTel, classe, aviso }) {
   const discar = semTel ? '' : telParaDiscagem(numero);
   const no = document.createElement(discar ? 'a' : 'div');
   no.className = 'tel' + (discar ? '' : ' tel--semlink') + (classe ? ' ' + classe : '');
@@ -75,13 +75,15 @@ function cartaoTelefone({ rotulo, numero, semTel, classe }) {
   no.append(rot, num);
 
   if (!discar) {
-    // Mesma razão do semTel no app: o Android reescreve 4004/3003 e o número
-    // resultante já apontou para o celular de uma pessoa real. Melhor o cliente
-    // digitar do que ligar para a pessoa errada.
-    const aviso = document.createElement('span');
-    aviso.className = 'tel__aviso';
-    aviso.textContent = 'Digite este número no teclado do telefone.';
-    no.appendChild(aviso);
+    // Duas razões diferentes para o número não ser link, e o texto tem de dizer
+    // qual é. A de sempre: o Android reescreve 4004/3003 e o resultado já
+    // apontou para o celular de uma pessoa real, então melhor digitar à mão. A
+    // outra vem por parâmetro — número que ninguém conferiu, onde digitar à mão
+    // é justamente o que não se deve fazer.
+    const nota = document.createElement('span');
+    nota.className = 'tel__aviso';
+    nota.textContent = aviso || 'Digite este número no teclado do telefone.';
+    no.appendChild(nota);
   }
   return no;
 }
@@ -170,6 +172,30 @@ async function iniciar() {
 
   const doSeguro = ordenarTelefones(cia.telefones);
 
+  /* ---- telefones ainda não conferidos ----
+   *
+   *  Esta página não sabia o que era EXEMPLO, e era o único lugar onde isso
+   *  importava de verdade. A imagem do cartão sai riscada, o arquivo do contato
+   *  vem com EXEMPLO- no nome e as observações dizem "NÃO USE" — e aqui, que é
+   *  onde o cliente TOCA com o dedo, o 0800 000 0001 aparecia como
+   *  "Assistência 24h / Reboque", clicável, com um botão grande oferecendo
+   *  salvar tudo na agenda dele.
+   *
+   *  Agora: aviso em cima, números visíveis mas sem link, e o botão de salvar
+   *  fora do ar. Os telefones da corretora continuam clicáveis logo abaixo, que
+   *  é para onde este cliente deve ligar. */
+  const naoConferido = !!cia.exemplo;
+  if (naoConferido) {
+    const av = el('naoConferido');
+    const forte = document.createElement('strong');
+    forte.textContent = 'Estes telefones ainda não foram conferidos.';
+    const texto = document.createElement('span');
+    texto.textContent = 'Não ligue por eles. Fale com a sua corretora nos números '
+      + 'no fim desta página — ela confirma o telefone certo da ' + cia.nome + ' na hora.';
+    av.append(forte, texto);
+    av.hidden = false;
+  }
+
   // Sem cabeçalho de seção: o rótulo de cada telefone já começa com o nome da
   // seguradora, então uma linha em cima dizendo a mesma coisa era repetição.
   const destino = el('telefones');
@@ -177,7 +203,8 @@ async function iniciar() {
     destino.appendChild(cartaoTelefone({
       rotulo: cia.nome + ' — ' + (t.rotuloCurto || t.rotulo),
       numero: t.numero,
-      semTel: !!t.semTel
+      semTel: naoConferido || !!t.semTel,
+      aviso: naoConferido ? 'Número não conferido — confirme com a corretora antes de ligar.' : ''
     }));
   }
 
@@ -218,7 +245,11 @@ async function iniciar() {
       telefones: paraContato
     }), nomeArquivoSeguro(nome, 'contato') + '.vcf');
   });
-  el('btnContato').hidden = false;
+  // Telefone não conferido não entra na agenda do cliente. Contato salvo é o que
+  // sobrevive: ele vai procurar "seguro" no telefone dentro de um ano, achar o
+  // número errado e discar sem desconfiar de nada. Enquanto ninguém ligou para
+  // confirmar, esse botão não existe.
+  el('btnContato').hidden = naoConferido;
 
   /* ---- ressalva ----
    *  O endereço não carrega o produto, mas o catálogo diz a que família a

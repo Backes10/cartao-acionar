@@ -8,7 +8,7 @@
 // Precisa bater com o VERSAO do sw.js. O diagnóstico mostra os dois lado a
 // lado justamente para o vendedor perceber quando o aparelho está preso numa
 // versão antiga: se divergirem, o service worker ainda não trocou.
-const VERSAO_APP = 'v48';
+const VERSAO_APP = 'v49';
 
 const CHAVE_CONFIG = 'acionar.config';
 const CHAVE_CATALOGO = 'acionar.seguradoras';
@@ -64,8 +64,8 @@ const CONFIG_PADRAO = {
 // acima do link, escrita para o cliente ler e para a busca do WhatsApp achar.
 const RAIZ_LINK = 'https://backes10.github.io/cartao-acionar/t/#';
 
-function linkDoCartao(cartao) {
-  if (!estado.config.linkNaMensagem || !estado.seguradoraId || !cartao) return '';
+function linkDoCartao() {
+  if (!estado.config.linkNaMensagem || !estado.seguradoraId) return '';
   return RAIZ_LINK + estado.seguradoraId;
 }
 
@@ -604,7 +604,7 @@ function mensagemWhatsApp(cartao) {
   const busca = ['Telefones', cartao.seguradora, repete ? '' : produto]
     .filter(Boolean).join(' ');
 
-  const link = linkDoCartao(cartao);
+  const link = linkDoCartao();
   if (link) {
     l.push(busca);
     l.push(link);
@@ -647,6 +647,22 @@ function conferirCartao() {
   }
 
   const avisos = [];
+  // Primeiro da lista de propósito. A proteção do EXEMPLO existia em três
+  // lugares — marca d'água na imagem, prefixo no nome do arquivo, "NÃO USE" nas
+  // observações do contato — e em nenhum deles na TELA de quem está montando o
+  // cartão. Dava para escolher uma seguradora não conferida, ver a prévia e
+  // enviar sem que uma linha do app dissesse por que aquele cartão está riscado.
+  //
+  // É aviso e não impedimento porque testar com exemplo é uso legítimo: quem
+  // está conferindo os números precisa gerar o cartão para conferir. O que não
+  // pode é o silêncio.
+  const cia = seguradoraAtual();
+  if (cia?.exemplo) {
+    avisos.push(`Os telefones da ${cia.nome} ainda não foram conferidos. A imagem sai riscada `
+      + 'com EXEMPLO e a página do link avisa o cliente para não discar. Antes de mandar para '
+      + 'cliente de verdade, ligue em cada número e marque "Já liguei em todos estes números" '
+      + 'no cadastro.');
+  }
   if (estado.divergenciaCorretora) {
     avisos.push('Os dados da corretora na página do link estão diferentes dos daqui ('
       + estado.divergenciaCorretora + '). O cliente que abrir o link vai ver os antigos — me avise para eu publicar a correção.');
@@ -1692,9 +1708,19 @@ function renderPendencias() {
   atualizarAcoes();
 }
 
-/** Trava tudo que gera um entregável enquanto o cartão estiver incompleto. */
+/** Trava tudo que gera um entregável enquanto o cartão estiver incompleto.
+ *
+ *  Duas condições diferentes, e a distinção importa:
+ *    - `completo` = o formulário está preenchido. Manda em quem APARECE.
+ *    - `pronto`   = além disso, os arquivos do cartão ATUAL já existem. Manda em
+ *                   quem está HABILITADO.
+ *
+ *  Antes era uma só, e o efeito colateral era o pisca-pisca: durante o
+ *  redesenho os passos 2 e 3 sumiam da tela e voltavam, empurrando o layout a
+ *  cada tecla digitada. Agora o botão fica cinza no lugar dele. */
 function atualizarAcoes() {
-  const pronto = !!estado.artefatos && !estado.bloqueado;
+  const completo = !estado.bloqueado;
+  const pronto = completo && !!estado.artefatos;
   for (const botao of [el.btnEnviar, el.btnVcf, el.btnPng, el.btnMensagem]) {
     if (botao) botao.disabled = !pronto;
   }
@@ -1707,7 +1733,7 @@ function atualizarAcoes() {
   // suposição sobre a plataforma foi o erro; agora os dois estão à vista e cada
   // um faz o que o rótulo diz.
   if (el.btnContatoDepois) {
-    el.btnContatoDepois.hidden = !pronto;
+    el.btnContatoDepois.hidden = !completo;
     el.btnContatoDepois.disabled = !pronto;
   }
 
@@ -1720,15 +1746,19 @@ function atualizarAcoes() {
   // Três passos à vista, numerados, na ordem de uso. Previsível ganha de
   // esperto.
   if (el.btnMensagemDepois) {
-    el.btnMensagemDepois.hidden = !pronto;
+    el.btnMensagemDepois.hidden = !completo;
     el.btnMensagemDepois.disabled = !pronto;
   }
 
   // O link mora dentro da mensagem, que o app nunca exibe. Sem mostrá-lo aqui,
   // não há como saber que ele existe nem como conferir a página antes de mandar
   // para um cliente — e a primeira reação a ele foi "não tem os links".
+  //
+  // Não depende dos artefatos: o link é da seguradora escolhida, não do cartão
+  // montado. Amarrá-lo ao cartão fazia o endereço desaparecer e voltar a cada
+  // tecla digitada, sem nenhum motivo.
   if (el.blocoLink) {
-    const url = pronto ? linkDoCartao(estado.artefatos.cartao) : '';
+    const url = completo ? linkDoCartao() : '';
     el.blocoLink.hidden = !url;
     if (url) {
       el.linkCliente.textContent = url;
@@ -1749,11 +1779,27 @@ let timerAtualizacao = null;
 let atualizando = false;
 let pedidoPendente = false;
 
+/** O cartão que está na memória não vale mais.
+ *
+ *  Chamado no instante em que o formulário muda, antes de qualquer redesenho.
+ *  Antes eu desabilitava três botões à mão aqui e o estado.artefatos continuava
+ *  apontando para o cartão ANTERIOR — e os passos 2 e 3 nem estavam na lista.
+ *  Digitava uma placa nova e, nos 250 ms de espera mais o tempo de desenhar
+ *  (medi 1,3 s no cartão mais alto), "2. Enviar a mensagem" e "3. Enviar o
+ *  contato" continuavam ativos, com o .vcf da placa velha pronto para ir. Um
+ *  toque rápido depois de corrigir um campo mandava o contato do veículo
+ *  errado, sem nada na tela dizendo isso.
+ *
+ *  Zerando os artefatos, o atualizarAcoes trava os cinco de uma vez e o enviar()
+ *  cai no "Ainda estou montando o cartão" — que é a verdade. */
+function descartarArtefatos() {
+  estado.artefatos = null;
+  atualizarAcoes();
+}
+
 function agendarAtualizacao() {
   clearTimeout(timerAtualizacao);
-  el.btnEnviar.disabled = true;
-  el.btnVcf.disabled = true;
-  el.btnPng.disabled = true;
+  descartarArtefatos();
   timerAtualizacao = setTimeout(atualizar, 250);
 }
 
@@ -1785,7 +1831,13 @@ async function executarAtualizacao() {
   const cartao = montarCartao();
   if (!cartao) return;
 
-  el.btnEnviar.disabled = true;
+  // Aqui também, e não só no agendarAtualizacao: trocar a seguradora no
+  // <select>, sair de um campo de dinheiro, salvar as configurações ou usar um
+  // cartão do histórico chamam atualizar() direto, sem passar pelo agendamento.
+  // Nesses caminhos o cartão velho ficava enviável do mesmo jeito — e trocar a
+  // seguradora é o pior deles, porque o .vcf pendurado tem os telefones da
+  // seguradora anterior.
+  descartarArtefatos();
   el.nomeContato.textContent = cartao.nomeContato || '—';
   renderPendencias();
   salvarRascunho();

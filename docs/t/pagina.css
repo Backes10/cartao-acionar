@@ -16,6 +16,18 @@
 
 * { box-sizing: border-box; }
 
+/* Mesma armadilha do app, e aqui ela batia no cliente: folha de autor vence a
+ * do navegador, então `.botao { display: block }` anulava o hidden do
+ * #btnContato. Na página de erro — "Não consegui abrir este cartão" — saía um
+ * botão laranja de largura inteira, "Salvar na minha agenda", 335x58, sem
+ * listener nenhum, porque iniciar() tinha voltado antes de registrá-lo. O
+ * cliente tocava e não acontecia nada.
+ *
+ * Também aparecia no caminho normal, entre o carregamento da página e a
+ * resposta do fetch. E o mesmo valia para .seguradora__logo, que deixava uma
+ * tira de 38px vazia quando a empresa não tem logo. */
+[hidden] { display: none !important; }
+
 html { -webkit-text-size-adjust: 100%; }
 
 body {
@@ -124,3 +136,21 @@ body {
   color: #7A271A;
   font-size: 14.5px;
 }
+
+/* Telefones não conferidos. Vermelho, acima dos números, e não em letra miúda:
+   a decisão que esta tela pede é discar ou não discar, e o cliente decide isso
+   antes de descer a página. */
+.naoconferido {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0 0 16px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border-left: 6px solid #D92D20;
+  background: #FEE4E2;
+  color: #7A271A;
+  font-size: 14.5px;
+  line-height: 1.45;
+}
+.naoconferido strong { font-size: 15.5px; }
