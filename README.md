@@ -32,15 +32,23 @@ Cartão de Yelum sai limpo, pronto para mandar.
 > É de propósito: mandar um número de sinistro errado é o único jeito de esse app
 > causar um problema real.
 
-### 📗 Como cadastrar: [MANUAL-CADASTRO.md](MANUAL-CADASTRO.md)
+### O manual do cadastro é um PDF, e ele não mora aqui
 
-Cadastrar telefone de seguradora é o único cadastro deste app que pode causar dano real, e
-tem regra que não se adivinha. O manual está num arquivo à parte, para dar de ler a quem vai
-fazer o cadastro sem entregar junto um README de programador.
+Cadastrar telefone de seguradora é o único cadastro deste app que pode causar dano real, e tem
+regra que não se adivinha. O guia é um PDF de 6 páginas, com prints, feito para dar de ler a
+quem vai fazer o cadastro:
 
-Cobre: onde fica, os cinco controles de cada telefone, a ordem no cartão, o aviso de número
-de central, o que o EXEMPLO faz em cinco lugares, por que o link do cliente depende de você
-me mandar o arquivo exportado, e o formato do `data/seguradoras.json` para quem edita à mão.
+```
+fontes/Como-cadastrar-telefones-das-seguradoras.pdf
+```
+
+**Fora do repositório de propósito** — `fontes/` é ignorada pelo git. Quem regenera é
+`fontes/tutorial.py` (o texto e o layout) com `fontes/figuras.py` (os três mockups). Mexeu na
+tela do cadastro? Rode os dois de novo, senão o guia passa a ensinar uma tela que não existe:
+
+```bash
+cd fontes && python figuras.py figuras && python tutorial.py figuras Como-cadastrar-telefones-das-seguradoras.pdf ..
+```
 
 ---
 
@@ -263,7 +271,7 @@ No seguro residencial e empresarial, use o campo de endereço só com bairro e c
 | `sw.js` `manifest.webmanifest` | fazem funcionar offline e instalar como app |
 | `build.py` | gera `docs/` (o site) e `dist/` (o arquivo único) |
 | `docs/` | **o que está no ar.** Gerado, mas vai no commit — é de lá que o Pages serve. |
-| `MANUAL-CADASTRO.md` | o manual de cadastrar seguradora e telefone |
+| `fontes/` | material de origem e o **PDF do manual do cadastro**. Ignorada pelo git. |
 | `PLANO.md` | o plano completo, com as decisões e o que vem nas próximas fases |
 
 Para adicionar um produto novo (consórcio, por exemplo), o lugar é `data/produtos.json` —
