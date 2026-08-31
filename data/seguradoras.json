@@ -1,6 +1,5 @@
 {
-  "_ATENCAO": "So a Yelum tem telefone conferido ('exemplo': false). Todas as outras estao com 'exemplo': true e saem com a marca EXEMPLO na imagem. Dentro delas ha DOIS tipos de numero: ficticio (0800 000 000X, nunca discou) e raspado do site da seguradora (tem '_contexto' e '_fonte'). Raspado NAO e conferido.",
-  "_sobre_raspado": "Os numeros com '_contexto' e '_fonte' foram extraidos automaticamente da pagina da seguradora. O texto em '_contexto' as vezes se refere a OUTRO numero da mesma pagina, entao o par numero/finalidade nao e confiavel. O rotulo e um chute a partir desse texto. Abra '_fonte', confira, LIGUE, corrija o rotulo, e so entao troque 'exemplo' para false.",
+  "_ATENCAO": "Todas as 14 entradas estao conferidas ('exemplo': false): a Acionar ligou em cada numero e corrigiu os rotulos em 2026-08-30. Entrada nova entra com 'exemplo': true e sai com a marca EXEMPLO na imagem ate alguem ligar.",
   "_como_publicar": "Pelo app: passo 2 > 'Cadastrar telefones e logo das seguradoras'. Ou editando este arquivo: corrija os telefones, apague '_contexto' e '_fonte' depois de conferir, e troque 'exemplo': true por false SO na seguradora que voce ja ligou.",
   "_tipos_de_telefone": "assistencia | sinistro | sac | whatsapp | ouvidoria | outro — o tipo so define o icone e a ordem no cartao.",
   "_sobre_produtos": "Em quais produtos a entrada aparece. Seguradora nao administra consorcio e administradora de consorcio nao vende seguro: sao pessoas juridicas diferentes, com CNPJ e telefones proprios, mesmo quando o nome coincide. Entrada SEM este campo aparece em todos os produtos.",
@@ -48,7 +47,7 @@
     {
       "id": "porto-seguro",
       "nome": "Porto Seguro",
-      "exemplo": true,
+      "exemplo": false,
       "produtos": [
         "auto",
         "moto",
@@ -60,31 +59,36 @@
       "site": "https://www.portoseguro.com.br",
       "telefones": [
         {
-          "rotulo": "Assistência 24h / Reboque",
-          "numero": "0800 000 0001",
-          "tipo": "assistencia"
+          "rotulo": "Capital e Região Metropolitana",
+          "numero": "4004 7678",
+          "tipo": "assistencia",
+          "rotuloCurto": "Capital e RM",
+          "semTel": true
         },
         {
-          "rotulo": "Aviso de Sinistro",
-          "numero": "0800 000 0002",
-          "tipo": "sinistro"
+          "rotulo": "Demais Regiões",
+          "numero": "0800 727 0800",
+          "tipo": "assistencia",
+          "rotuloCurto": "Demais Regiões"
         },
         {
           "rotulo": "SAC",
-          "numero": "0800 000 0003",
-          "tipo": "sac"
+          "numero": "0800 727 2766",
+          "tipo": "sac",
+          "rotuloCurto": "SAC"
         },
         {
           "rotulo": "WhatsApp da seguradora",
-          "numero": "(11) 90000-0001",
-          "tipo": "whatsapp"
+          "numero": "(11) 3003 9303",
+          "tipo": "whatsapp",
+          "rotuloCurto": "WhatsApp"
         }
       ]
     },
     {
       "id": "azul-seguros",
       "nome": "Azul Seguros",
-      "exemplo": true,
+      "exemplo": false,
       "produtos": [
         "auto",
         "moto",
@@ -96,68 +100,36 @@
       "site": "https://www.azulseguros.com.br",
       "telefones": [
         {
-          "rotulo": "Central de Atendimento — capitais",
-          "rotuloCurto": "Central capitais",
-          "numero": "0800 703 0203",
-          "tipo": "outro",
-          "_contexto": "e atendimento: 4004-3700 (Capitais e grandes centros) e 0300 123 2985 (outras regiões) ou",
-          "_fonte": "https://www.azulseguros.com.br"
-        },
-        {
-          "rotulo": "SAC",
-          "rotuloCurto": "SAC",
-          "numero": "0800 703 1280",
-          "tipo": "sac",
-          "_contexto": "sua região. SAC Para cancelamento, reclamações e solicitar informações: Para todo Brasil",
-          "_fonte": "https://www.azulseguros.com.br/fale-com-a-azul/"
-        },
-        {
-          "rotulo": "SAC",
-          "rotuloCurto": "SAC",
-          "numero": "0800 727 1184",
-          "tipo": "sac",
-          "_contexto": "ória, segundo o cliente, pelo Serviço de Atendimento ao Cliente (SAC): Para todo o Brasil",
-          "_fonte": "https://www.azulseguros.com.br/fale-com-a-azul/"
-        },
-        {
-          "rotulo": "SAC",
-          "rotuloCurto": "SAC",
-          "numero": "0800 727 8736",
-          "tipo": "sac",
-          "_contexto": "o de Atendimento ao Cliente (SAC): Para todo o Brasil 0800 727 1184 Deficientes auditivos",
-          "_fonte": "https://www.azulseguros.com.br/fale-com-a-azul/"
-        },
-        {
-          "rotulo": "Central de Atendimento",
-          "rotuloCurto": "Central",
-          "numero": "4004-3700",
-          "tipo": "outro",
-          "_contexto": "uro e reparo rápido. Estamos à disposição para te ajudar em nossa central de atendimento:",
-          "_fonte": "https://www.azulseguros.com.br",
+          "rotulo": "Capital e Região Metropolitana",
+          "numero": "4004 3700",
+          "tipo": "assistencia",
+          "rotuloCurto": "Capital e RM",
           "semTel": true
         },
         {
-          "rotulo": "Central de Atendimento — capitais",
-          "rotuloCurto": "Central capitais",
-          "numero": "0300 123 2985",
-          "tipo": "outro",
-          "_contexto": "para te ajudar em nossa central de atendimento: 4004-3700 (Capitais e grandes centros) e",
-          "_fonte": "https://www.azulseguros.com.br"
+          "rotulo": "Demais Regiões",
+          "numero": "0800 703 0203",
+          "tipo": "assistencia",
+          "rotuloCurto": "Demais Regiões"
         },
         {
-          "rotulo": "Aviso de Sinistro",
-          "rotuloCurto": "Sinistro",
+          "rotulo": "SAC",
+          "numero": "0800 703 1280",
+          "tipo": "sac",
+          "rotuloCurto": "SAC"
+        },
+        {
+          "rotulo": "WhatsApp",
           "numero": "(21)3906-2985",
-          "tipo": "sinistro",
-          "_contexto": "ria, boletos, pagamentos e acompanhamento do seu processo de sinistro. Para todo o Brasil",
-          "_fonte": "https://www.azulseguros.com.br/fale-com-a-azul/"
+          "tipo": "whatsapp",
+          "rotuloCurto": "WhatsApp"
         }
       ]
     },
     {
       "id": "itau-seguros",
       "nome": "Itaú Seguros",
-      "exemplo": true,
+      "exemplo": false,
       "produtos": [
         "auto",
         "moto",
@@ -168,27 +140,31 @@
       "site": "",
       "telefones": [
         {
-          "rotulo": "Ouvidoria",
-          "rotuloCurto": "Ouvidoria",
-          "numero": "0800 570 0011",
-          "tipo": "ouvidoria",
-          "_contexto": "deb Pacotes e tarifas Fale com o Itaú Para você Sac 0800 728 0728 0800 728 0728 Ouvidoria",
-          "_fonte": "https://www.itau.com.br"
+          "rotulo": "Capital e Região Metropolitana",
+          "numero": "3003 1010",
+          "tipo": "assistencia",
+          "rotuloCurto": "Capital e RM",
+          "semTel": true
         },
         {
-          "rotulo": "SAC",
-          "rotuloCurto": "SAC",
-          "numero": "0800 728 0728",
-          "tipo": "sac",
-          "_contexto": "o Para empresas Para poder público Fundeb Pacotes e tarifas Fale com o Itaú Para você Sac",
-          "_fonte": "https://www.itau.com.br"
+          "rotulo": "Demais Regiões",
+          "numero": "0800 720 1010",
+          "tipo": "assistencia",
+          "rotuloCurto": "Demais Regiões"
+        },
+        {
+          "rotulo": "WhatsApp",
+          "numero": "(11) 98355 9577",
+          "tipo": "whatsapp",
+          "rotuloCurto": "WhatsApp"
         }
-      ]
+      ],
+      "logo": "assets/seguradoras/itau-seguros.png"
     },
     {
       "id": "bradesco-seguros",
       "nome": "Bradesco Seguros",
-      "exemplo": true,
+      "exemplo": false,
       "produtos": [
         "auto",
         "moto",
@@ -199,51 +175,31 @@
       "site": "",
       "telefones": [
         {
-          "rotulo": "Central de Atendimento",
-          "rotuloCurto": "Central",
-          "numero": "4004 0237",
-          "tipo": "outro",
-          "_contexto": "Atendimento para Auto, Saúde, Vida, Previdência, Residencial, Dental e dúvidas em geral.",
-          "_fonte": "https://www.bradescoseguros.com.br/clientes",
+          "rotulo": "Capital e Região Metropolitana",
+          "numero": "4004 2757",
+          "tipo": "assistencia",
+          "rotuloCurto": "Capital e RM",
           "semTel": true
+        },
+        {
+          "rotulo": "Demais Regiões",
+          "numero": "0800 701 2757",
+          "tipo": "assistencia",
+          "rotuloCurto": "Demais Regiões"
+        },
+        {
+          "rotulo": "WhatsApp",
+          "numero": "(11) 3003 1022",
+          "tipo": "whatsapp",
+          "rotuloCurto": "WhatsApp"
         }
       ],
-      "logo": "assets/seguradoras/bradesco-consorcio.png"
+      "logo": "assets/seguradoras/bradesco.png"
     },
     {
       "id": "allianz",
       "nome": "Allianz Seguros",
-      "exemplo": true,
-      "produtos": [
-        "auto",
-        "moto",
-        "residencial",
-        "vida",
-        "empresarial"
-      ],
-      "site": "",
-      "telefones": [
-        {
-          "rotulo": "Assistência 24h / Reboque",
-          "numero": "0800 000 0041",
-          "tipo": "assistencia"
-        },
-        {
-          "rotulo": "Aviso de Sinistro",
-          "numero": "0800 000 0042",
-          "tipo": "sinistro"
-        },
-        {
-          "rotulo": "SAC",
-          "numero": "0800 000 0043",
-          "tipo": "sac"
-        }
-      ]
-    },
-    {
-      "id": "hdi",
-      "nome": "HDI Seguros",
-      "exemplo": true,
+      "exemplo": false,
       "produtos": [
         "auto",
         "moto",
@@ -255,18 +211,64 @@
       "telefones": [
         {
           "rotulo": "Assistência 24h",
-          "rotuloCurto": "Assistência",
-          "numero": "11 99524-8188",
+          "numero": "0800 013 0700",
           "tipo": "assistencia",
-          "_contexto": "Assistência via WhatsApp × WhatsApp! Aqui tem, Assistência 24h , Sinistro e muito mais...",
-          "_fonte": "https://www.hdiseguros.com.br"
+          "rotuloCurto": "Assistência 24h"
+        },
+        {
+          "rotulo": "WhatsApp",
+          "numero": "(11) 4090 1444",
+          "tipo": "whatsapp",
+          "rotuloCurto": "WhatsApp"
+        },
+        {
+          "rotulo": "SAC",
+          "numero": "0800 011 5215",
+          "tipo": "sac",
+          "rotuloCurto": "SAC"
         }
-      ]
+      ],
+      "logo": "assets/seguradoras/allianz.png"
+    },
+    {
+      "id": "hdi",
+      "nome": "HDI Seguros",
+      "exemplo": false,
+      "produtos": [
+        "auto",
+        "moto",
+        "residencial",
+        "vida",
+        "empresarial"
+      ],
+      "site": "",
+      "telefones": [
+        {
+          "rotulo": "Capital e Região Metropolitana",
+          "numero": "3003 5390",
+          "tipo": "assistencia",
+          "rotuloCurto": "Capital e RM",
+          "semTel": true
+        },
+        {
+          "rotulo": "Demais Regiões",
+          "numero": "0800 434 4340",
+          "tipo": "assistencia",
+          "rotuloCurto": "Demais Regiões"
+        },
+        {
+          "rotulo": "WhatsApp",
+          "numero": "(11) 99524 8188",
+          "tipo": "whatsapp",
+          "rotuloCurto": "WhatsApp"
+        }
+      ],
+      "logo": "assets/seguradoras/hdi.png"
     },
     {
       "id": "tokio-marine",
       "nome": "Tokio Marine",
-      "exemplo": true,
+      "exemplo": false,
       "produtos": [
         "auto",
         "moto",
@@ -278,75 +280,29 @@
       "site": "https://www.tokiomarine.com.br",
       "telefones": [
         {
-          "rotulo": "Aviso de Sinistro — demais regiões",
-          "rotuloCurto": "Sinistro demais",
-          "numero": "0800 015 3600",
-          "tipo": "sinistro",
-          "_contexto": "lidades) SAC 3616-9000 (São Paulo) 0800 774 2000 (Demais localidades) Aviso Roubo / Furto",
-          "_fonte": "https://www.tokiomarine.com.br/telefones/"
-        },
-        {
-          "rotulo": "SAC — demais regiões",
-          "rotuloCurto": "SAC demais",
-          "numero": "0800 117 1721",
-          "tipo": "sac",
-          "_contexto": "dar Agendamento por telefone 4002-7002 (São Paulo) 0800 770 1415 (Demais localidades) SAC",
-          "_fonte": "https://www.tokiomarine.com.br/telefones/"
-        },
-        {
-          "rotulo": "Aviso de Sinistro",
-          "rotuloCurto": "Sinistro",
-          "numero": "0800 323 5095",
-          "tipo": "sinistro",
-          "_contexto": "calidades) WhatsApp (11) 99500-0741 SAC 0800 888 8909 Aviso Roubo / Furto 0800 882 1889 /",
-          "_fonte": "https://www.tokiomarine.com.br/telefones/"
+          "rotulo": "Assistência 24h",
+          "numero": "0800 318 6546",
+          "tipo": "assistencia",
+          "rotuloCurto": "Assistência 24h"
         },
         {
           "rotulo": "SAC",
-          "rotuloCurto": "SAC",
-          "numero": "0800 449 0000",
-          "tipo": "sac",
-          "_contexto": "eriados nacionais. Formulário online do Serviço de Atendimento ao Cliente. Ou ligue para:",
-          "_fonte": "https://www.tokiomarine.com.br/telefones/"
-        },
-        {
-          "rotulo": "Aviso de Sinistro — capitais",
-          "rotuloCurto": "Sinistro capitais",
-          "numero": "0800 600 7707",
-          "tipo": "sinistro",
-          "_contexto": "grandes centros) 0800 725 7707 (Demais localidades) SAC 0800 725 7707 Aviso Roubo / Furto",
-          "_fonte": "https://www.tokiomarine.com.br/telefones/"
-        },
-        {
-          "rotulo": "Central de Atendimento",
-          "rotuloCurto": "Central",
-          "numero": "0800 702 8181",
-          "tipo": "outro",
-          "_contexto": "Japonês 日本語での対応窓 Horário de Atendimento Segunda a sexta das 08:15h às 17:15h Ligue para:",
-          "_fonte": "https://www.tokiomarine.com.br/telefones/"
-        },
-        {
-          "rotulo": "Atendimento 24 horas",
-          "rotuloCurto": "Atendimento 24h",
           "numero": "0800 703 9000",
-          "tipo": "assistencia",
-          "_contexto": "formações sobre serviços e seguros. Atendimento 24 Horas Formulário online Ou ligue para:",
-          "_fonte": "https://www.tokiomarine.com.br/telefones/"
+          "tipo": "sac",
+          "rotuloCurto": "SAC"
         },
         {
-          "rotulo": "Atendimento 24 horas",
-          "rotuloCurto": "Atendimento 24h",
-          "numero": "0800 707 5050",
-          "tipo": "assistencia",
-          "_contexto": "24 Horas: 0800 31 86546 (Território Nacional) 3543-5809 (Mercosul) Atendimento 24 Horas:",
-          "_fonte": "https://www.tokiomarine.com.br/assistencia-24h/"
+          "rotulo": "WhatsApp",
+          "numero": "(11) 99578 6546",
+          "tipo": "whatsapp",
+          "rotuloCurto": "WhatsApp"
         }
       ]
     },
     {
       "id": "mapfre",
       "nome": "Mapfre Seguros",
-      "exemplo": true,
+      "exemplo": false,
       "produtos": [
         "auto",
         "moto",
@@ -358,121 +314,23 @@
       "telefones": [
         {
           "rotulo": "Central de Atendimento",
-          "rotuloCurto": "Central",
-          "numero": "0800 061 3040",
-          "tipo": "outro",
-          "_contexto": ": Pontos de Atendimento Poupex. Digital: App POUPEX ou site www.poupex.com.br/poupexvida/",
-          "_fonte": "https://www.mapfre.com.br/atendimento/"
-        },
-        {
-          "rotulo": "Assistência 24h",
-          "rotuloCurto": "Assistência",
-          "numero": "0800-323 5098",
+          "numero": "0800 775 4545",
           "tipo": "assistencia",
-          "_contexto": "s 08h00 às 14h00. 0800 775 1131 Agendamento e Instalação Assistência 24h (11) 4580-4004 e",
-          "_fonte": "https://www.mapfre.com.br/atendimento/"
+          "rotuloCurto": "Central"
         },
         {
-          "rotulo": "Aviso de Sinistro",
-          "rotuloCurto": "Sinistro",
-          "numero": "0800 709 8432",
-          "tipo": "sinistro",
-          "_contexto": "7196 Abertura e informação de Sinistros 2ª a 6ª, das 8h às 18h, exceto feriados nacionais",
-          "_fonte": "https://www.mapfre.com.br/atendimento/"
-        },
-        {
-          "rotulo": "Atendimento 24 horas",
-          "rotuloCurto": "Atendimento 24h",
-          "numero": "0800 727 3065",
-          "tipo": "assistencia",
-          "_contexto": "clamações, cancelamentos e informações sobre serviços e seguros. 24 horas, todos os dias.",
-          "_fonte": "https://www.mapfre.com.br/atendimento/"
-        },
-        {
-          "rotulo": "Atendimento 24 horas",
-          "rotuloCurto": "Atendimento 24h",
-          "numero": "0800 775 1000",
-          "tipo": "assistencia",
-          "_contexto": "ões sobre serviços e seguros 24 horas, todos os dias. Acesse também no Portal do Cliente.",
-          "_fonte": "https://www.mapfre.com.br/atendimento/"
-        },
-        {
-          "rotulo": "Atendimento 24 horas",
-          "rotuloCurto": "Atendimento 24h",
-          "numero": "0800 775 1125",
-          "tipo": "assistencia",
-          "_contexto": "ões sobre serviços e seguros 24 horas, todos os dias. Acesse também no Portal do Cliente.",
-          "_fonte": "https://www.mapfre.com.br/atendimento/"
-        },
-        {
-          "rotulo": "Atendimento 24 horas",
-          "rotuloCurto": "Atendimento 24h",
-          "numero": "0800 775 1130",
-          "tipo": "assistencia",
-          "_contexto": "clamações, cancelamentos e informações sobre serviços e seguros. 24 horas, todos os dias.",
-          "_fonte": "https://www.mapfre.com.br/atendimento/"
-        },
-        {
-          "rotulo": "Assistência 24h",
-          "rotuloCurto": "Assistência",
-          "numero": "0800 775 1131",
-          "tipo": "assistencia",
-          "_contexto": "ida Automóvel e Garantia Mecânica Sinistro, Atendimento ao Ponto de Venda Assistência 24h",
-          "_fonte": "https://www.mapfre.com.br/atendimento/"
-        }
-      ]
-    },
-    {
-      "id": "sompo",
-      "nome": "Sompo Seguros",
-      "exemplo": true,
-      "produtos": [
-        "auto",
-        "moto",
-        "residencial",
-        "vida",
-        "empresarial"
-      ],
-      "site": "",
-      "telefones": [
-        {
-          "rotulo": "Aviso de Sinistro",
-          "rotuloCurto": "Sinistro",
-          "numero": "0800 723 3002",
-          "tipo": "sinistro",
-          "_contexto": "ifestação. Sompo SOS Cargas Para comunicar um Aviso de Sinistro de Transportes ligue para",
-          "_fonte": "https://sompo.com.br/contato"
-        },
-        {
-          "rotulo": "Assistência 24h",
-          "rotuloCurto": "Assistência",
-          "numero": "0800 771 9000",
-          "tipo": "assistencia",
-          "_contexto": "istências Para acionar os serviços de Assistência Sompo do seguro Empresarial, ligue para",
-          "_fonte": "https://sompo.com.br/contato"
-        },
-        {
-          "rotulo": "WhatsApp — demais regiões",
-          "rotuloCurto": "WhatsApp demais",
-          "numero": "(11) 3460 9000",
+          "rotulo": "WhatsApp",
+          "numero": "(11) 4004 0101",
           "tipo": "whatsapp",
-          "_contexto": "rande São Paulo 0800 77 00 179 Demais Localidades Acesse nosso WhatsApp através do número",
-          "_fonte": "https://sompo.com.br/contato"
-        },
-        {
-          "rotulo": "Atendimento 24 horas",
-          "rotuloCurto": "Atendimento 24h",
-          "numero": "(11) 3470-3589",
-          "tipo": "assistencia",
-          "_contexto": "ndimento 24 horas Assessoria de Imprensa Departamento de Marketing – William Parron Tels.",
-          "_fonte": "https://sompo.com.br/contato"
+          "rotuloCurto": "WhatsApp"
         }
-      ]
+      ],
+      "logo": "assets/seguradoras/mapfre.png"
     },
     {
       "id": "sulamerica",
       "nome": "SulAmérica",
-      "exemplo": true,
+      "exemplo": false,
       "produtos": [
         "auto",
         "moto",
@@ -484,56 +342,17 @@
       "site": "https://www.sulamerica.com.br",
       "telefones": [
         {
-          "rotulo": "Assistência 24h",
-          "numero": "0800 000 0091",
-          "tipo": "assistencia"
-        },
-        {
-          "rotulo": "Aviso de Sinistro",
-          "numero": "0800 000 0092",
-          "tipo": "sinistro"
-        },
-        {
-          "rotulo": "SAC",
-          "numero": "0800 000 0093",
-          "tipo": "sac"
+          "rotulo": "Atendimento Vida",
+          "numero": "(11)3004 9723",
+          "tipo": "whatsapp",
+          "rotuloCurto": "Atendimento Vida"
         }
       ]
     },
     {
       "id": "zurich",
       "nome": "Zurich Seguros",
-      "exemplo": true,
-      "produtos": [
-        "auto",
-        "moto",
-        "residencial",
-        "vida",
-        "empresarial"
-      ],
-      "site": "",
-      "telefones": [
-        {
-          "rotulo": "Assistência 24h / Reboque",
-          "numero": "0800 000 0101",
-          "tipo": "assistencia"
-        },
-        {
-          "rotulo": "Aviso de Sinistro",
-          "numero": "0800 000 0102",
-          "tipo": "sinistro"
-        },
-        {
-          "rotulo": "SAC",
-          "numero": "0800 000 0103",
-          "tipo": "sac"
-        }
-      ]
-    },
-    {
-      "id": "suhai",
-      "nome": "Suhai Seguradora",
-      "exemplo": true,
+      "exemplo": false,
       "produtos": [
         "auto",
         "moto",
@@ -545,27 +364,49 @@
       "telefones": [
         {
           "rotulo": "Assistência 24h",
-          "rotuloCurto": "Assistência",
-          "numero": "0800-327-8424",
+          "numero": "0800 729 1400",
           "tipo": "assistencia",
-          "_contexto": "ra a sexta-feira, das 8h às 19h Assistência 24h Troca de pneu, guincho e auxílio mecânico",
-          "_fonte": "https://suhaiseguradora.com/"
+          "rotuloCurto": "Assistência 24h"
         },
         {
           "rotulo": "WhatsApp",
-          "rotuloCurto": "WhatsApp",
-          "numero": "0800-772-1214",
+          "numero": "(11) 2890 2121",
           "tipo": "whatsapp",
-          "_contexto": "Peça sua cotação grátis WhatsApp 3003-0335 Iniciar conversa agora Central de Atendimento",
-          "_fonte": "https://suhaiseguradora.com/"
+          "rotuloCurto": "WhatsApp"
+        },
+        {
+          "rotulo": "SAC",
+          "numero": "0800 284 4848",
+          "tipo": "sac",
+          "rotuloCurto": "SAC"
+        }
+      ],
+      "logo": "assets/seguradoras/zurich.png"
+    },
+    {
+      "id": "suhai",
+      "nome": "Suhai Seguradora",
+      "exemplo": false,
+      "produtos": [
+        "auto",
+        "moto",
+        "residencial",
+        "vida",
+        "empresarial"
+      ],
+      "site": "",
+      "telefones": [
+        {
+          "rotulo": "Assistência 24h",
+          "numero": "0800 327 8424",
+          "tipo": "assistencia",
+          "rotuloCurto": "Assistência"
         },
         {
           "rotulo": "WhatsApp",
-          "rotuloCurto": "WhatsApp",
-          "numero": "3003-0335",
+          "numero": "(11) 3003 0335",
           "tipo": "whatsapp",
-          "_contexto": "a resolução. Fale conosco, estamos aqui pra ajudar você Peça sua cotação grátis WhatsApp",
-          "_fonte": "https://suhaiseguradora.com/",
+          "rotuloCurto": "WhatsApp",
           "semTel": true
         }
       ]
@@ -573,7 +414,7 @@
     {
       "id": "porto-seguro-consorcio",
       "nome": "Porto Seguro Consórcio",
-      "exemplo": true,
+      "exemplo": false,
       "produtos": [
         "consorcio"
       ],
@@ -581,327 +422,35 @@
       "site": "https://www.portoseguro.com.br/consorcio",
       "telefones": [
         {
-          "rotulo": "Central de relacionamento — Grande São Paulo",
-          "rotuloCurto": "Central Grande SP",
-          "numero": "(11) 3366 3006",
-          "tipo": "atendimento",
-          "_contexto": "Rótulo e número lidos JUNTOS na página oficial de contatos, numa seção dedicada a consórcio. É a melhor procedência que consegui — mas ninguém ligou.",
-          "_fonte": "https://www.portoseguro.com.br/fale-conosco/contatos/telefones-e-sac"
-        },
-        {
           "rotulo": "Central de relacionamento — demais localidades",
-          "rotuloCurto": "Central",
           "numero": "0800 721 3006",
           "tipo": "atendimento",
-          "_contexto": "Rótulo e número lidos JUNTOS na página oficial de contatos, numa seção dedicada a consórcio. É a melhor procedência que consegui — mas ninguém ligou.",
-          "_fonte": "https://www.portoseguro.com.br/fale-conosco/contatos/telefones-e-sac"
+          "rotuloCurto": "Central"
         },
         {
           "rotulo": "SAC Consórcio — 24h",
-          "rotuloCurto": "SAC",
           "numero": "0800 727 2743",
           "tipo": "sac",
-          "_contexto": "Rótulo e número lidos JUNTOS na página oficial de contatos, numa seção dedicada a consórcio. É a melhor procedência que consegui — mas ninguém ligou.",
-          "_fonte": "https://www.portoseguro.com.br/fale-conosco/contatos/telefones-e-sac"
-        }
-      ]
-    },
-    {
-      "id": "embracon",
-      "nome": "Embracon",
-      "exemplo": true,
-      "produtos": [
-        "consorcio"
-      ],
-      "logo": "assets/seguradoras/embracon.png",
-      "site": "https://www.embracon.com.br",
-      "telefones": [
-        {
-          "rotulo": "Central de relacionamento",
-          "rotuloCurto": "Central",
-          "numero": "0800 889 0999",
-          "tipo": "atendimento",
-          "_contexto": "Rótulo e número lidos JUNTOS na página oficial de contatos, numa seção dedicada a consórcio. É a melhor procedência que consegui — mas ninguém ligou.",
-          "_fonte": "https://www.embracon.com.br/blog/canais-de-atendimento-embracon"
-        },
-        {
-          "rotulo": "Central de relacionamento (alternativo)",
-          "rotuloCurto": "Central 2",
-          "numero": "4003 9999",
-          "tipo": "atendimento",
-          "semTel": true,
-          "_contexto": "Rótulo e número lidos JUNTOS na página oficial de contatos, numa seção dedicada a consórcio. É a melhor procedência que consegui — mas ninguém ligou.",
-          "_fonte": "https://www.embracon.com.br/blog/canais-de-atendimento-embracon"
-        },
-        {
-          "rotulo": "Ouvidoria",
-          "rotuloCurto": "Ouvidoria",
-          "numero": "0800 888 4321",
-          "tipo": "ouvidoria",
-          "_contexto": "Rótulo e número lidos JUNTOS na página oficial de contatos, numa seção dedicada a consórcio. É a melhor procedência que consegui — mas ninguém ligou.",
-          "_fonte": "https://www.embracon.com.br/blog/canais-de-atendimento-embracon"
-        }
-      ]
-    },
-    {
-      "id": "rodobens",
-      "nome": "Rodobens Consórcio",
-      "exemplo": true,
-      "produtos": [
-        "consorcio"
-      ],
-      "logo": "assets/seguradoras/rodobens.png",
-      "site": "https://www.rodobens.com.br/consorcio/",
-      "telefones": [
-        {
-          "rotulo": "Atendimento consórcio",
-          "rotuloCurto": "Consórcio",
-          "numero": "0800 701 0212",
-          "tipo": "atendimento",
-          "_contexto": "Números reunidos de busca na web, incluindo sites de terceiros. NÃO li o par rótulo/número na página oficial. O rótulo pode pertencer a outro número. Confira no site e ligue antes de usar.",
-          "_fonte": "https://www.rodobens.com.br/consorcio/paginas/contato.aspx"
-        },
-        {
-          "rotulo": "Central Rodobens",
-          "rotuloCurto": "Central",
-          "numero": "0800 405 9909",
-          "tipo": "atendimento",
-          "_contexto": "Números reunidos de busca na web, incluindo sites de terceiros. NÃO li o par rótulo/número na página oficial. O rótulo pode pertencer a outro número. Confira no site e ligue antes de usar.",
-          "_fonte": "https://www.rodobens.com.br/consorcio/paginas/contato.aspx"
-        },
-        {
-          "rotulo": "Ouvidoria consórcio",
-          "rotuloCurto": "Ouvidoria",
-          "numero": "0800 701 8606",
-          "tipo": "ouvidoria",
-          "_contexto": "Números reunidos de busca na web, incluindo sites de terceiros. NÃO li o par rótulo/número na página oficial. O rótulo pode pertencer a outro número. Confira no site e ligue antes de usar.",
-          "_fonte": "https://www.rodobens.com.br/consorcio/paginas/contato.aspx"
-        }
-      ]
-    },
-    {
-      "id": "ademicon",
-      "nome": "Ademicon",
-      "exemplo": true,
-      "produtos": [
-        "consorcio"
-      ],
-      "logo": "assets/seguradoras/ademicon.png",
-      "site": "https://www.ademicon.com.br",
-      "telefones": [
-        {
-          "rotulo": "Central de atendimento",
-          "rotuloCurto": "Central",
-          "numero": "(41) 3023 2000",
-          "tipo": "atendimento",
-          "_contexto": "Números reunidos de busca na web, incluindo sites de terceiros. NÃO li o par rótulo/número na página oficial. O rótulo pode pertencer a outro número. Confira no site e ligue antes de usar. O (41) 3023 2000 aparece como central e o 0800 602 9080 como ouvidoria E como informações gerais — as duas coisas na mesma fonte.",
-          "_fonte": "https://www.ademicon.com.br/ouvidoria"
-        },
-        {
-          "rotulo": "Ouvidoria",
-          "rotuloCurto": "Ouvidoria",
-          "numero": "0800 602 9080",
-          "tipo": "ouvidoria",
-          "_contexto": "Números reunidos de busca na web, incluindo sites de terceiros. NÃO li o par rótulo/número na página oficial. O rótulo pode pertencer a outro número. Confira no site e ligue antes de usar. O (41) 3023 2000 aparece como central e o 0800 602 9080 como ouvidoria E como informações gerais — as duas coisas na mesma fonte.",
-          "_fonte": "https://www.ademicon.com.br/ouvidoria"
-        }
-      ]
-    },
-    {
-      "id": "hs-consorcios",
-      "nome": "HS Consórcios",
-      "exemplo": true,
-      "produtos": [
-        "consorcio"
-      ],
-      "logo": "",
-      "site": "https://hsconsorcios.com.br",
-      "telefones": [
-        {
-          "rotulo": "Central de atendimento",
-          "rotuloCurto": "Central",
-          "numero": "(51) 3564 8400",
-          "tipo": "atendimento",
-          "_contexto": "Números reunidos de busca na web, incluindo sites de terceiros. NÃO li o par rótulo/número na página oficial. O rótulo pode pertencer a outro número. Confira no site e ligue antes de usar. A central é um número do RS ((51)), o que bate com uma administradora que atende a região — vale confirmar se é a de consorciado ou a da matriz.",
-          "_fonte": "https://hsconsorcios.com.br/contato/"
-        },
-        {
-          "rotulo": "Central de vendas",
-          "rotuloCurto": "Vendas",
-          "numero": "0800 644 9007",
-          "tipo": "outro",
-          "_contexto": "Números reunidos de busca na web, incluindo sites de terceiros. NÃO li o par rótulo/número na página oficial. O rótulo pode pertencer a outro número. Confira no site e ligue antes de usar. A central é um número do RS ((51)), o que bate com uma administradora que atende a região — vale confirmar se é a de consorciado ou a da matriz.",
-          "_fonte": "https://hsconsorcios.com.br/contato/"
-        },
-        {
-          "rotulo": "Ouvidoria",
-          "rotuloCurto": "Ouvidoria",
-          "numero": "0800 648 1213",
-          "tipo": "ouvidoria",
-          "_contexto": "Números reunidos de busca na web, incluindo sites de terceiros. NÃO li o par rótulo/número na página oficial. O rótulo pode pertencer a outro número. Confira no site e ligue antes de usar. A central é um número do RS ((51)), o que bate com uma administradora que atende a região — vale confirmar se é a de consorciado ou a da matriz.",
-          "_fonte": "https://hsconsorcios.com.br/contato/"
-        }
-      ]
-    },
-    {
-      "id": "itau-consorcio",
-      "nome": "Itaú Consórcio",
-      "exemplo": true,
-      "produtos": [
-        "consorcio"
-      ],
-      "logo": "",
-      "site": "https://www.itau.com.br/creditos/consorcio",
-      "telefones": [
-        {
-          "rotulo": "Central do consórcio",
-          "rotuloCurto": "Consórcio",
-          "numero": "0800 970 4828",
-          "tipo": "atendimento",
-          "_contexto": "Números reunidos de busca na web, incluindo sites de terceiros. NÃO li o par rótulo/número na página oficial. O rótulo pode pertencer a outro número. Confira no site e ligue antes de usar. O 0800 970 4828 aparece como central específica do consórcio; os demais são canais gerais do banco.",
-          "_fonte": "https://www.itau.com.br/atendimento-itau"
-        },
-        {
-          "rotulo": "Central Itaú",
-          "rotuloCurto": "Central",
-          "numero": "4004 4224",
-          "tipo": "atendimento",
-          "semTel": true,
-          "_contexto": "Números reunidos de busca na web, incluindo sites de terceiros. NÃO li o par rótulo/número na página oficial. O rótulo pode pertencer a outro número. Confira no site e ligue antes de usar. O 0800 970 4828 aparece como central específica do consórcio; os demais são canais gerais do banco.",
-          "_fonte": "https://www.itau.com.br/atendimento-itau"
-        },
-        {
-          "rotulo": "SAC — 24h",
-          "rotuloCurto": "SAC",
-          "numero": "0800 728 0728",
-          "tipo": "sac",
-          "_contexto": "Números reunidos de busca na web, incluindo sites de terceiros. NÃO li o par rótulo/número na página oficial. O rótulo pode pertencer a outro número. Confira no site e ligue antes de usar. O 0800 970 4828 aparece como central específica do consórcio; os demais são canais gerais do banco.",
-          "_fonte": "https://www.itau.com.br/atendimento-itau"
-        },
-        {
-          "rotulo": "Ouvidoria",
-          "rotuloCurto": "Ouvidoria",
-          "numero": "0800 570 0011",
-          "tipo": "ouvidoria",
-          "_contexto": "Números reunidos de busca na web, incluindo sites de terceiros. NÃO li o par rótulo/número na página oficial. O rótulo pode pertencer a outro número. Confira no site e ligue antes de usar. O 0800 970 4828 aparece como central específica do consórcio; os demais são canais gerais do banco.",
-          "_fonte": "https://www.itau.com.br/atendimento-itau"
+          "rotuloCurto": "SAC"
         }
       ]
     },
     {
       "id": "bradesco-consorcio",
       "nome": "Bradesco Consórcio",
-      "exemplo": true,
+      "exemplo": false,
       "produtos": [
         "consorcio"
       ],
-      "logo": "assets/seguradoras/bradesco-consorcio.png",
+      "logo": "assets/seguradoras/bradesco.png",
       "site": "https://banco.bradesco/consorcio",
       "telefones": [
         {
-          "rotulo": "Central consórcio — capitais",
-          "rotuloCurto": "Central capitais",
-          "numero": "4002 0022",
-          "tipo": "atendimento",
-          "semTel": true,
-          "_contexto": "Números reunidos de busca na web, incluindo sites de terceiros. NÃO li o par rótulo/número na página oficial. O rótulo pode pertencer a outro número. Confira no site e ligue antes de usar.",
-          "_fonte": "https://banco.bradesco/html/classic/atendimento/fale-conosco/centrais-de-atendimento.shtm"
-        },
-        {
-          "rotulo": "Central consórcio — demais localidades",
-          "rotuloCurto": "Central",
-          "numero": "0800 570 0022",
-          "tipo": "atendimento",
-          "_contexto": "Números reunidos de busca na web, incluindo sites de terceiros. NÃO li o par rótulo/número na página oficial. O rótulo pode pertencer a outro número. Confira no site e ligue antes de usar.",
-          "_fonte": "https://banco.bradesco/html/classic/atendimento/fale-conosco/centrais-de-atendimento.shtm"
-        },
-        {
-          "rotulo": "SAC Consórcio",
-          "rotuloCurto": "SAC",
-          "numero": "0800 721 1166",
-          "tipo": "sac",
-          "_contexto": "Números reunidos de busca na web, incluindo sites de terceiros. NÃO li o par rótulo/número na página oficial. O rótulo pode pertencer a outro número. Confira no site e ligue antes de usar.",
-          "_fonte": "https://banco.bradesco/html/classic/atendimento/fale-conosco/centrais-de-atendimento.shtm"
-        },
-        {
-          "rotulo": "Ouvidoria",
-          "rotuloCurto": "Ouvidoria",
-          "numero": "0800 727 9933",
-          "tipo": "ouvidoria",
-          "_contexto": "Números reunidos de busca na web, incluindo sites de terceiros. NÃO li o par rótulo/número na página oficial. O rótulo pode pertencer a outro número. Confira no site e ligue antes de usar.",
-          "_fonte": "https://banco.bradesco/html/classic/atendimento/fale-conosco/centrais-de-atendimento.shtm"
-        }
-      ]
-    },
-    {
-      "id": "magalu-consorcio",
-      "nome": "Consórcio Magalu",
-      "exemplo": true,
-      "produtos": [
-        "consorcio"
-      ],
-      "logo": "",
-      "site": "https://consorciomagalu.com.br",
-      "telefones": [
-        {
-          "rotulo": "Atendimento ao consorciado",
-          "rotuloCurto": "Atendimento",
-          "numero": "0800 340 1214",
-          "tipo": "atendimento",
-          "_contexto": "Números reunidos de busca na web, incluindo sites de terceiros. NÃO li o par rótulo/número na página oficial. O rótulo pode pertencer a outro número. Confira no site e ligue antes de usar. ATENÇÃO: a mesma fonte dá 0800 340 1214 como atendimento E como ouvidoria. Um dos dois rótulos está errado — descubra qual antes de usar.",
-          "_fonte": "https://consorciomagalu.com.br/2020/10/21/nossos-canais-de-atendimento/"
-        },
-        {
-          "rotulo": "Atendimento — São Paulo",
-          "rotuloCurto": "São Paulo",
-          "numero": "(11) 3185 7300",
-          "tipo": "atendimento",
-          "_contexto": "Números reunidos de busca na web, incluindo sites de terceiros. NÃO li o par rótulo/número na página oficial. O rótulo pode pertencer a outro número. Confira no site e ligue antes de usar. ATENÇÃO: a mesma fonte dá 0800 340 1214 como atendimento E como ouvidoria. Um dos dois rótulos está errado — descubra qual antes de usar.",
-          "_fonte": "https://consorciomagalu.com.br/2020/10/21/nossos-canais-de-atendimento/"
-        },
-        {
-          "rotulo": "SAC",
-          "rotuloCurto": "SAC",
-          "numero": "0800 310 0002",
-          "tipo": "sac",
-          "_contexto": "Números reunidos de busca na web, incluindo sites de terceiros. NÃO li o par rótulo/número na página oficial. O rótulo pode pertencer a outro número. Confira no site e ligue antes de usar. ATENÇÃO: a mesma fonte dá 0800 340 1214 como atendimento E como ouvidoria. Um dos dois rótulos está errado — descubra qual antes de usar.",
-          "_fonte": "https://consorciomagalu.com.br/2020/10/21/nossos-canais-de-atendimento/"
-        }
-      ]
-    },
-    {
-      "id": "caixa-consorcio",
-      "nome": "CAIXA Consórcio",
-      "exemplo": true,
-      "produtos": [
-        "consorcio"
-      ],
-      "logo": "assets/seguradoras/caixa-consorcio.png",
-      "site": "https://www.caixaconsorcio.com.br",
-      "telefones": [
-        {
           "rotulo": "Central de relacionamento",
-          "rotuloCurto": "Central",
-          "numero": "0800 975 1000",
+          "numero": "4004 4436",
           "tipo": "atendimento",
-          "_contexto": "Números reunidos de busca na web, incluindo sites de terceiros. NÃO li o par rótulo/número na página oficial. O rótulo pode pertencer a outro número. Confira no site e ligue antes de usar.",
-          "_fonte": "https://blogcaixaconsorcio.com.br/conheca-os-canais-oficiais-da-caixa-consorcio/"
-        },
-        {
-          "rotulo": "SAC — 24h",
-          "rotuloCurto": "SAC",
-          "numero": "0800 975 2000",
-          "tipo": "sac",
-          "_contexto": "Números reunidos de busca na web, incluindo sites de terceiros. NÃO li o par rótulo/número na página oficial. O rótulo pode pertencer a outro número. Confira no site e ligue antes de usar.",
-          "_fonte": "https://blogcaixaconsorcio.com.br/conheca-os-canais-oficiais-da-caixa-consorcio/"
-        },
-        {
-          "rotulo": "Ouvidoria",
-          "rotuloCurto": "Ouvidoria",
-          "numero": "0800 975 3000",
-          "tipo": "ouvidoria",
-          "_contexto": "Números reunidos de busca na web, incluindo sites de terceiros. NÃO li o par rótulo/número na página oficial. O rótulo pode pertencer a outro número. Confira no site e ligue antes de usar.",
-          "_fonte": "https://blogcaixaconsorcio.com.br/conheca-os-canais-oficiais-da-caixa-consorcio/"
+          "rotuloCurto": "Central",
+          "semTel": true
         }
       ]
     }
