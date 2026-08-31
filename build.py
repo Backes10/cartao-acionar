@@ -170,6 +170,31 @@ for nome in PUBLICAVEIS:
 for r in recusados:
     print('  fora do site (extensao nao publicavel): %s' % r)
 
+# ---- dominio proprio ----
+# O GitHub Pages le o dominio de um arquivo chamado CNAME na raiz do site. Ele
+# nao entra em PUBLICAVEIS porque nao tem extensao e o filtro de EXTENSOES_OK o
+# recusaria -- e afrouxar aquele filtro foi o que um dia publicou dois PDFs de
+# origem num endereco publico.
+#
+# Se um dia sair do GitHub Pages, apagar o CNAME da raiz basta: o build para de
+# copia-lo e nada mais muda. E se ele existir, o RAIZ_PUBLICA do app.js TEM de
+# apontar para o mesmo dominio -- o app avisa nas pendencias quando nao aponta,
+# mas aqui a conferencia sai de graca e antes de publicar.
+cname = os.path.join(RAIZ, 'CNAME')
+if os.path.isfile(cname):
+    with open(cname, encoding='utf-8') as f:
+        dominio = f.read().strip()
+    shutil.copy2(cname, os.path.join(site, 'CNAME'))
+    esperados.add('CNAME')
+    raiz_app = re.search(r"RAIZ_PUBLICA\s*=\s*'([^']+)'", js)
+    if raiz_app and dominio not in raiz_app.group(1):
+        raise SystemExit(
+            'ERRO: o CNAME diz "%s" e o RAIZ_PUBLICA do app.js diz "%s".\n'
+            '       O cartao gravaria um endereco onde o site nao esta, e o QR fica\n'
+            '       congelado na imagem: nao ha como corrigir depois de enviado.'
+            % (dominio, raiz_app.group(1)))
+    print('  dominio proprio: %s' % dominio)
+
 # ---- carimbo de versao nos enderecos ----
 # index.html, app.js e styles.css sao baixados e guardados em cache separados.
 # Numa troca de versao o aparelho podia ficar com o HTML novo e o JS velho: foi
