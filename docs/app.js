@@ -8,7 +8,7 @@
 // Precisa bater com o VERSAO do sw.js. O diagnóstico mostra os dois lado a
 // lado justamente para o vendedor perceber quando o aparelho está preso numa
 // versão antiga: se divergirem, o service worker ainda não trocou.
-const VERSAO_APP = 'v54';
+const VERSAO_APP = 'v55';
 
 const CHAVE_CONFIG = 'acionar.config';
 const CHAVE_CATALOGO = 'acionar.seguradoras';
@@ -62,7 +62,23 @@ const CONFIG_PADRAO = {
 // Caminho curto: cada caractere aqui é uma letra a mais de endereço azul na
 // conversa. "/telefones/" dizia o que era, mas isso agora está na linha logo
 // acima do link, escrita para o cliente ler e para a busca do WhatsApp achar.
-const RAIZ_LINK = 'https://backes10.github.io/cartao-acionar/t/#';
+/** ONDE ESTA APLICAÇÃO MORA, publicamente. MUDOU DE HOSPEDAGEM? É AQUI.
+ *
+ *  Este é o único endereço fixo do projeto — todo o resto é caminho relativo e
+ *  se muda de lugar sozinho. Ele existe porque o cartão grava dois endereços
+ *  ABSOLUTOS que precisam funcionar longe daqui: o link dos telefones, que vai
+ *  no texto da mensagem, e o QR de indicação, que vai DENTRO DA IMAGEM.
+ *
+ *  O do QR é o que não perdoa. A imagem do cartão é congelada: fica anos no
+ *  celular de quem recebeu e não há como corrigi-la. Um cartão que sair
+ *  apontando para um endereço que depois deixa de existir leva o QR junto, e a
+ *  indicação com ele. Por isso a ordem de uma mudança de hospedagem é: trocar
+ *  esta linha, publicar, conferir, e SÓ ENTÃO gerar cartão para cliente.
+ *
+ *  Tem de terminar com barra. */
+const RAIZ_PUBLICA = 'https://backes10.github.io/cartao-acionar/';
+
+const RAIZ_LINK = RAIZ_PUBLICA + 't/#';
 
 function linkDoCartao() {
   if (!estado.config.linkNaMensagem || !estado.seguradoraId) return '';
@@ -99,7 +115,7 @@ function linkDoCartao() {
       qual a placa do carro saiu do link do cliente.
    ========================================================================== */
 
-const RAIZ_INDICACAO = 'https://backes10.github.io/cartao-acionar/a/#';
+const RAIZ_INDICACAO = RAIZ_PUBLICA + 'a/#';
 const CHAVE_INDICACOES = 'acionar.indicacoes';
 
 /* Alfabeto sem 0/O, 1/I/L e 5/S: o código é lido em voz alta e digitado à mão
@@ -908,6 +924,24 @@ function conferirCartao() {
     avisos.push('Os dados da corretora na página do link estão diferentes dos daqui ('
       + estado.divergenciaCorretora + '). O cliente que abrir o link vai ver os antigos — me avise para eu publicar a correção.');
   }
+  /* O app está sendo servido de um endereço diferente do que ele grava no
+   * cartão? Então a hospedagem mudou e a constante RAIZ_PUBLICA ficou para trás.
+   *
+   * Sem este aviso o erro é silencioso e só aparece no pior momento: o cartão
+   * sai bonito, o vendedor manda, e o cliente toca num link que não existe mais
+   * — ou pior, o conhecido aponta a câmera para um QR morto, e ninguém fica
+   * sabendo. Vale a pena avisar mesmo com um falso positivo ocasional. */
+  const enderecoAqui = location.origin + location.pathname.replace(/[^/]*$/, '');
+  const local = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+  // file:// é o arquivo único aberto por duplo clique, onde não há endereço
+  // nenhum para comparar — e ali o RAIZ_PUBLICA é justamente o que salva.
+  if (!local && location.protocol !== 'file:' && enderecoAqui !== RAIZ_PUBLICA) {
+    avisos.push(`Este app está aberto em ${enderecoAqui}, mas grava ${RAIZ_PUBLICA} no link e no `
+      + 'QR do cartão. Se a hospedagem mudou, atualize o RAIZ_PUBLICA em app.js e publique de '
+      + 'novo ANTES de mandar cartão para cliente — o QR fica congelado na imagem e não tem '
+      + 'como ser corrigido depois.');
+  }
+
   if (!estado.config.whatsapp) avisos.push('Cadastre o WhatsApp do corretor em Configurações — sem ele o cliente não tem como te achar.');
   if (!estado.config.logo) avisos.push('Suba o logo da Acionar em Configurações para o cartão sair com a marca.');
   if (fotoRecusada) avisos.push('O logo entrou na imagem, mas ficou grande demais para virar a foto do contato. Use um PNG mais simples, de traço, se quiser a marca na agenda também.');
