@@ -18,13 +18,14 @@
  * MEXEU EM QUALQUER ARQUIVO DA CASCA? Suba o número do VERSAO abaixo.
  */
 
-const VERSAO = 'acionar-v52';
+const VERSAO = 'acionar-v53';
 
 const CASCA = [
   '.',
   'index.html',
   'styles.css',
   'comum.js',
+  'qr.js',
   'app.js',
   'manifest.webmanifest',
   'assets/logo-acionar.png',
@@ -32,7 +33,7 @@ const CASCA = [
   'assets/icone-512.png'
 ];
 
-const DADOS = ['data/produtos.json', 'data/seguradoras.json'];
+const DADOS = ['data/produtos.json', 'data/seguradoras.json', 'data/campanhas.json'];
 
 self.addEventListener('install', (evento) => {
   evento.waitUntil(

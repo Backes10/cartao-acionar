@@ -253,6 +253,9 @@ main { padding: 0 16px 8px; max-width: 620px; margin: 0 auto; }
 .campo__label { font-size: 12.5px; font-weight: 600; color: var(--texto-fraco); }
 .campo__opc { font-weight: 400; }
 .campo__ajuda { font-size: 12px; color: var(--texto-fraco); }
+/* Campo e botão lado a lado, com o botão do tamanho do texto dele. */
+.campo__linha { display: flex; gap: 8px; align-items: stretch; }
+.campo__linha .botao { width: auto; flex: 0 0 auto; }
 .campo__input {
   width: 100%;
   padding: 11px 12px;

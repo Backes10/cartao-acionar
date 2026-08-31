@@ -33,7 +33,9 @@ PUBLICAVEIS = [
     'manifest.webmanifest',
     'data',
     'assets',   # inclui assets/seguradoras/
+    'qr.js',      # gerador de QR do convite de indicacao, usado pelo cartao
     't',          # a pagina do link que o cliente recebe no WhatsApp
+    'a',          # a pagina da indicacao, onde cai quem escaneia o QR
     'telefones',  # redirecionamentos de enderecos antigos, para nao quebrar
     'c',          # link ja enviado
 ]
@@ -61,6 +63,7 @@ def data_uri(*caminho):
 html = ler('index.html')
 css = ler('styles.css')
 comum = ler('comum.js')
+qr = ler('qr.js')
 js = ler('app.js')
 produtos = json.loads(ler('data', 'produtos.json'))
 seguradoras = json.loads(ler('data', 'seguradoras.json'))
@@ -109,8 +112,10 @@ partes = [
     '<script>\nwindow.DADOS_EMBUTIDOS = %s;\nwindow.LOGO_EMBUTIDO = %s;\n</script>'
     % (sem_fechar_script(json.dumps(dados, ensure_ascii=False, separators=(',', ':'))),
        json.dumps(logo)),
-    # comum.js antes de app.js: app.js chama telParaDiscagem e companhia.
+    # comum.js e qr.js antes de app.js: app.js chama telParaDiscagem e
+    # companhia, e gerarQR/desenharQR para o convite de indicacao do cartao.
     '<script>\n%s\n</script>' % sem_fechar_script(comum),
+    '<script>\n%s\n</script>' % sem_fechar_script(qr),
     '<script>\n%s\n</script>' % sem_fechar_script(js),
 ]
 
@@ -181,6 +186,7 @@ with open(alvo_html, encoding='utf-8') as f:
 antes = html_site
 html_site = html_site.replace('src="app.js"', 'src="app.js?v=%s"' % carimbo)
 html_site = html_site.replace('src="comum.js"', 'src="comum.js?v=%s"' % carimbo)
+html_site = html_site.replace('src="qr.js"', 'src="qr.js?v=%s"' % carimbo)
 html_site = html_site.replace('href="styles.css"', 'href="styles.css?v=%s"' % carimbo)
 if html_site == antes:
     raise SystemExit('ERRO: nao achei app.js/styles.css no index.html para carimbar a versao. '

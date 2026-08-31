@@ -283,6 +283,25 @@
 
     <hr class="dialogo__hr">
 
+    <!-- Quem indicou? O cartão leva um QR de indicação, e quem escaneia manda
+         "Vim por indicação. Código A7K2M9". O código é opaco de propósito: a
+         tradução para o nome mora só neste aparelho e nunca sobe para a
+         internet. Sem esta busca, o código que chega no WhatsApp não vira
+         nome nenhum. -->
+    <div class="campo campo--full">
+      <span class="campo__label">Quem indicou? Busque o código</span>
+      <div class="campo__linha">
+        <input id="cfgBuscaCodigo" class="campo__input" type="text" inputmode="latin"
+          autocapitalize="characters" autocomplete="off" spellcheck="false"
+          maxlength="8" placeholder="A7K2M9">
+        <button id="cfgBuscarCodigo" class="botao botao--fantasma" type="button">Buscar</button>
+      </div>
+      <span class="campo__ajuda" id="cfgResultadoCodigo">Chegou uma mensagem citando um
+        código? Digite aqui para ver de quem é a indicação.</span>
+    </div>
+
+    <hr class="dialogo__hr">
+
     <label class="campo campo--full campo--caixa">
       <input id="cfgFotoNoContato" type="checkbox">
       <span>
@@ -318,6 +337,10 @@
 </dialog>
 
 <script src="comum.js"></script>
+<!-- qr.js antes de app.js: o cartao chama gerarQR/desenharQR para o convite
+     de indicacao. Gerador proprio, sem biblioteca externa -- ver o cabecalho
+     de qr.js. -->
+<script src="qr.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

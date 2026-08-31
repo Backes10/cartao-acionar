@@ -1,0 +1,7 @@
+{
+  "_leia_me": "Campanha de indicacao mostrada na pagina a/. Trocar 'ativa' liga e desliga a promocao em TODOS os cartoes ja enviados, na hora, sem reimprimir nada — e sem tocar em imagem nenhuma, porque o cartao nunca promete numero. Com 'ativa': null a pagina apresenta a corretora e o botao de WhatsApp, e nao promete beneficio nenhum.",
+  "_como_ligar": "Escreva a campanha em 'campanhas' e ponha o id dela em 'ativa'. Passada a data em 'ate', ela se desliga sozinha — a pagina confere a data antes de mostrar. Para desligar antes, volte 'ativa' para null.",
+  "_regra_que_nao_se_quebra": "A imagem do cartao NUNCA cita beneficio. Ela fica anos no celular do cliente e nao ha como corrigi-la: um cartao dizendo 'indique e ganhe 10%' continua circulando depois da campanha acabar, e a corretora fica com uma promessa impressa que nao pode honrar. Promocao mora aqui, que e pagina e se atualiza.",
+  "ativa": null,
+  "campanhas": {}
+}

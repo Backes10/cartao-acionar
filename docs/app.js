@@ -8,7 +8,7 @@
 // Precisa bater com o VERSAO do sw.js. O diagnóstico mostra os dois lado a
 // lado justamente para o vendedor perceber quando o aparelho está preso numa
 // versão antiga: se divergirem, o service worker ainda não trocou.
-const VERSAO_APP = 'v52';
+const VERSAO_APP = 'v53';
 
 const CHAVE_CONFIG = 'acionar.config';
 const CHAVE_CATALOGO = 'acionar.seguradoras';
@@ -70,6 +70,106 @@ function linkDoCartao() {
   // vai. Ver divergenciaDoLink().
   if (divergenciaDoLink().omitir) return '';
   return RAIZ_LINK + estado.seguradoraId;
+}
+
+/* ==========================================================================
+   INDICAÇÃO POR QR CODE
+
+   O cartão leva um QR que NÃO é para o cliente que o recebeu: ninguém escaneia
+   a tela do próprio celular. Ele é para a segunda pessoa — o conhecido a quem
+   a cliente mostra o cartão. Por isso o QR é o de indicação, e o link dos
+   telefones continua no texto da mensagem, onde é tocável.
+
+   O código identifica QUEM indicou, e viaja sozinho dentro do endereço: o
+   conhecido não digita nada e não precisa lembrar do código de outra pessoa.
+
+   Três regras da especificação, e todas moram aqui:
+
+   1. O cartão nunca promete número. A imagem é congelada — fica anos no
+      celular de quem recebeu e não há como corrigi-la. Ao lado do QR só entra
+      frase permanentemente verdadeira ("Conhece alguém que precisa de
+      seguro?"), nunca "ganhe 10%". Uma promoção impressa continua circulando
+      depois de acabar, e aí a corretora tem uma promessa que não pode honrar.
+   2. O que o QR promete é decidido DEPOIS, na página. Como ele aponta para um
+      endereço da Acionar e não para um WhatsApp fixo, ligar uma campanha um
+      ano depois faz todos os cartões já enviados passarem a valer, sem
+      reimprimir nada.
+   3. Nome de cliente não viaja. O código é opaco e a tradução código → nome
+      fica só neste aparelho, nunca sobe para a internet — mesma regra pela
+      qual a placa do carro saiu do link do cliente.
+   ========================================================================== */
+
+const RAIZ_INDICACAO = 'https://backes10.github.io/cartao-acionar/a/#';
+const CHAVE_INDICACOES = 'acionar.indicacoes';
+
+/* Alfabeto sem 0/O, 1/I/L e 5/S: o código é lido em voz alta e digitado à mão
+ * na busca do app, e esses pares são exatamente onde se erra. Sobram 28
+ * símbolos, que em 6 casas dão 481 milhões de combinações. */
+const ALFABETO_CODIGO = '2346789ABCDEFGHJKMNPQRTUVWXYZ';
+
+function lerIndicacoes() {
+  try {
+    const salvo = JSON.parse(localStorage.getItem(CHAVE_INDICACOES) || '{}');
+    return salvo && typeof salvo === 'object' ? salvo : {};
+  } catch (_) {
+    return {};
+  }
+}
+
+/** Chave de comparação do nome: sem acento, sem caixa, sem espaço repetido.
+ *
+ *  Existe para "João da Silva", "joao da silva" e "João  da Silva" receberem o
+ *  MESMO código. A especificação pede isso em letra: dois cartões para a mesma
+ *  cliente têm de sair com o mesmo código, senão a indicação dela se divide em
+ *  dois e nenhuma das metades bate. */
+function chaveDoNome(nome) {
+  return String(nome || '')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase().replace(/\s+/g, ' ').trim();
+}
+
+/** O código desta cliente: o que já existe, ou um novo, gravado no aparelho.
+ *
+ *  Sorteado e guardado, e não derivado do nome. Código derivado seria a mesma
+ *  função aplicada a um conjunto pequeno de nomes brasileiros: quem tivesse o
+ *  código poderia testar nomes até achar o que bate, e o nome da cliente
+ *  vazaria pelo próprio código. Sorteado, ele não diz nada a quem o vê. */
+function codigoDeIndicacao(nome) {
+  const chave = chaveDoNome(nome);
+  if (!chave) return '';
+  const mapa = lerIndicacoes();
+  for (const [codigo, reg] of Object.entries(mapa)) {
+    if (chaveDoNome(reg && reg.nome) === chave) return codigo;
+  }
+
+  let codigo = '';
+  // Sorteio criptográfico e não Math.random: o código é o que atribui a
+  // indicação, e sequência previsível deixaria alguém reivindicar a de outro.
+  for (let tentativa = 0; tentativa < 20 && !codigo; tentativa += 1) {
+    const bytes = new Uint8Array(6);
+    crypto.getRandomValues(bytes);
+    const candidato = Array.from(bytes, (b) => ALFABETO_CODIGO[b % ALFABETO_CODIGO.length]).join('');
+    if (!mapa[candidato]) codigo = candidato;
+  }
+  if (!codigo) return '';
+
+  mapa[codigo] = { nome: String(nome).trim(), em: new Date().toISOString().slice(0, 10) };
+  try {
+    localStorage.setItem(CHAVE_INDICACOES, JSON.stringify(mapa));
+  } catch (_) {
+    // Sem espaço para gravar, é melhor não pôr QR nenhum no cartão do que pôr
+    // um código que este aparelho não vai saber traduzir depois.
+    return '';
+  }
+  return codigo;
+}
+
+/** De quem é este código? Usado quando chega a mensagem "Vim por indicação". */
+function buscarIndicacao(codigo) {
+  const alvo = String(codigo || '').toUpperCase().replace(/[^0-9A-Z]/g, '');
+  if (!alvo) return null;
+  const reg = lerIndicacoes()[alvo];
+  return reg ? { codigo: alvo, nome: reg.nome, em: reg.em } : null;
 }
 
 /** O link é público e a página lê o `data/seguradoras.json` PUBLICADO — nunca o
@@ -651,6 +751,11 @@ function montarCartao() {
     emails,
     extras,
     ehExemplo,
+    // Código de indicação desta cliente, emitido na primeira vez e reaproveitado
+    // depois. Sem nome preenchido não há a quem atribuir a indicação, e aí o
+    // cartão sai sem QR — melhor sem QR do que com um que não conta para
+    // ninguém. Ver codigoDeIndicacao().
+    codigoIndicacao: codigoDeIndicacao(dados.segurado),
     foto: null
   };
 
@@ -1109,6 +1214,83 @@ const SERVICOS = [
   { id: 'saude', curto: 'Saúde' }
 ];
 
+/** O convite de indicação: a frase, o QR e a instrução, na coluna da direita.
+ *
+ *  Devolve o `y` onde o bloco termina, para quem chamou empurrar o rodapé se
+ *  ele passar do último telefone.
+ *
+ *  Nível de correção M e não Q: os dois cabem, mas o Q empurra o código para a
+ *  versão 5 (37 módulos contra 33) e, num quadrado de tamanho fixo, mais
+ *  módulos significa cada um menor. Lido da tela de um celular pela câmera de
+ *  outro, o que trava a leitura é módulo pequeno, não falta de correção. */
+function desenharConviteIndicacao(ctx, codigo, yTopo, cores) {
+  // 287 = 41 módulos × 7 pixels, e os 41 são os 33 do código mais os 4 de zona
+  // de silêncio de cada lado. Casar a caixa com um múltiplo exato importa: o
+  // desenharQR arredonda o passo para baixo, então uma caixa de 280 daria o
+  // mesmo passo 6 de uma de 246 e jogaria fora 34 pixels de largura útil.
+  //
+  // Tamanho é o que decide se este QR é lido. Ele é escaneado da TELA de um
+  // celular pela câmera de outro, e o que trava esse tipo de leitura é módulo
+  // pequeno. A primeira versão punha a frase em cima do código numa coluna de
+  // 300, e sobrava tão pouco que o código saía com 132 pixels. Com a frase ao
+  // LADO, o código fica com 231 — 75% maior, na mesma altura de bloco.
+  const LADO_QR = 287;
+  const xQR = LARGURA - PAD - LADO_QR;
+  const RESPIRO = 26;
+
+  let qr;
+  try {
+    qr = gerarQR(RAIZ_INDICACAO + codigo, 'M');
+  } catch (_) {
+    // Sem QR o cartão sai como sempre saiu. Um cartão sem convite é muito
+    // melhor que um cartão que não é gerado.
+    return yTopo;
+  }
+
+  desenharQR(ctx, qr, xQR, yTopo, LADO_QR, cores.tinta, '#FFFFFF');
+
+  /* A frase à esquerda do código, alinhada à direita para encostar nele.
+   *
+   * Ela é permanentemente verdadeira de propósito. A imagem do cartão é
+   * congelada: fica anos no celular de quem recebeu e não há como corrigi-la.
+   * Promessa de campanha ("indique e ganhe 10%") continuaria circulando depois
+   * da campanha acabar. O que muda com o tempo mora na página, que se
+   * atualiza. */
+  ctx.save();
+  ctx.textAlign = 'right';
+  const direita = xQR - RESPIRO;
+  const larguraTexto = direita - (PAD + 380);
+
+  ctx.font = fnt(600, 23);
+  const linhas = quebrarTexto(ctx, 'Conhece alguém que precisa de seguro?', larguraTexto);
+  const ALTURA_LINHA = 30;
+  // Centralizado contra o código, não alinhado pelo topo: o bloco de texto tem
+  // duas ou três linhas conforme a quebra, e alinhar pelo topo deixava a frase
+  // pendurada no alto de um quadrado de 287.
+  let y = yTopo + (LADO_QR - (linhas.length * ALTURA_LINHA + 26)) / 2 + 20;
+  ctx.fillStyle = cores.tinta;
+  for (const linha of linhas) {
+    ctx.fillText(linha, direita, y);
+    y += ALTURA_LINHA;
+  }
+
+  // textoEspacado desenha caractere a caractere a partir do x, então precisa de
+  // alinhamento à esquerda e do x já calculado: com textAlign 'right' cada
+  // letra sairia alinhada por ela mesma e a palavra ficava embaralhada.
+  y += 8;
+  ctx.fillStyle = cores.tintaFraca;
+  ctx.font = fnt(700, 18);
+  ctx.textAlign = 'left';
+  const ESPACO = 1.6;
+  const rotulo = 'APONTE A CÂMERA';
+  let largura = -ESPACO;
+  for (const ch of rotulo) largura += ctx.measureText(ch).width + ESPACO;
+  textoEspacado(ctx, rotulo, direita - largura, y, ESPACO);
+
+  ctx.restore();
+  return yTopo + LADO_QR;
+}
+
 async function desenharCartao(cartao) {
   const cfg = estado.config;
   const marca = cfg.cor1 || '#0E3A5E';
@@ -1321,6 +1503,7 @@ async function desenharCartao(cartao) {
     textoEspacado(ctx, cartao.tituloTelefones, PAD, y, 1.6);
     y += 36;
 
+    const yTopoTelefones = y;
     for (const t of telSeguradora) {
       ctx.fillStyle = destaque;
       retanguloArredondado(ctx, PAD, y - 6, 7, 62, 4);
@@ -1332,6 +1515,23 @@ async function desenharCartao(cartao) {
       ctx.font = fnt(800, 46);
       ctx.fillText(t.numero, PAD + 26, y + 56);
       y += 84;
+    }
+
+    /* ---- QR de indicação ----
+     *
+     *  Entra no vazio à DIREITA dos telefones, que já existia e não era usado.
+     *  Ao lado, e não embaixo, porque altura a mais faz o WhatsApp cortar a
+     *  imagem no balão da conversa — e é justamente a lista de telefones que
+     *  ficaria de fora. O `y` só avança se o bloco do QR passar do último
+     *  telefone, o que acontece quando a seguradora tem menos de quatro.
+     *
+     *  A frase é permanentemente verdadeira, de propósito. Ver o bloco de
+     *  comentário de codigoDeIndicacao(): a imagem é congelada e não há como
+     *  corrigir promessa impressa. */
+    if (cartao.codigoIndicacao) {
+      const fim = desenharConviteIndicacao(ctx, cartao.codigoIndicacao, yTopoTelefones,
+        { tinta, tintaFraca });
+      y = Math.max(y, fim);
     }
   }
 
@@ -3376,6 +3576,7 @@ async function iniciar() {
     'btnCancelarSeguradora', 'btnExcluirSeguradora',
     'dlgConfig', 'formConfig', 'cfgCorretor', 'cfgWhats',
     'cfgTelefone', 'cfgEmail', 'cfgCorretora', 'cfgSite', 'cfgCor1', 'cfgCor2',
+    'cfgBuscaCodigo', 'cfgBuscarCodigo', 'cfgResultadoCodigo',
     'cfgFotoNoContato', 'cfgLinkMensagem', 'cfgLogo',
     'cfgLogoPrevia', 'cfgLogoRemover', 'cfgTemplate', 'cfgTemplateAjuda']) {
     el[id] = $('#' + id);
@@ -3591,6 +3792,28 @@ async function iniciar() {
     emEdicao.logo = '';
     el.segLogoPrevia.hidden = true;
     el.segLogo.value = '';
+  });
+
+  /* Busca do código de indicação. Só lê o que está neste aparelho — a lista
+   * código → nome nunca sai daqui. */
+  const buscarCodigo = () => {
+    const digitado = String(el.cfgBuscaCodigo.value || '').trim();
+    const alvo = el.cfgResultadoCodigo;
+    if (!digitado) {
+      alvo.textContent = 'Chegou uma mensagem citando um código? Digite aqui para ver de '
+        + 'quem é a indicação.';
+      return;
+    }
+    const achado = buscarIndicacao(digitado);
+    alvo.textContent = achado
+      ? `${achado.codigo} — ${achado.nome} (cartão gerado em ${dataParaBR(achado.em) || achado.em})`
+      : `Não achei o código ${digitado.toUpperCase()} neste aparelho. Ele é emitido no `
+        + 'celular de quem gerou o cartão: se foi outro vendedor, o código está lá.';
+  };
+  el.cfgBuscarCodigo?.addEventListener('click', buscarCodigo);
+  el.cfgBuscaCodigo?.addEventListener('keydown', (ev) => {
+    // Enter dentro de um <dialog> com form envia o formulário e fecha a janela.
+    if (ev.key === 'Enter') { ev.preventDefault(); buscarCodigo(); }
   });
 
   el.btnExportarCatalogo?.addEventListener('click', exportarCatalogo);

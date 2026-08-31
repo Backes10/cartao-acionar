@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Acionar Corretora de Seguros</title>
+<meta name="theme-color" content="#EB6522">
+<!-- noindex como na página do link: o endereço carrega um código de indicação
+     no fragmento e não há por que essas variações aparecerem em busca. Quem
+     chega aqui chega pela câmera, apontada para o cartão de um conhecido. -->
+<meta name="robots" content="noindex, nofollow">
+<!-- Reaproveita a folha da página do link: mesma marca, mesmos alvos de toque
+     grandes, mesmo tema claro fixo. Duas folhas para o mesmo visual divergiriam
+     na primeira correção — foi o que aconteceu com as regras de telefone antes
+     de virarem comum.js. -->
+<link rel="stylesheet" href="../t/pagina.css">
+<style>
+  /* O pouco que existe só aqui. */
+
+  /* O .botao da folha compartilhada foi escrito para <button>, que já centra o
+     texto e não sublinha. Aqui o botão é um <a> — precisa ser, porque leva para
+     o wa.me — e sem estas três linhas ele sai com o texto sublinhado, encostado
+     no canto superior esquerdo de um retângulo laranja. */
+  a.botao {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    text-decoration: none;
+    padding: 0 16px;
+  }
+
+  .lead { font-size: 17px; margin: 0 0 18px; }
+  .campanha {
+    display: none;
+    border: 2px solid var(--marca);
+    background: #FFF3E9;
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin: 0 0 18px;
+  }
+  .campanha--on { display: block; }
+  .campanha__titulo { font-weight: 800; font-size: 17px; margin: 0 0 6px; }
+  .campanha p { margin: 4px 0; font-size: 15px; }
+  .campanha__prazo { color: var(--fraca); font-size: 13.5px; }
+  .codigo {
+    margin: 18px 0 6px;
+    font-size: 13.5px;
+    color: var(--fraca);
+  }
+  .codigo strong {
+    display: inline-block;
+    font-size: 19px;
+    letter-spacing: 0.12em;
+    color: var(--tinta);
+  }
+  .servicos {
+    list-style: none;
+    padding: 0;
+    margin: 22px 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .servicos li {
+    border: 1px solid var(--borda);
+    border-radius: 999px;
+    padding: 6px 13px;
+    font-size: 14px;
+    color: var(--fraca);
+    background: #FFFFFF;
+  }
+</style>
+</head>
+<body>
+  <header class="topo">
+    <img class="topo__logo" src="../assets/logo-acionar-pequeno.png"
+      width="352" height="102" alt="Acionar Corretora de Seguros">
+  </header>
+
+  <main class="folha">
+    <h1 id="titulo" class="titulo">Acionar Corretora de Seguros</h1>
+
+    <p class="lead">
+      Você chegou aqui pela indicação de um cliente nosso. A Acionar cuida do
+      seguro de ponta a ponta: cotação com várias seguradoras, contratação e,
+      no dia do problema, alguém atendendo do lado de cá.
+    </p>
+
+    <div id="campanha" class="campanha" aria-live="polite"></div>
+
+    <a id="btnWhats" class="botao botao--primario" rel="noopener">
+      Falar no WhatsApp
+    </a>
+
+    <div id="telefonesCorretora" class="telefones telefones--claro"></div>
+
+    <p id="codigo" class="codigo" hidden></p>
+
+    <ul class="servicos">
+      <li>Auto</li><li>Moto</li><li>Residencial</li><li>Vida</li>
+      <li>Empresarial</li><li>Consórcio</li>
+    </ul>
+  </main>
+
+  <script src="../comum.js"></script>
+  <script src="pagina.js"></script>
+</body>
+</html>
