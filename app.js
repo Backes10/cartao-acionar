@@ -8,7 +8,7 @@
 // Precisa bater com o VERSAO do sw.js. O diagnóstico mostra os dois lado a
 // lado justamente para o vendedor perceber quando o aparelho está preso numa
 // versão antiga: se divergirem, o service worker ainda não trocou.
-const VERSAO_APP = 'v53';
+const VERSAO_APP = 'v54';
 
 const CHAVE_CONFIG = 'acionar.config';
 const CHAVE_CATALOGO = 'acionar.seguradoras';
@@ -1235,8 +1235,7 @@ function desenharConviteIndicacao(ctx, codigo, yTopo, cores) {
   // 300, e sobrava tão pouco que o código saía com 132 pixels. Com a frase ao
   // LADO, o código fica com 231 — 75% maior, na mesma altura de bloco.
   const LADO_QR = 287;
-  const xQR = LARGURA - PAD - LADO_QR;
-  const RESPIRO = 26;
+  const FRASE = 'Conhece quem precisa de seguro?';
 
   let qr;
   try {
@@ -1247,45 +1246,51 @@ function desenharConviteIndicacao(ctx, codigo, yTopo, cores) {
     return yTopo;
   }
 
-  desenharQR(ctx, qr, xQR, yTopo, LADO_QR, cores.tinta, '#FFFFFF');
-
-  /* A frase à esquerda do código, alinhada à direita para encostar nele.
-   *
-   * Ela é permanentemente verdadeira de propósito. A imagem do cartão é
-   * congelada: fica anos no celular de quem recebeu e não há como corrigi-la.
-   * Promessa de campanha ("indique e ganhe 10%") continuaria circulando depois
-   * da campanha acabar. O que muda com o tempo mora na página, que se
-   * atualiza. */
   ctx.save();
-  ctx.textAlign = 'right';
-  const direita = xQR - RESPIRO;
-  const larguraTexto = direita - (PAD + 380);
+  ctx.textAlign = 'center';
 
-  ctx.font = fnt(600, 23);
-  const linhas = quebrarTexto(ctx, 'Conhece alguém que precisa de seguro?', larguraTexto);
-  const ALTURA_LINHA = 30;
-  // Centralizado contra o código, não alinhado pelo topo: o bloco de texto tem
-  // duas ou três linhas conforme a quebra, e alinhar pelo topo deixava a frase
-  // pendurada no alto de um quadrado de 287.
-  let y = yTopo + (LADO_QR - (linhas.length * ALTURA_LINHA + 26)) / 2 + 20;
+  /* O bloco é tão largo quanto o mais largo dos dois — a frase ou o código — e
+   * encosta na margem direita. Dimensionar pelo código só deixava a frase mais
+   * larga que ele, e centrada nele ela passava da margem do cartão; dimensionar
+   * pela frase e centralizar tudo resolve os dois de uma vez.
+   *
+   * O teto é o vazio que existe à direita dos telefones. Passar disso encostaria
+   * no número mais longo da lista. */
+  ctx.font = fnt(600, 22);
+  const LIMITE = LARGURA - PAD * 2 - 340;
+  const larguraBloco = Math.min(LIMITE, Math.max(LADO_QR, ctx.measureText(FRASE).width));
+  const x0 = LARGURA - PAD - larguraBloco;
+  const centro = x0 + larguraBloco / 2;
+  const xQR = centro - LADO_QR / 2;
+
+  /* A frase vai ACIMA do código, na altura do rótulo "EM CASO DE SINISTRO OU
+   * REBOQUE" — que ocupa só o lado esquerdo e deixa essa linha livre aqui. É
+   * espaço que o cartão já gastava: aproveitá-lo faz o bloco inteiro custar
+   * apenas a altura do código, e não a do código mais a da frase. O QR fica
+   * alinhado com o primeiro telefone da lista.
+   *
+   * Altura importa mais do que parece: passando de certo ponto o WhatsApp corta
+   * a imagem no balão da conversa, e o que fica de fora é justamente a lista de
+   * telefones — o motivo do cartão existir.
+   *
+   * A frase é curta e permanentemente verdadeira. A imagem é congelada: fica
+   * anos no celular de quem recebeu e não há como corrigi-la. "Indique e ganhe
+   * 10%" continuaria circulando depois da campanha acabar. O que muda com o
+   * tempo mora na página, que se atualiza.
+   *
+   * Sem "aponte a câmera" embaixo: QR code não precisa de legenda dizendo o que
+   * é, e a linha custava mais 26px. */
   ctx.fillStyle = cores.tinta;
+  const linhas = quebrarTexto(ctx, FRASE, larguraBloco);
+  // Empilha para CIMA a partir da linha do rótulo, para que uma segunda linha
+  // cresça para o espaço vazio acima e não empurre o código para baixo.
+  let yTexto = yTopo - 36 - (linhas.length - 1) * 30;
   for (const linha of linhas) {
-    ctx.fillText(linha, direita, y);
-    y += ALTURA_LINHA;
+    ctx.fillText(linha, centro, yTexto);
+    yTexto += 30;
   }
 
-  // textoEspacado desenha caractere a caractere a partir do x, então precisa de
-  // alinhamento à esquerda e do x já calculado: com textAlign 'right' cada
-  // letra sairia alinhada por ela mesma e a palavra ficava embaralhada.
-  y += 8;
-  ctx.fillStyle = cores.tintaFraca;
-  ctx.font = fnt(700, 18);
-  ctx.textAlign = 'left';
-  const ESPACO = 1.6;
-  const rotulo = 'APONTE A CÂMERA';
-  let largura = -ESPACO;
-  for (const ch of rotulo) largura += ctx.measureText(ch).width + ESPACO;
-  textoEspacado(ctx, rotulo, direita - largura, y, ESPACO);
+  desenharQR(ctx, qr, xQR, yTopo, LADO_QR, cores.tinta, '#FFFFFF');
 
   ctx.restore();
   return yTopo + LADO_QR;
