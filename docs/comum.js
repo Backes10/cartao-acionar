@@ -76,6 +76,20 @@ function telParaWaMe(bruto) {
   return d;
 }
 
+/** Dois campos apontam para o MESMO telefone?
+ *
+ *  Compara pela forma discável, não pelo texto: "(51) 3566-0010", "5135660010"
+ *  e "+55 51 3566-0010" são o mesmo número escrito de três jeitos.
+ *
+ *  Existe porque a corretora pode ter UM número só servindo de WhatsApp e de
+ *  telefone. Sem esta comparação ele sairia duplicado em quatro lugares — no
+ *  rodapé do cartão, no contato que o cliente salva na agenda, na página do
+ *  link e na página do QR. */
+function mesmoTelefone(a, b) {
+  const x = telParaDiscagem(a);
+  return !!x && x === telParaDiscagem(b);
+}
+
 /** Escapa o que o vCard trata como separador. */
 function escVCard(valor) {
   return String(valor ?? '')

@@ -136,8 +136,16 @@ async function iniciar() {
     botao.hidden = true;
   }
 
-  if (dados.whatsapp) telefoneDaCorretora(dados, 'WhatsApp', dados.whatsapp, true);
-  if (dados.telefone) telefoneDaCorretora(dados, 'Escritório', dados.telefone, false);
+  /* Mesma regra da página do link: quando o WhatsApp e o telefone são o mesmo
+   * número, os rótulos nomeiam a AÇÃO e não a linha. Aqui não há contato para
+   * salvar, então bastam os dois toques. */
+  if (mesmoTelefone(dados.whatsapp, dados.telefone)) {
+    telefoneDaCorretora(dados, 'WhatsApp', dados.whatsapp, true);
+    telefoneDaCorretora(dados, 'Ligar', dados.telefone, false);
+  } else {
+    if (dados.whatsapp) telefoneDaCorretora(dados, 'WhatsApp', dados.whatsapp, true);
+    if (dados.telefone) telefoneDaCorretora(dados, 'Escritório', dados.telefone, false);
+  }
 
   if (codigo) {
     const p = el('codigo');

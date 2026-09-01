@@ -285,16 +285,41 @@ async function iniciar() {
  *
  *  Devolve a lista porque o botão de salvar na agenda monta o contato com ela. */
 function mostrarCorretora(corretora) {
-  const lista = [];
-  if (!corretora) return lista;
-  if (corretora.whatsapp) {
-    lista.push({ rotulo: 'WhatsApp', numero: corretora.whatsapp, movel: true });
+  if (!corretora) return [];
+
+  /* Duas listas, e não uma, porque tela e agenda querem coisas diferentes
+   * quando o WhatsApp e o telefone são o MESMO número — o caso da Acionar, que
+   * atende no fixo do escritório pelos dois.
+   *
+   * Na TELA valem os dois: tocar num abre a conversa, no outro disca, e são
+   * ações diferentes para quem está parado no acostamento. Os rótulos passam a
+   * nomear a ação e não a linha, senão o cliente lê "Escritório" duas vezes com
+   * o mesmo número e não sabe o que muda.
+   *
+   * Na AGENDA vale um só. Dois contatos com o número idêntico é lixo no
+   * telefone de quem recebeu, e foi o que este projeto passou a evitar em todo
+   * lugar depois que o cartão começou a repetir número. */
+  const umSoNumero = mesmoTelefone(corretora.whatsapp, corretora.telefone);
+  const naTela = [];
+  const naAgenda = [];
+
+  if (umSoNumero) {
+    naTela.push({ rotulo: 'WhatsApp', numero: corretora.whatsapp, movel: true });
+    naTela.push({ rotulo: 'Ligar', numero: corretora.telefone, movel: false });
+    naAgenda.push({
+      rotulo: 'WhatsApp e telefone',
+      rotuloAgenda: 'Acionar WhatsApp e telefone',
+      numero: corretora.whatsapp,
+      movel: false
+    });
+  } else {
+    if (corretora.whatsapp) naTela.push({ rotulo: 'WhatsApp', numero: corretora.whatsapp, movel: true });
+    if (corretora.telefone) naTela.push({ rotulo: 'Escritório', numero: corretora.telefone, movel: false });
+    naAgenda.push(...naTela);
   }
-  if (corretora.telefone) {
-    lista.push({ rotulo: 'Escritório', numero: corretora.telefone, movel: false });
-  }
-  for (const t of lista) destinoCorretora(t, corretora);
-  return lista;
+
+  for (const t of naTela) destinoCorretora(t, corretora);
+  return naAgenda;
 }
 
 function destinoCorretora(t, corretora) {

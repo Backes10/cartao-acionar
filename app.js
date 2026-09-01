@@ -8,7 +8,7 @@
 // Precisa bater com o VERSAO do sw.js. O diagnóstico mostra os dois lado a
 // lado justamente para o vendedor perceber quando o aparelho está preso numa
 // versão antiga: se divergirem, o service worker ainda não trocou.
-const VERSAO_APP = 'v55';
+const VERSAO_APP = 'v56';
 
 const CHAVE_CONFIG = 'acionar.config';
 const CHAVE_CATALOGO = 'acionar.seguradoras';
@@ -25,7 +25,11 @@ const LOGO_PADRAO = window.LOGO_EMBUTIDO || 'assets/logo-acionar.png';
 // tiradas da própria arte: laranja #EB6522 e grafite #3A3737.
 const CONFIG_PADRAO = {
   corretor: '',
-  whatsapp: '(51) 99741-4049',
+  // Um numero so: a Acionar tirou o celular e o fixo do escritorio atende no
+  // WhatsApp e na ligacao. Os dois campos apontam para ele de proposito -- e o
+  // codigo junta os dois num item so onde repetir faria mal (rodape do cartao,
+  // contato do cliente). Ver mesmoTelefone() em comum.js.
+  whatsapp: '(51) 3566-0010',
   telefone: '(51) 3566-0010',
   email: 'acionarseguros@acionarseguros.com.br',
   corretora: 'Acionar Corretora de Seguros',
@@ -680,27 +684,45 @@ function montarCartao() {
   // agenda do cliente lê "Yelum Demais Regiões" / "Acionar WhatsApp" e não
   // uma lista de frases cortadas.
   const marcaCorretora = cfg.corretor ? primeiroNome(cfg.corretor) : 'Acionar';
-  if (cfg.whatsapp) {
+  /* Um número só, servindo de WhatsApp E de telefone, é o caso da Acionar hoje:
+   * o celular saiu e ficou o fixo do escritório, que atende nos dois. Sem esta
+   * junção o mesmo número sairia duas vezes no rodapé do cartão e viraria dois
+   * contatos idênticos na agenda do cliente. */
+  if (mesmoTelefone(cfg.whatsapp, cfg.telefone)) {
     telefones.push({
-      rotulo: `WhatsApp ${marcaCorretora}`,
-      rotuloAgenda: `Acionar WhatsApp${cfg.corretor ? ' (' + marcaCorretora + ')' : ''}`,
-      // No rodapé do cartão o nome da corretora está na linha de cima: repetir
-      // "Acionar" aqui só rouba espaço de uma faixa que já é apertada.
-      rotuloRodape: 'WhatsApp',
+      rotulo: 'Acionar — WhatsApp e telefone',
+      rotuloAgenda: 'Acionar WhatsApp e telefone',
+      rotuloRodape: 'WhatsApp e telefone',
       numero: cfg.whatsapp,
-      movel: true,
-      grupo: 'corretor'
-    });
-  }
-  if (cfg.telefone) {
-    telefones.push({
-      rotulo: 'Acionar — escritório (horário comercial)',
-      rotuloAgenda: 'Acionar Escritório',
-      rotuloRodape: 'Escritório',
-      numero: cfg.telefone,
+      // Fixo de escritório, então WORK e não CELL no contato. O rótulo já diz
+      // que atende no WhatsApp; marcar como celular só poria "Móvel" errado na
+      // agenda de quem recebeu.
       movel: false,
       grupo: 'corretor'
     });
+  } else {
+    if (cfg.whatsapp) {
+      telefones.push({
+        rotulo: `WhatsApp ${marcaCorretora}`,
+        rotuloAgenda: `Acionar WhatsApp${cfg.corretor ? ' (' + marcaCorretora + ')' : ''}`,
+        // No rodapé do cartão o nome da corretora está na linha de cima: repetir
+        // "Acionar" aqui só rouba espaço de uma faixa que já é apertada.
+        rotuloRodape: 'WhatsApp',
+        numero: cfg.whatsapp,
+        movel: true,
+        grupo: 'corretor'
+      });
+    }
+    if (cfg.telefone) {
+      telefones.push({
+        rotulo: 'Acionar — escritório (horário comercial)',
+        rotuloAgenda: 'Acionar Escritório',
+        rotuloRodape: 'Escritório',
+        numero: cfg.telefone,
+        movel: false,
+        grupo: 'corretor'
+      });
+    }
   }
 
   // O link wa.me saiu: era o mesmo número do WhatsApp que já está na lista, e
