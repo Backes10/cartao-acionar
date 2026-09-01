@@ -18,7 +18,7 @@
  * MEXEU EM QUALQUER ARQUIVO DA CASCA? Suba o número do VERSAO abaixo.
  */
 
-const VERSAO = 'acionar-v56';
+const VERSAO = 'acionar-v57';
 
 const CASCA = [
   '.',
