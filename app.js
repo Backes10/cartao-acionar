@@ -8,7 +8,7 @@
 // Precisa bater com o VERSAO do sw.js. O diagnóstico mostra os dois lado a
 // lado justamente para o vendedor perceber quando o aparelho está preso numa
 // versão antiga: se divergirem, o service worker ainda não trocou.
-const VERSAO_APP = 'v60';
+const VERSAO_APP = 'v61';
 
 const CHAVE_CONFIG = 'acionar.config';
 const CHAVE_CATALOGO = 'acionar.seguradoras';
@@ -2688,10 +2688,16 @@ function renderHistorico() {
   el.listaHistorico.innerHTML = '';
   el.btnLimparHistorico.hidden = todos.length === 0;
 
-  // A busca só aparece quando há o que buscar: numa lista de seis cartões ela
-  // seria um campo a mais pedindo atenção sem resolver nada.
+  /* A busca aparece sempre que houver cartão — mesma regra do "Limpar
+   * histórico" logo abaixo dela.
+   *
+   *  Antes ela só surgia acima de MOSTRAR_HISTORICO, para não poluir uma lista
+   *  curta. Mas o vendedor não tem como saber que existe um campo que aparece
+   *  sozinho lá pelo quadragésimo cartão: ele procura, não acha, e conclui que
+   *  o app não busca. Campo visível desde o começo custa 40px e se explica
+   *  sozinho pelo texto de dentro. */
   const busca = el.buscaHistorico ? chaveDoNome(el.buscaHistorico.value) : '';
-  if (el.buscaHistorico) el.buscaHistorico.hidden = todos.length <= MOSTRAR_HISTORICO && !busca;
+  if (el.buscaHistorico) el.buscaHistorico.hidden = todos.length === 0;
 
   if (!todos.length) {
     const li = document.createElement('li');
