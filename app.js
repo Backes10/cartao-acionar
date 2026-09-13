@@ -8,7 +8,7 @@
 // Precisa bater com o VERSAO do sw.js. O diagnóstico mostra os dois lado a
 // lado justamente para o vendedor perceber quando o aparelho está preso numa
 // versão antiga: se divergirem, o service worker ainda não trocou.
-const VERSAO_APP = 'v58';
+const VERSAO_APP = 'v59';
 
 const CHAVE_CONFIG = 'acionar.config';
 const CHAVE_CATALOGO = 'acionar.seguradoras';
@@ -3700,6 +3700,37 @@ function registrarServiceWorker() {
           if (novo.state === 'installed') avisar(novo);
         });
       });
+
+      /* Perguntar ao servidor se mudou, sem depender de recarregar a página.
+       *
+       *  Era o buraco: o `register()` acima só roda quando a página CARREGA, e
+       *  no celular o app é instalado na tela inicial e fica aberto em segundo
+       *  plano por dias. Sem recarga não havia consulta nenhuma, e o aparelho
+       *  ficava preso numa versão velha sem nunca descobrir — exatamente o que
+       *  o comentário lá em cima diz que o `updateViaCache` resolve, e não
+       *  resolve: ele controla COMO a consulta é feita, não SE ela acontece.
+       *
+       *  Duas oportunidades, as duas baratas: quando o vendedor traz o app de
+       *  volta para a frente, que é o gesto natural no celular, e de meia em
+       *  meia hora para quem deixa o app aberto o dia inteiro. Cada consulta é
+       *  um GET condicional de 5 KB no sw.js; quando nada mudou o servidor
+       *  responde 304 e acabou.
+       *
+       *  A janela de 5 minutos evita a rajada de quem fica alternando entre o
+       *  app e o WhatsApp — que é o uso normal aqui, um cartão atrás do outro. */
+      const ESPERA = 5 * 60 * 1000;
+      // Começa em zero, e não em Date.now(): com o relógio já armado, a primeira
+      // volta ao app depois de abrir ficava bloqueada pelos 5 minutos. O custo
+      // de deixar passar é um GET condicional a mais por carregamento.
+      let ultimaConsulta = 0;
+      const consultar = () => {
+        if (document.visibilityState !== 'visible') return;
+        if (Date.now() - ultimaConsulta < ESPERA) return;
+        ultimaConsulta = Date.now();
+        registro.update().catch(() => { /* sem rede: tenta na próxima */ });
+      };
+      document.addEventListener('visibilitychange', consultar);
+      setInterval(consultar, 30 * 60 * 1000);
     })
     .catch((erro) => console.warn('service worker', erro));
 }
