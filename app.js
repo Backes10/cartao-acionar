@@ -8,7 +8,7 @@
 // Precisa bater com o VERSAO do sw.js. O diagnóstico mostra os dois lado a
 // lado justamente para o vendedor perceber quando o aparelho está preso numa
 // versão antiga: se divergirem, o service worker ainda não trocou.
-const VERSAO_APP = 'v59';
+const VERSAO_APP = 'v60';
 
 const CHAVE_CONFIG = 'acionar.config';
 const CHAVE_CATALOGO = 'acionar.seguradoras';
@@ -2701,7 +2701,18 @@ function renderHistorico() {
     return;
   }
 
-  const achados = busca ? todos.filter((i) => textoBuscavel(i).includes(busca)) : todos;
+  /* Cada palavra digitada tem de aparecer, em qualquer ordem e em qualquer
+   * campo. Com `includes` da frase inteira, "maria civic" não achava nada: o
+   * texto indexado é uma concatenação, e os dois termos não são vizinhos nela.
+   * E procurar pelo cliente MAIS o carro é justamente como se procura quando a
+   * pessoa tem dois seguros. */
+  const termos = busca.split(' ').filter(Boolean);
+  const achados = termos.length
+    ? todos.filter((i) => {
+      const texto = textoBuscavel(i);
+      return termos.every((termo) => texto.includes(termo));
+    })
+    : todos;
   if (!achados.length) {
     const li = document.createElement('li');
     li.className = 'historico__vazio';
