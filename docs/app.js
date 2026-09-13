@@ -8,13 +8,37 @@
 // Precisa bater com o VERSAO do sw.js. O diagnóstico mostra os dois lado a
 // lado justamente para o vendedor perceber quando o aparelho está preso numa
 // versão antiga: se divergirem, o service worker ainda não trocou.
-const VERSAO_APP = 'v57';
+const VERSAO_APP = 'v58';
 
 const CHAVE_CONFIG = 'acionar.config';
 const CHAVE_CATALOGO = 'acionar.seguradoras';
 const CHAVE_HISTORICO = 'acionar.historico';
 const CHAVE_RASCUNHO = 'acionar.rascunho';
-const MAX_HISTORICO = 20;
+/* Quanto tempo o histórico guarda, e o teto de segurança.
+ *
+ *  A janela é de TEMPO e não de contagem porque o que o vendedor procura ali é
+ *  o cartão do ano passado, para renovar — e isso é um prazo, não um número.
+ *  Com teto só de contagem, o mesmo valor entrega coisas opostas: quem faz dois
+ *  cartões por semana leva anos para encher 500, quem faz vinte enche em seis
+ *  meses e perde a renovação.
+ *
+ *  Dezoito meses cobrem o ciclo anual com folga. Os 500 ficam de rede, para o
+ *  vendedor de volume alto não encostar no limite do navegador — e nem chegam
+ *  perto: 500 cartões são 244 KB dos ~5 MB disponíveis.
+ *
+ *  A expiração também é o que transforma isso em retenção de verdade. Guardar
+ *  nome, placa, apólice e WhatsApp de cliente para sempre num celular que pode
+ *  ser perdido ou vendido é o que uma política de retenção existe para evitar —
+ *  e depender de alguém lembrar de tocar em "Limpar histórico" não é política. */
+const MESES_HISTORICO = 18;
+const MAX_HISTORICO = 500;
+
+/** Quantos itens a lista desenha de uma vez.
+ *
+ *  Não é limite de armazenamento, é de tela: renderHistorico recria a lista
+ *  inteira a cada cartão enviado, e 500 itens são mil nós de DOM redesenhados
+ *  num celular mediano. O resto se alcança pela busca. */
+const MOSTRAR_HISTORICO = 40;
 
 // Logo que vem no projeto. É uma URL relativa, não base64: o canvas e o
 // <img> aceitam as duas, e assim não ocupa espaço no localStorage.
@@ -2594,8 +2618,47 @@ function copiarLegado(texto) {
    Histórico
    ========================================================================== */
 
+/** O histórico, já sem o que passou da validade.
+ *
+ *  Expira na LEITURA e grava de volta quando algo caiu — não basta esconder o
+ *  registro velho da tela, ele tem de sair do aparelho. Filtrar só na exibição
+ *  deixaria o dado do cliente guardado para sempre, que é exatamente o que a
+ *  janela de retenção existe para evitar.
+ *
+ *  Grava de volta apenas quando houve poda, senão toda leitura viraria uma
+ *  escrita — e renderHistorico lê a cada cartão enviado.
+ *
+ *  Registro sem `quando` legível fica. Data quebrada é defeito nosso, e apagar
+ *  o cartão de um cliente por causa dele seria cobrar do vendedor o preço de um
+ *  bug. O teto de MAX_HISTORICO cuida desses. */
 function lerHistorico() {
-  try { return JSON.parse(localStorage.getItem(CHAVE_HISTORICO) || '[]'); } catch (_) { return []; }
+  let itens;
+  try { itens = JSON.parse(localStorage.getItem(CHAVE_HISTORICO) || '[]'); } catch (_) { return []; }
+  if (!Array.isArray(itens)) return [];
+
+  const limite = new Date();
+  limite.setMonth(limite.getMonth() - MESES_HISTORICO);
+  const validos = itens.filter((i) => {
+    const quando = new Date(i && i.quando);
+    return isNaN(quando) || quando >= limite;
+  }).slice(0, MAX_HISTORICO);
+
+  if (validos.length !== itens.length) {
+    try { localStorage.setItem(CHAVE_HISTORICO, JSON.stringify(validos)); } catch (_) { /* sem espaço: a poda tenta de novo na próxima leitura */ }
+  }
+  return validos;
+}
+
+/** O texto pelo qual um cartão do histórico pode ser encontrado.
+ *
+ *  O que aparece em destaque na lista é o nomeContato — "Seguro Auto — Honda
+ *  Civic EXL", ou seja, o VEÍCULO. Mas um ano depois ninguém procura "Civic":
+ *  procura "Maria". Por isso a busca varre também o nome do segurado e a placa,
+ *  que é o que o cliente costuma citar ao ligar. */
+function textoBuscavel(item) {
+  const d = (item && item.dados) || {};
+  return chaveDoNome([item && item.nomeContato, item && item.seguradora,
+    d.segurado, d.placa, d.marca, d.modelo].filter(Boolean).join(' '));
 }
 
 function registrarHistorico(cartao) {
@@ -2621,16 +2684,34 @@ function registrarHistorico(cartao) {
 }
 
 function renderHistorico() {
-  const itens = lerHistorico();
+  const todos = lerHistorico();
   el.listaHistorico.innerHTML = '';
-  el.btnLimparHistorico.hidden = itens.length === 0;
-  if (!itens.length) {
+  el.btnLimparHistorico.hidden = todos.length === 0;
+
+  // A busca só aparece quando há o que buscar: numa lista de seis cartões ela
+  // seria um campo a mais pedindo atenção sem resolver nada.
+  const busca = el.buscaHistorico ? chaveDoNome(el.buscaHistorico.value) : '';
+  if (el.buscaHistorico) el.buscaHistorico.hidden = todos.length <= MOSTRAR_HISTORICO && !busca;
+
+  if (!todos.length) {
     const li = document.createElement('li');
     li.className = 'historico__vazio';
     li.textContent = 'Os cartões que você enviar aparecem aqui, prontos para reenviar ou renovar.';
     el.listaHistorico.appendChild(li);
     return;
   }
+
+  const achados = busca ? todos.filter((i) => textoBuscavel(i).includes(busca)) : todos;
+  if (!achados.length) {
+    const li = document.createElement('li');
+    li.className = 'historico__vazio';
+    li.textContent = `Nenhum cartão com "${el.buscaHistorico.value.trim()}". `
+      + `O histórico guarda os últimos ${MESES_HISTORICO} meses.`;
+    el.listaHistorico.appendChild(li);
+    return;
+  }
+
+  const itens = achados.slice(0, MOSTRAR_HISTORICO);
   for (const item of itens) {
     const li = document.createElement('li');
     const info = document.createElement('div');
@@ -2641,7 +2722,10 @@ function renderHistorico() {
     const meta = document.createElement('div');
     meta.className = 'historico__meta';
     const quando = new Date(item.quando);
-    meta.textContent = [item.seguradora, isNaN(quando) ? '' : quando.toLocaleDateString('pt-BR')].filter(Boolean).join(' · ');
+    // O segurado entra na linha de baixo: o nome em destaque é o do veículo, e
+    // sem isto a lista não diz de QUEM é o cartão — que é como se procura.
+    meta.textContent = [item.dados && item.dados.segurado, item.seguradora,
+      isNaN(quando) ? '' : quando.toLocaleDateString('pt-BR')].filter(Boolean).join(' · ');
     info.append(nome, meta);
     const botao = document.createElement('button');
     botao.type = 'button';
@@ -2649,6 +2733,16 @@ function renderHistorico() {
     botao.textContent = 'Usar';
     botao.addEventListener('click', () => carregarDoHistorico(item));
     li.append(info, botao);
+    el.listaHistorico.appendChild(li);
+  }
+
+  // Lista cortada precisa dizer que foi cortada, senão o vendedor conclui que o
+  // cartão sumiu e vai refazer à mão um que está guardado ali.
+  if (achados.length > itens.length) {
+    const li = document.createElement('li');
+    li.className = 'historico__vazio';
+    li.textContent = `Mostrando ${itens.length} de ${achados.length}. `
+      + 'Use a busca para achar o resto.';
     el.listaHistorico.appendChild(li);
   }
 }
@@ -3628,7 +3722,7 @@ async function iniciar() {
     'listaTelefones', 'formDados', 'inpWhatsCliente',
     'nomeContato', 'pendencias', 'canvasCartao', 'btnEnviar', 'btnMensagem', 'btnVcf', 'btnPng',
     'maisEnvio', 'btnContatoDepois', 'btnMensagemDepois', 'blocoLink', 'linkCliente',
-    'btnLimpar', 'statusEnvio', 'listaHistorico', 'btnLimparHistorico',
+    'btnLimpar', 'statusEnvio', 'listaHistorico', 'buscaHistorico', 'btnLimparHistorico',
     'diagnostico', 'diagLista', 'btnCopiarDiag',
     'btnCatalogo', 'btnBannerCatalogo', 'dlgCatalogo', 'vistaLista', 'vistaEditor', 'listaCatalogo',
     'btnNovaSeguradora', 'btnFecharCatalogo', 'btnExportarCatalogo', 'inpImportarCatalogo',
@@ -3876,6 +3970,10 @@ async function iniciar() {
     // Enter dentro de um <dialog> com form envia o formulário e fecha a janela.
     if (ev.key === 'Enter') { ev.preventDefault(); buscarCodigo(); }
   });
+
+  // Filtra enquanto digita. Sem debounce de proposito: o filtro roda sobre um
+  // array ja em memoria e desenha no maximo MOSTRAR_HISTORICO linhas.
+  el.buscaHistorico?.addEventListener('input', renderHistorico);
 
   el.btnExportarCatalogo?.addEventListener('click', exportarCatalogo);
   el.inpImportarCatalogo?.addEventListener('change', () => {

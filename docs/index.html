@@ -12,7 +12,7 @@
 <!-- o iOS ignora os ícones do manifest ao "Adicionar à Tela de Início" -->
 <link rel="apple-touch-icon" href="assets/icone-192.png">
 <link rel="icon" type="image/png" href="assets/icone-192.png">
-<link rel="stylesheet" href="styles.css?v=v57">
+<link rel="stylesheet" href="styles.css?v=v58">
 </head>
 <body>
 
@@ -117,6 +117,12 @@
 
   <section class="passo">
     <h2 class="passo__titulo">Histórico</h2>
+    <!-- Busca pelo nome do cliente, e não só pelo veículo: a lista mostra em
+         destaque "Seguro Auto — Honda Civic", mas quem liga um ano depois é a
+         Maria. Some quando há poucos cartões, para não pesar a tela à toa. -->
+    <input id="buscaHistorico" class="campo__input historico__busca" type="search"
+      autocomplete="off" spellcheck="false" hidden
+      placeholder="Buscar por cliente, placa ou veículo">
     <ul id="listaHistorico" class="historico"></ul>
     <button id="btnLimparHistorico" class="botao botao--fantasma" type="button" hidden>Limpar histórico</button>
   </section>
@@ -336,11 +342,11 @@
   </form>
 </dialog>
 
-<script src="comum.js?v=v57"></script>
+<script src="comum.js?v=v58"></script>
 <!-- qr.js antes de app.js: o cartao chama gerarQR/desenharQR para o convite
      de indicacao. Gerador proprio, sem biblioteca externa -- ver o cabecalho
      de qr.js. -->
-<script src="qr.js?v=v57"></script>
-<script src="app.js?v=v57"></script>
+<script src="qr.js?v=v58"></script>
+<script src="app.js?v=v58"></script>
 </body>
 </html>

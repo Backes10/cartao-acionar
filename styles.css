@@ -393,6 +393,7 @@ textarea.campo__input { min-height: 78px; resize: vertical; line-height: 1.35; }
 
 /* ---------- histórico ---------- */
 
+.historico__busca { margin-bottom: 10px; }
 .historico { list-style: none; margin: 0; padding: 0; }
 .historico li {
   display: flex; align-items: center; gap: 10px;
