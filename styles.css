@@ -406,6 +406,16 @@ textarea.campo__input { min-height: 78px; resize: vertical; line-height: 1.35; }
 .historico__meta { font-size: 12px; color: var(--texto-fraco); }
 .historico__vazio { color: var(--texto-fraco); font-size: 14px; padding: 4px 0; }
 .historico .botao { padding: 8px 12px; font-size: 13.5px; }
+/* Quadrado, para o X nao virar um botao comprido ao lado do Usar. O alvo
+   continua com 36px, que e o minimo confortavel para o dedo. */
+.historico__apagar {
+  flex: 0 0 auto;
+  width: 36px; height: 36px;
+  padding: 0;
+  display: grid; place-items: center;
+  font-size: 15px; line-height: 1;
+  color: var(--texto-fraco);
+}
 
 /* ---------- catálogo de seguradoras ---------- */
 

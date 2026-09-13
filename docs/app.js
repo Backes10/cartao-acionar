@@ -8,7 +8,7 @@
 // Precisa bater com o VERSAO do sw.js. O diagnóstico mostra os dois lado a
 // lado justamente para o vendedor perceber quando o aparelho está preso numa
 // versão antiga: se divergirem, o service worker ainda não trocou.
-const VERSAO_APP = 'v61';
+const VERSAO_APP = 'v62';
 
 const CHAVE_CONFIG = 'acionar.config';
 const CHAVE_CATALOGO = 'acionar.seguradoras';
@@ -2749,7 +2749,30 @@ function renderHistorico() {
     botao.className = 'botao';
     botao.textContent = 'Usar';
     botao.addEventListener('click', () => carregarDoHistorico(item));
-    li.append(info, botao);
+
+    /* Apagar UM cartão.
+     *
+     *  Antes só existia "Limpar histórico", que leva tudo. Isso deixava o
+     *  vendedor sem saída no caso que mais importa: o cliente pede para apagar
+     *  os dados dele, e a única ferramenta disponível destrói dezoito meses de
+     *  trabalho junto. Agora dá para tirar um sem tocar no resto. */
+    const apagar = document.createElement('button');
+    apagar.type = 'button';
+    apagar.className = 'botao botao--fantasma historico__apagar';
+    apagar.textContent = '✕';
+    apagar.title = 'Apagar este cartão do histórico';
+    apagar.setAttribute('aria-label', `Apagar ${item.nomeContato} do histórico`);
+    apagar.addEventListener('click', () => {
+      if (!confirm(`Apagar "${item.nomeContato}" do histórico?\n\nO cartão já enviado ao cliente não muda — sai só daqui.`)) return;
+      const resto = lerHistorico().filter((i) => !mesmoValor(i, item));
+      try {
+        localStorage.setItem(CHAVE_HISTORICO, JSON.stringify(resto));
+      } catch (_) { /* sem espaço para gravar: a lista continua como está */ }
+      renderHistorico();
+      statusEnvio('Cartão apagado do histórico.');
+    });
+
+    li.append(info, botao, apagar);
     el.listaHistorico.appendChild(li);
   }
 
@@ -3946,6 +3969,14 @@ async function iniciar() {
   });
 
   el.btnLimparHistorico?.addEventListener('click', () => {
+    // Confirmação porque não há volta, e o botão fica logo abaixo da lista que
+    // o vendedor rola com o dedo. Com vinte cartões um toque errado era chato;
+    // com dezoito meses de histórico é perda de trabalho. A contagem entra na
+    // pergunta para a decisão ser tomada sabendo o tamanho dela.
+    const quantos = lerHistorico().length;
+    if (!quantos) return;
+    const s = quantos === 1 ? 'o único cartão guardado' : `os ${quantos} cartões guardados`;
+    if (!confirm(`Apagar ${s}?\n\nNão tem como desfazer. Para tirar um só, use o ✕ na linha dele.`)) return;
     localStorage.removeItem(CHAVE_HISTORICO);
     renderHistorico();
     statusEnvio('Histórico limpo.');
