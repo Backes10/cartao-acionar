@@ -14,23 +14,25 @@ Roda inteiro no aparelho. Nenhum dado de cliente sai do celular, não existe ser
 
 ## Antes de usar com cliente de verdade
 
-**A Yelum já está com os números reais**, tirados da imagem oficial que a Acionar envia hoje.
-Cartão de Yelum sai limpo, pronto para mandar.
+**As 14 empresas do catálogo estão com os telefones conferidos.** Em 30/08/2026 a Acionar
+ligou em cada número, corrigiu os rótulos para a finalidade real e devolveu o catálogo. A
+marca **EXEMPLO** saiu do cartão.
 
-> **As outras 21 entradas do catálogo** (12 seguradoras e 9 administradoras de
-> consórcio) **estão com telefones não conferidos** — parte fictícios
-> (`0800 000 0001`), parte raspados do site da própria empresa sem ninguém ter
-> ligado para confirmar. Enquanto estiverem assim:
+> Sobram dois buracos de conteúdo, e nenhum se resolve sem a Acionar:
 >
-> - a imagem sai com a marca **EXEMPLO** atravessada;
-> - o arquivo do contato vem com `EXEMPLO-` no nome;
-> - o passo 4 mostra um aviso amarelo dizendo de qual empresa é o problema;
-> - **a página do link avisa o cliente**, não deixa nenhum número virar toque e
->   esconde o botão de salvar na agenda. Os telefones da Acionar continuam
->   clicáveis, que é para onde esse cliente deve ligar.
+> - **SulAmérica** ficou com um telefone só, *"Atendimento Vida"*, e a entrada vale para auto,
+>   moto, residencial, vida e empresarial. O cartão de auto imprime "EM CASO DE SINISTRO OU
+>   REBOQUE" e embaixo o número de Vida. Falta o de assistência 24h.
+> - **Bradesco Consórcio** ficou com um número só, `4004 4436`, marcado `semTel` — e o vCard
+>   pula todo `semTel`, então o contato salvo pelo cliente sai sem número nenhum da
+>   administradora. O número aparece na imagem, para digitar à mão. Falta um 0800.
 >
-> É de propósito: mandar um número de sinistro errado é o único jeito de esse app
-> causar um problema real.
+> As duas estão marcadas como conferidas, então **não sai marca EXEMPLO avisando**.
+
+Entrada nova entra com `"exemplo": true` e volta a valer o regime antigo, que continua no
+código: imagem riscada com **EXEMPLO**, `EXEMPLO-` no nome do arquivo do contato, aviso amarelo
+no passo 4, e a página do link avisando o cliente sem deixar nenhum número virar toque. É de
+propósito — mandar um número de sinistro errado é o único jeito de esse app causar dano real.
 
 ### O manual do cadastro é um PDF, e ele não mora aqui
 
@@ -167,16 +169,16 @@ npx serve .
 ## Primeira configuração
 
 **Já vem preenchida** com os dados do cartão que a Acionar envia hoje: logo, laranja
-`#EB6522`, grafite `#3A3737`, WhatsApp `(51) 99741-4049`, escritório `(51) 3566-0010`
-e o e-mail. Não precisa configurar nada para começar.
+`#EB6522`, grafite `#3A3737`, WhatsApp e telefone `(51) 3566-0010` e o e-mail. O celular
+saiu a pedido da Acionar em 01/09/2026: o fixo do escritório atende nos dois canais, e o app
+junta os dois num item só onde repetir faria mal (rodapé do cartão, contato do cliente). Não precisa configurar nada para começar.
 
 Confira dois pontos no ⚙ do topo:
 
 - **Nome do corretor** — está vazio. Sem ele o cartão assina "Acionar Corretora de
   Seguros"; com ele, o bloco fica pessoal ("WhatsApp Sérgio", por exemplo).
-- **WhatsApp** — está o geral, `(51) 99741-4049`. O cartão antigo tem também um
-  *WhatsApp Sérgio* `(51) 99988-8643`. Se o cliente deve falar com uma pessoa e não com
-  o número geral, troque aqui.
+- **WhatsApp** — está o do escritório, `(51) 3566-0010`. Se o cliente deve falar com uma
+  pessoa e não com o número geral, troque aqui.
 - **Site** — está vazio de propósito. Veja *Dois problemas no cartão antigo*, abaixo.
 
 Também dá para mudar o **padrão do nome do contato** por produto, se `Seguro Auto -
@@ -203,8 +205,17 @@ o cliente acha que está protegido.
 4. Confere a prévia.
 5. **Enviar no WhatsApp** → escolhe o cliente.
 
-O **Histórico** guarda os últimos 20 cartões: *Usar* recarrega tudo, você só troca a
-vigência e reenvia. Renovação anual em 10 segundos.
+O **Histórico** guarda os cartões dos últimos **18 meses**, até 500: *Usar* recarrega tudo,
+você só troca a vigência e reenvia. Renovação anual em 10 segundos.
+
+A janela é de tempo, e não de contagem, porque o que se procura ali é o cartão do ano passado —
+e isso é um prazo. Também é o que torna aquilo retenção de verdade: o dado do cliente sai do
+aparelho sozinho, sem depender de alguém lembrar de limpar.
+
+Com a lista grande, o campo de busca no topo dela procura por **cliente, placa ou veículo** —
+cada palavra digitada conta, em qualquer ordem. O nome do segurado entra na busca mesmo sem ser
+o título da linha: um ano depois ninguém procura "Civic", procura "Maria". O **✕** de cada linha
+apaga só aquele cartão; *Limpar histórico* leva todos, e os dois perguntam antes.
 
 ### No Android são dois passos, e não tem como ser um
 
@@ -246,6 +257,36 @@ novo, mas o PDF continua circulando:
 
 Instagram, Facebook e o endereço no Maps estão certos.
 
+## O QR de indicação
+
+O cartão traz um QR no espaço vazio à direita dos telefones, com a frase *"Conhece quem precisa
+de seguro?"*. Ele **não é para o cliente que recebeu** — ninguém escaneia a tela do próprio
+celular. É para a segunda pessoa, o conhecido a quem ele mostra o cartão.
+
+Quem aponta a câmera cai em `a/`, que apresenta a corretora e abre o WhatsApp com a mensagem já
+escrita: *"Olá! Vim por indicação. Código A7K2M9"*. O conhecido não digita nada e não precisa
+lembrar do código de outra pessoa — ele viaja sozinho dentro do endereço.
+
+O código identifica **quem indicou**. É sorteado na primeira vez que a cliente recebe um cartão
+e reaproveitado depois, então dois cartões para a mesma pessoa saem com o mesmo código. Para
+saber de quem é um código que chegou no WhatsApp: ⚙ → *Quem indicou? Busque o código*.
+
+### Três regras que não se quebram
+
+1. **O cartão nunca promete número.** A imagem é congelada: fica anos no celular de quem
+   recebeu e não há como corrigi-la. Ao lado do QR só entra frase permanentemente verdadeira,
+   nunca "ganhe 10%" — uma promoção impressa continua circulando depois de acabar.
+2. **A promoção mora na página, que se atualiza.** Está em `data/campanhas.json`, hoje com
+   `"ativa": null`. Ligar a campanha é trocar uma linha, e vale na hora para **todos os cartões
+   já enviados**, sem reimprimir nada. É por isso que o código entra no QR desde já, mesmo sem
+   promoção: sem ele, cartão enviado hoje ficaria sem atribuição amanhã.
+3. **Nome de cliente não viaja.** O código é opaco e a tradução código → nome fica só no
+   aparelho do vendedor. Por isso ela **não** entra no `exportarCatalogo`, que existe para ser
+   mandado para publicação.
+
+Falta a Acionar decidir o que quem indica ganha (seção 6 de `fontes/Indicacao-por-QR-code.pdf`).
+Enquanto não decide, o QR funciona como cartão de visita digital da corretora.
+
 ## O que não vai no cartão
 
 Nome, veículo, placa, apólice, vigência e franquia — sim.
@@ -263,9 +304,12 @@ No seguro residencial e empresarial, use o campo de endereço só com bairro e c
 | `index.html` `styles.css` `app.js` | o app |
 | `comum.js` | regras de telefone e de vCard compartilhadas entre o app e a página do link. Já estiveram duplicadas e sete de oito cópias divergiram. |
 | `t/` | a página que o cliente abre pelo link da mensagem |
-| `c/` `telefones/` | endereços antigos da mesma página, redirecionando. Não apague: há link enviado apontando para eles. |
+| `qr.js` | gerador de QR code próprio, sem dependência externa. Conferido por `fontes/conferir-qr.py` |
+| `a/` | a página onde cai quem escaneia o QR de indicação do cartão |
+| `c/` `telefones/` | endereços antigos da mesma página, redirecionando. Existem por precaução: **nenhum cliente recebeu link ainda**, então hoje não há nada apontando para eles. |
 | `data/seguradoras.json` | **catálogo de telefones — é o que você mantém** |
 | `data/produtos.json` | campos e padrão de nome de cada produto |
+| `data/campanhas.json` | liga e desliga a promoção da indicação. Com `"ativa": null` o QR não promete nada |
 | `data/corretora.json` | os dados da Acionar que a **página do link** usa. O app usa os de Configurações e compara os dois. |
 | `assets/` | logo, ícones e os logos das seguradoras |
 | `sw.js` `manifest.webmanifest` | fazem funcionar offline e instalar como app |
@@ -310,5 +354,10 @@ Estas coisas o app **não** faz e estão planejadas (ver `PLANO.md`):
   detecta a diferença e deixa o link fora da mensagem, mas quem publica sou eu,
   a partir do JSON exportado.
 
-E o teste que só dá para fazer com aparelho na mão: **importar o contato num iPhone, num
-Android com Google Contatos e num Samsung**, conferindo etiqueta, discagem e foto.
+E os testes que só dão para fazer com aparelho na mão:
+
+- **importar o contato num iPhone, num Android com Google Contatos e num Samsung**, conferindo
+  etiqueta, discagem e foto;
+- **ler o QR do cartão com iPhone e com Android**, da tela de um aparelho pela câmera de outro.
+  O gerador foi conferido contra duas bibliotecas independentes, mas câmera de celular tem
+  tolerância própria.
